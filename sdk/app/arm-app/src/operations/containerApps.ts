@@ -660,7 +660,6 @@ const listCustomHostNameAnalysisOperationSpec: coreClient.OperationSpec = {
     200: {
       bodyMapper: Mappers.CustomHostnameAnalysisResult
     },
-    204: {},
     default: {
       bodyMapper: Mappers.DefaultErrorResponse
     }
@@ -683,6 +682,7 @@ const listSecretsOperationSpec: coreClient.OperationSpec = {
     200: {
       bodyMapper: Mappers.SecretsCollection
     },
+    204: {},
     default: {
       bodyMapper: Mappers.DefaultErrorResponse
     }

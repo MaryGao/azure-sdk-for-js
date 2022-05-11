@@ -835,6 +835,23 @@ packages:
       tslib: 2.4.0
     dev: false
 
+  /@azure/core-rest-pipeline/1.8.0:
+    resolution: {integrity: sha512-o8eZr96erQpiq8EZhZU/SyN6ncOfZ6bexwN2nMm9WpDmZGvaq907kopADt8XvNhbEF7kRA1l901Pg8mXjWp3UQ==}
+    engines: {node: '>=12.0.0'}
+    dependencies:
+      '@azure/abort-controller': 1.1.0
+      '@azure/core-auth': 1.3.2
+      '@azure/core-tracing': 1.0.0-preview.13
+      '@azure/logger': 1.0.3
+      form-data: 4.0.0
+      http-proxy-agent: 4.0.1
+      https-proxy-agent: 5.0.1
+      tslib: 2.4.0
+      uuid: 8.3.2
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /@azure/core-rest-pipeline/1.8.1:
     resolution: {integrity: sha512-R/XpxZcDgGbnneEifnsAcjLoR2NCmlDxKDmzd8oi5jx5YEnPE6gsxHQWAk2+uY55Ka717x/fdctyoCYKnumrqw==}
     engines: {node: '>=12.0.0'}
@@ -13636,17 +13653,20 @@ packages:
     dev: false
 
   file:projects/arm-subscriptions.tgz:
-    resolution: {integrity: sha512-VY1+MYOKFtHZX6Pi9GiDv+NA09OubHR8oYDeKz7OdPu4aP9xUAcI6FF7WprbAVyHGbB3qsnU2gtEma7bYzuWjA==, tarball: file:projects/arm-subscriptions.tgz}
+    resolution: {integrity: sha512-e0uv5ealRuVXbPLdHWVeOMSGYaA+mMJtgSfKAMpUvo0z+rb7dMB/MYuGZf3RzBc9skNpkd1USDoMZaKCCkI4sA==, tarball: file:projects/arm-subscriptions.tgz}
     name: '@rush-temp/arm-subscriptions'
     version: 0.0.0
     dependencies:
       '@azure-tools/test-recorder': 1.0.2
+      '@azure/core-rest-pipeline': 1.8.0
       '@azure/identity': 2.0.4
-      '@microsoft/api-extractor': 7.18.11
+      '@microsoft/api-extractor': 7.23.1
       '@rollup/plugin-commonjs': 21.1.0_rollup@2.72.0
       '@rollup/plugin-json': 4.1.0_rollup@2.72.0
       '@rollup/plugin-multi-entry': 4.1.0_rollup@2.72.0
       '@rollup/plugin-node-resolve': 13.3.0_rollup@2.72.0
+      '@types/chai': 4.3.1
+      chai: 4.3.6
       cross-env: 7.0.3
       mkdirp: 1.0.4
       mocha: 7.2.0
@@ -13659,7 +13679,6 @@ packages:
     transitivePeerDependencies:
       - '@types/node'
       - debug
-      - encoding
       - supports-color
     dev: false
 

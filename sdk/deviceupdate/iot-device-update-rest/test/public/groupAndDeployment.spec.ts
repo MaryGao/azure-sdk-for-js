@@ -26,16 +26,16 @@ describe("group and deployment test", () => {
     const deploymentId = "testdeployment1";
 
     const listGroupResult = await client
-      .path("/deviceupdate/{instanceId}/management/groups", instanceId)
+      .path("/deviceUpdate/{instanceId}/management/groups", instanceId)
       .get();
     if (listGroupResult.status !== "200") {
       assert.fail(
-        `GET "/deviceupdate/${instanceId}/management/groups" failed with ${listGroupResult.status}`
+        `GET "/deviceUpdate/${instanceId}/management/groups" failed with ${listGroupResult.status}`
       );
     }
 
     const createGroupResult = await client
-      .path("/deviceupdate/{instanceId}/management/groups/{groupId}", instanceId, groupId)
+      .path("/deviceUpdate/{instanceId}/management/groups/{groupId}", instanceId, groupId)
       .put({
         body: {
           groupId: groupId,
@@ -47,22 +47,22 @@ describe("group and deployment test", () => {
       });
     if (createGroupResult.status !== "200") {
       assert.fail(
-        `PUT "/deviceupdate/${instanceId}/management/groups/${groupId}" failed with ${createGroupResult.status}`
+        `PUT "/deviceUpdate/${instanceId}/management/groups/${groupId}" failed with ${createGroupResult.status}`
       );
     }
 
     const getGroupResult = await client
-      .path("/deviceupdate/{instanceId}/management/groups/{groupId}", instanceId, groupId)
+      .path("/deviceUpdate/{instanceId}/management/groups/{groupId}", instanceId, groupId)
       .get();
     if (getGroupResult.status !== "200") {
       assert.fail(
-        `GET "/deviceupdate/${instanceId}/management/groups/${groupId}" failed with ${getGroupResult.status}`
+        `GET "/deviceUpdate/${instanceId}/management/groups/${groupId}" failed with ${getGroupResult.status}`
       );
     }
 
     const createDeploymentResult = await client
       .path(
-        "/deviceupdate/{instanceId}/management/groups/{groupId}/deployments/{deploymentId}",
+        "/deviceUpdate/{instanceId}/management/groups/{groupId}/deployments/{deploymentId}",
         instanceId,
         groupId,
         deploymentId
@@ -81,13 +81,13 @@ describe("group and deployment test", () => {
       });
     if (createDeploymentResult.status !== "200") {
       assert.fail(
-        `PUT "/deviceupdate/${instanceId}/management/groups/${groupId}/deployments/${deploymentId}" failed with ${getGroupResult.status}`
+        `PUT "/deviceUpdate/${instanceId}/management/groups/${groupId}/deployments/${deploymentId}" failed with ${getGroupResult.status}`
       );
     }
 
     const getDeploymentResult = await client
       .path(
-        "/deviceupdate/{instanceId}/management/groups/{groupId}/deployments/{deploymentId}",
+        "/deviceUpdate/{instanceId}/management/groups/{groupId}/deployments/{deploymentId}",
         instanceId,
         groupId,
         deploymentId
@@ -95,13 +95,13 @@ describe("group and deployment test", () => {
       .get();
     if (getDeploymentResult.status !== "200") {
       assert.fail(
-        `GET "/deviceupdate/${instanceId}/management/groups/${groupId}/deployments/${deploymentId}" failed with ${getGroupResult.status}`
+        `GET "/deviceUpdate/${instanceId}/management/groups/${groupId}/deployments/${deploymentId}" failed with ${getGroupResult.status}`
       );
     }
 
     const deleteDeploymentResult = await client
       .path(
-        "/deviceupdate/{instanceId}/management/groups/{groupId}/deployments/{deploymentId}",
+        "/deviceUpdate/{instanceId}/management/groups/{groupId}/deployments/{deploymentId}",
         instanceId,
         groupId,
         deploymentId
@@ -109,16 +109,16 @@ describe("group and deployment test", () => {
       .delete();
     if (deleteDeploymentResult.status !== "204") {
       assert.fail(
-        `DELETE "/deviceupdate/${instanceId}/management/groups/${groupId}/deployments/${deploymentId}" failed with ${deleteDeploymentResult.status}`
+        `DELETE "/deviceUpdate/${instanceId}/management/groups/${groupId}/deployments/${deploymentId}" failed with ${deleteDeploymentResult.status}`
       );
     }
 
     const deleteGroupResult = await client
-      .path("/deviceupdate/{instanceId}/management/groups/{groupId}", instanceId, groupId)
+      .path("/deviceUpdate/{instanceId}/management/groups/{groupId}", instanceId, groupId)
       .delete();
     if (deleteGroupResult.status !== "204") {
       assert.fail(
-        `DELETE "/deviceupdate/${instanceId}/management/groups/${groupId}" failed with ${deleteGroupResult.status}`
+        `DELETE "/deviceUpdate/${instanceId}/management/groups/${groupId}" failed with ${deleteGroupResult.status}`
       );
     }
   });

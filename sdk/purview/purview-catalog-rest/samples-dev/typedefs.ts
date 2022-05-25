@@ -1,32 +1,33 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
+// // Copyright (c) Microsoft Corporation.
+// // Licensed under the MIT License.
 
-/**
- * This sample demonstrates how get a list of typedefs
- *
- * @summary gets a list of typedefs for entities
- * @azsdk-weight 40
- */
+// /**
+//  * This sample demonstrates how get a list of typedefs
+//  *
+//  * @summary gets a list of typedefs for entities
+//  * @azsdk-weight 40
+//  */
 
-import PurviewCatalog from "@azure-rest/purview-catalog";
-import { DefaultAzureCredential } from "@azure/identity";
-import dotenv from "dotenv";
+// import PurviewCatalog from "@azure-rest/purview-catalog";
+// import { DefaultAzureCredential } from "@azure/identity";
+// import dotenv from "dotenv";
 
-dotenv.config();
+// dotenv.config();
 
-const endpoint = process.env["ENDPOINT"] || "";
+// const endpoint = process.env["ENDPOINT"] || "";
 
-async function main() {
-  console.log("== List entity typedefs sample ==");
-  const client = PurviewCatalog(endpoint, new DefaultAzureCredential());
+// async function main() {
+//   console.log("== List entity typedefs sample ==");
 
-  const dataSources = await client.path("/atlas/v2/types/typedefs").get();
+//   const client = PurviewCatalog(endpoint, new DefaultAzureCredential());
 
-  if (dataSources.status !== "200") {
-    throw dataSources;
-  }
+//   const dataSources = await client.path("/atlas/v2/types/typedefs").get();
 
-  console.log(dataSources.body.entityDefs?.map((ds) => ds.name).join("\n"));
-}
+//   if (dataSources.status !== "200") {
+//     throw dataSources;
+//   }
 
-main().catch(console.error);
+//   console.log(dataSources.body.entityDefs?.map((ds) => ds?.name).join("\n"));
+// }
+
+// main().catch(console.error);

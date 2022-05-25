@@ -8,7 +8,8 @@
 package-name: "@azure-rest/purview-catalog"
 title: PurviewCatalog
 description: Purview Catalog Client
-generate-metadata: false
+generate-metadata: true
+generate-test: true
 license-header: MICROSOFT_MIT_NO_VERSION
 output-folder: ../
 source-code-folder-path: ./src
@@ -18,7 +19,7 @@ rest-level-client: true
 add-credentials: true
 credential-scopes: "https://purview.azure.net/.default"
 use-extension:
-  "@autorest/typescript": "6.0.0-alpha.17.20220328.1"
+  "@autorest/typescript": "latest"
 ```
 
 ```yaml

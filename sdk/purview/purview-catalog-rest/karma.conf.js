@@ -1,11 +1,10 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 
 // https://github.com/karma-runner/karma-chrome-launcher
 process.env.CHROME_BIN = require("puppeteer").executablePath();
 require("dotenv").config();
 const { relativeRecordingsPath } = require("@azure-tools/test-recorder");
-
 process.env.RECORDINGS_RELATIVE_PATH = relativeRecordingsPath();
 
 module.exports = function (config) {
@@ -34,7 +33,12 @@ module.exports = function (config) {
     // list of files / patterns to load in the browser
     files: [
       "dist-test/index.browser.js",
-      { pattern: "dist-test/index.browser.js.map", type: "html", included: false, served: true },
+      {
+        pattern: "dist-test/index.browser.js.map",
+        type: "html",
+        included: false,
+        served: true,
+      },
     ],
 
     // list of files / patterns to exclude
@@ -55,7 +59,7 @@ module.exports = function (config) {
       "AZURE_CLIENT_SECRET",
       "AZURE_CLIENT_ID",
       "AZURE_TENANT_ID",
-      "RECORDINGS_RELATIVE_PATH",
+      "SUBSCRIPTION_ID",
     ],
 
     // test results reporter to use

@@ -22,11 +22,11 @@ describe("device test", () => {
 
   it("list devices", async function () {
     const result = await client
-      .path("/deviceupdate/{instanceId}/management/devices", "sdkinstance")
+      .path("/deviceUpdate/{instanceId}/management/devices", "sdkinstance")
       .get();
     if (result.status !== "200") {
       assert.fail(
-        `GET "/deviceupdate/sdkinstance/management/devices" failed with ${result.status}`
+        `GET "/deviceUpdate/sdkinstance/management/devices" failed with ${result.status}`
       );
     }
   });

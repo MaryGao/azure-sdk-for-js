@@ -8,7 +8,7 @@
 package-name: "@azure-rest/purview-catalog"
 title: PurviewCatalog
 description: Purview Catalog Client
-generate-metadata: true
+generate-metadata: false
 generate-test: true
 license-header: MICROSOFT_MIT_NO_VERSION
 output-folder: ../

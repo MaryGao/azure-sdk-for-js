@@ -28,6 +28,10 @@ async function main() {
     .path("/deviceUpdate/{instanceId}/management/devices", instanceId)
     .get();
 
+
+  if (result.status != "202") {
+    console.log(result);
+  }
   console.log(result);
 }
 

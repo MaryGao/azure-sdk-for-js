@@ -123,11 +123,10 @@ export interface EntityPartialUpdateEntityAttributeByGuidMediaTypesParam {
   contentType?: "application/json";
 }
 
-export type EntityPartialUpdateEntityAttributeByGuidParameters =
-  EntityPartialUpdateEntityAttributeByGuidQueryParam &
-    EntityPartialUpdateEntityAttributeByGuidMediaTypesParam &
-    EntityPartialUpdateEntityAttributeByGuidBodyParam &
-    RequestParameters;
+export type EntityPartialUpdateEntityAttributeByGuidParameters = EntityPartialUpdateEntityAttributeByGuidQueryParam &
+  EntityPartialUpdateEntityAttributeByGuidMediaTypesParam &
+  EntityPartialUpdateEntityAttributeByGuidBodyParam &
+  RequestParameters;
 export type EntityDeleteByGuidParameters = RequestParameters;
 export type EntityGetClassificationParameters = RequestParameters;
 export type EntityDeleteClassificationParameters = RequestParameters;
@@ -196,11 +195,10 @@ export interface EntityPartialUpdateEntityByUniqueAttributesMediaTypesParam {
   contentType?: "application/json";
 }
 
-export type EntityPartialUpdateEntityByUniqueAttributesParameters =
-  EntityPartialUpdateEntityByUniqueAttributesQueryParam &
-    EntityPartialUpdateEntityByUniqueAttributesMediaTypesParam &
-    EntityPartialUpdateEntityByUniqueAttributesBodyParam &
-    RequestParameters;
+export type EntityPartialUpdateEntityByUniqueAttributesParameters = EntityPartialUpdateEntityByUniqueAttributesQueryParam &
+  EntityPartialUpdateEntityByUniqueAttributesMediaTypesParam &
+  EntityPartialUpdateEntityByUniqueAttributesBodyParam &
+  RequestParameters;
 
 export interface EntityDeleteByUniqueAttributeQueryParamProperties {
   /** The qualified name of the entity. */
@@ -223,8 +221,8 @@ export interface EntityDeleteClassificationByUniqueAttributeQueryParam {
   queryParameters?: EntityDeleteClassificationByUniqueAttributeQueryParamProperties;
 }
 
-export type EntityDeleteClassificationByUniqueAttributeParameters =
-  EntityDeleteClassificationByUniqueAttributeQueryParam & RequestParameters;
+export type EntityDeleteClassificationByUniqueAttributeParameters = EntityDeleteClassificationByUniqueAttributeQueryParam &
+  RequestParameters;
 
 export interface EntityAddClassificationsByUniqueAttributeBodyParam {
   /** An array of classification to be added. */
@@ -245,11 +243,10 @@ export interface EntityAddClassificationsByUniqueAttributeMediaTypesParam {
   contentType?: "application/json";
 }
 
-export type EntityAddClassificationsByUniqueAttributeParameters =
-  EntityAddClassificationsByUniqueAttributeQueryParam &
-    EntityAddClassificationsByUniqueAttributeMediaTypesParam &
-    EntityAddClassificationsByUniqueAttributeBodyParam &
-    RequestParameters;
+export type EntityAddClassificationsByUniqueAttributeParameters = EntityAddClassificationsByUniqueAttributeQueryParam &
+  EntityAddClassificationsByUniqueAttributeMediaTypesParam &
+  EntityAddClassificationsByUniqueAttributeBodyParam &
+  RequestParameters;
 
 export interface EntityUpdateClassificationsByUniqueAttributeBodyParam {
   /** An array of classification to be updated. */
@@ -270,11 +267,10 @@ export interface EntityUpdateClassificationsByUniqueAttributeMediaTypesParam {
   contentType?: "application/json";
 }
 
-export type EntityUpdateClassificationsByUniqueAttributeParameters =
-  EntityUpdateClassificationsByUniqueAttributeQueryParam &
-    EntityUpdateClassificationsByUniqueAttributeMediaTypesParam &
-    EntityUpdateClassificationsByUniqueAttributeBodyParam &
-    RequestParameters;
+export type EntityUpdateClassificationsByUniqueAttributeParameters = EntityUpdateClassificationsByUniqueAttributeQueryParam &
+  EntityUpdateClassificationsByUniqueAttributeMediaTypesParam &
+  EntityUpdateClassificationsByUniqueAttributeBodyParam &
+  RequestParameters;
 
 export interface EntitySetClassificationsBodyParam {
   /** Atlas entity headers. */
@@ -303,8 +299,8 @@ export interface EntityGetEntitiesByUniqueAttributesQueryParam {
   queryParameters?: EntityGetEntitiesByUniqueAttributesQueryParamProperties;
 }
 
-export type EntityGetEntitiesByUniqueAttributesParameters =
-  EntityGetEntitiesByUniqueAttributesQueryParam & RequestParameters;
+export type EntityGetEntitiesByUniqueAttributesParameters = EntityGetEntitiesByUniqueAttributesQueryParam &
+  RequestParameters;
 export type EntityGetHeaderParameters = RequestParameters;
 
 export interface GlossaryListGlossariesQueryParamProperties {
@@ -351,10 +347,9 @@ export interface GlossaryCreateGlossaryCategoriesMediaTypesParam {
   contentType?: "application/json";
 }
 
-export type GlossaryCreateGlossaryCategoriesParameters =
-  GlossaryCreateGlossaryCategoriesMediaTypesParam &
-    GlossaryCreateGlossaryCategoriesBodyParam &
-    RequestParameters;
+export type GlossaryCreateGlossaryCategoriesParameters = GlossaryCreateGlossaryCategoriesMediaTypesParam &
+  GlossaryCreateGlossaryCategoriesBodyParam &
+  RequestParameters;
 
 export interface GlossaryCreateGlossaryCategoryBodyParam {
   /**
@@ -369,10 +364,9 @@ export interface GlossaryCreateGlossaryCategoryMediaTypesParam {
   contentType?: "application/json";
 }
 
-export type GlossaryCreateGlossaryCategoryParameters =
-  GlossaryCreateGlossaryCategoryMediaTypesParam &
-    GlossaryCreateGlossaryCategoryBodyParam &
-    RequestParameters;
+export type GlossaryCreateGlossaryCategoryParameters = GlossaryCreateGlossaryCategoryMediaTypesParam &
+  GlossaryCreateGlossaryCategoryBodyParam &
+  RequestParameters;
 export type GlossaryGetGlossaryCategoryParameters = RequestParameters;
 
 export interface GlossaryUpdateGlossaryCategoryBodyParam {
@@ -385,10 +379,9 @@ export interface GlossaryUpdateGlossaryCategoryMediaTypesParam {
   contentType?: "application/json";
 }
 
-export type GlossaryUpdateGlossaryCategoryParameters =
-  GlossaryUpdateGlossaryCategoryMediaTypesParam &
-    GlossaryUpdateGlossaryCategoryBodyParam &
-    RequestParameters;
+export type GlossaryUpdateGlossaryCategoryParameters = GlossaryUpdateGlossaryCategoryMediaTypesParam &
+  GlossaryUpdateGlossaryCategoryBodyParam &
+  RequestParameters;
 export type GlossaryDeleteGlossaryCategoryParameters = RequestParameters;
 
 export interface GlossaryPartialUpdateGlossaryCategoryBodyParam {
@@ -401,10 +394,9 @@ export interface GlossaryPartialUpdateGlossaryCategoryMediaTypesParam {
   contentType?: "application/json";
 }
 
-export type GlossaryPartialUpdateGlossaryCategoryParameters =
-  GlossaryPartialUpdateGlossaryCategoryMediaTypesParam &
-    GlossaryPartialUpdateGlossaryCategoryBodyParam &
-    RequestParameters;
+export type GlossaryPartialUpdateGlossaryCategoryParameters = GlossaryPartialUpdateGlossaryCategoryMediaTypesParam &
+  GlossaryPartialUpdateGlossaryCategoryBodyParam &
+  RequestParameters;
 
 export interface GlossaryListRelatedCategoriesQueryParamProperties {
   /** The page size - by default there is no paging. */
@@ -511,11 +503,10 @@ export interface GlossaryPartialUpdateGlossaryTermMediaTypesParam {
   contentType?: "application/json";
 }
 
-export type GlossaryPartialUpdateGlossaryTermParameters =
-  GlossaryPartialUpdateGlossaryTermQueryParam &
-    GlossaryPartialUpdateGlossaryTermMediaTypesParam &
-    GlossaryPartialUpdateGlossaryTermBodyParam &
-    RequestParameters;
+export type GlossaryPartialUpdateGlossaryTermParameters = GlossaryPartialUpdateGlossaryTermQueryParam &
+  GlossaryPartialUpdateGlossaryTermMediaTypesParam &
+  GlossaryPartialUpdateGlossaryTermBodyParam &
+  RequestParameters;
 
 export interface GlossaryCreateGlossaryTermsBodyParam {
   /** An array of glossary term definitions to be created in bulk. */
@@ -554,8 +545,8 @@ export interface GlossaryGetEntitiesAssignedWithTermQueryParam {
   queryParameters?: GlossaryGetEntitiesAssignedWithTermQueryParamProperties;
 }
 
-export type GlossaryGetEntitiesAssignedWithTermParameters =
-  GlossaryGetEntitiesAssignedWithTermQueryParam & RequestParameters;
+export type GlossaryGetEntitiesAssignedWithTermParameters = GlossaryGetEntitiesAssignedWithTermQueryParam &
+  RequestParameters;
 
 export interface GlossaryAssignTermToEntitiesBodyParam {
   /** An array of related object IDs to which the term has to be associated. */
@@ -581,10 +572,9 @@ export interface GlossaryRemoveTermAssignmentFromEntitiesMediaTypesParam {
   contentType?: "application/json";
 }
 
-export type GlossaryRemoveTermAssignmentFromEntitiesParameters =
-  GlossaryRemoveTermAssignmentFromEntitiesMediaTypesParam &
-    GlossaryRemoveTermAssignmentFromEntitiesBodyParam &
-    RequestParameters;
+export type GlossaryRemoveTermAssignmentFromEntitiesParameters = GlossaryRemoveTermAssignmentFromEntitiesMediaTypesParam &
+  GlossaryRemoveTermAssignmentFromEntitiesBodyParam &
+  RequestParameters;
 
 export interface GlossaryDeleteTermAssignmentFromEntitiesBodyParam {
   /** An array of related object IDs from which the term has to be dissociated. */
@@ -596,10 +586,9 @@ export interface GlossaryDeleteTermAssignmentFromEntitiesMediaTypesParam {
   contentType?: "application/json";
 }
 
-export type GlossaryDeleteTermAssignmentFromEntitiesParameters =
-  GlossaryDeleteTermAssignmentFromEntitiesMediaTypesParam &
-    GlossaryDeleteTermAssignmentFromEntitiesBodyParam &
-    RequestParameters;
+export type GlossaryDeleteTermAssignmentFromEntitiesParameters = GlossaryDeleteTermAssignmentFromEntitiesMediaTypesParam &
+  GlossaryDeleteTermAssignmentFromEntitiesBodyParam &
+  RequestParameters;
 
 export interface GlossaryListRelatedTermsQueryParamProperties {
   /** The page size - by default there is no paging. */
@@ -662,8 +651,8 @@ export interface GlossaryListGlossaryCategoriesHeadersQueryParam {
   queryParameters?: GlossaryListGlossaryCategoriesHeadersQueryParamProperties;
 }
 
-export type GlossaryListGlossaryCategoriesHeadersParameters =
-  GlossaryListGlossaryCategoriesHeadersQueryParam & RequestParameters;
+export type GlossaryListGlossaryCategoriesHeadersParameters = GlossaryListGlossaryCategoriesHeadersQueryParam &
+  RequestParameters;
 
 export interface GlossaryGetDetailedGlossaryQueryParamProperties {
   /** Whether include term hierarchy */
@@ -762,11 +751,10 @@ export interface GlossaryImportGlossaryTermsViaCsvMediaTypesParam {
   contentType?: "multipart/form-data";
 }
 
-export type GlossaryImportGlossaryTermsViaCsvParameters =
-  GlossaryImportGlossaryTermsViaCsvQueryParam &
-    GlossaryImportGlossaryTermsViaCsvMediaTypesParam &
-    GlossaryImportGlossaryTermsViaCsvBodyParam &
-    RequestParameters;
+export type GlossaryImportGlossaryTermsViaCsvParameters = GlossaryImportGlossaryTermsViaCsvQueryParam &
+  GlossaryImportGlossaryTermsViaCsvMediaTypesParam &
+  GlossaryImportGlossaryTermsViaCsvBodyParam &
+  RequestParameters;
 
 export interface GlossaryImportGlossaryTermsViaCsvByGlossaryNameBodyParam {
   body: GlossaryImportGlossaryTermsViaCsvByGlossaryNameFormBody;
@@ -795,11 +783,10 @@ export interface GlossaryImportGlossaryTermsViaCsvByGlossaryNameMediaTypesParam 
   contentType?: "multipart/form-data";
 }
 
-export type GlossaryImportGlossaryTermsViaCsvByGlossaryNameParameters =
-  GlossaryImportGlossaryTermsViaCsvByGlossaryNameQueryParam &
-    GlossaryImportGlossaryTermsViaCsvByGlossaryNameMediaTypesParam &
-    GlossaryImportGlossaryTermsViaCsvByGlossaryNameBodyParam &
-    RequestParameters;
+export type GlossaryImportGlossaryTermsViaCsvByGlossaryNameParameters = GlossaryImportGlossaryTermsViaCsvByGlossaryNameQueryParam &
+  GlossaryImportGlossaryTermsViaCsvByGlossaryNameMediaTypesParam &
+  GlossaryImportGlossaryTermsViaCsvByGlossaryNameBodyParam &
+  RequestParameters;
 export type GlossaryGetImportCsvOperationStatusParameters = RequestParameters;
 
 export interface GlossaryExportGlossaryTermsAsCsvBodyParam {
@@ -821,11 +808,10 @@ export interface GlossaryExportGlossaryTermsAsCsvMediaTypesParam {
   contentType?: "application/json";
 }
 
-export type GlossaryExportGlossaryTermsAsCsvParameters =
-  GlossaryExportGlossaryTermsAsCsvQueryParam &
-    GlossaryExportGlossaryTermsAsCsvMediaTypesParam &
-    GlossaryExportGlossaryTermsAsCsvBodyParam &
-    RequestParameters;
+export type GlossaryExportGlossaryTermsAsCsvParameters = GlossaryExportGlossaryTermsAsCsvQueryParam &
+  GlossaryExportGlossaryTermsAsCsvMediaTypesParam &
+  GlossaryExportGlossaryTermsAsCsvBodyParam &
+  RequestParameters;
 
 export interface GlossaryListTermsByGlossaryNameQueryParamProperties {
   /** The page size - by default there is no paging. */
@@ -1029,10 +1015,9 @@ export interface TypesUpdateAtlasTypeDefinitionsMediaTypesParam {
   contentType?: "application/json";
 }
 
-export type TypesUpdateAtlasTypeDefinitionsParameters =
-  TypesUpdateAtlasTypeDefinitionsMediaTypesParam &
-    TypesUpdateAtlasTypeDefinitionsBodyParam &
-    RequestParameters;
+export type TypesUpdateAtlasTypeDefinitionsParameters = TypesUpdateAtlasTypeDefinitionsMediaTypesParam &
+  TypesUpdateAtlasTypeDefinitionsBodyParam &
+  RequestParameters;
 
 export interface TypesDeleteTypeDefinitionsBodyParam {
   /** A composite object that captures all types to be deleted */
@@ -1105,7 +1090,6 @@ export interface CollectionMoveEntitiesToCollectionMediaTypesParam {
   contentType?: "application/json";
 }
 
-export type CollectionMoveEntitiesToCollectionParameters =
-  CollectionMoveEntitiesToCollectionMediaTypesParam &
-    CollectionMoveEntitiesToCollectionBodyParam &
-    RequestParameters;
+export type CollectionMoveEntitiesToCollectionParameters = CollectionMoveEntitiesToCollectionMediaTypesParam &
+  CollectionMoveEntitiesToCollectionBodyParam &
+  RequestParameters;

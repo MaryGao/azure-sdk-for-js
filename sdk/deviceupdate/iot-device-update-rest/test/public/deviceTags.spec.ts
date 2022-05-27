@@ -21,13 +21,14 @@ describe("device tags test", () => {
   });
 
   it("list device tags", async function () {
-    const result = await client
-      .path("/deviceUpdate/{instanceId}/management/devicetags", "sdkinstance")
+    const response = await client
+      .path("/deviceUpdate/{instanceId}/updates/providers/{provider}/names", "sdkinstance", "foo")
       .get();
-    if (result.status !== "200") {
+    assert.equal(response.status, "404");
+    if (response.status !== "404") {
       assert.fail(
-        `GET "/deviceUpdate/sdkinstance/management/devicetags" failed with ${result.status}`
+        `GET "/deviceUpdate/sdkInstance/updates/providers/foo/names" was expected to return 404 instead of ${response.status}`
       );
-    }
+
   });
 }).timeout(600000);

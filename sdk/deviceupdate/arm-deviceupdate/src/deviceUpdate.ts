@@ -14,33 +14,46 @@ import {
   SendRequest
 } from "@azure/core-rest-pipeline";
 import * as coreAuth from "@azure/core-auth";
-import { OperationsImpl, LedgerImpl } from "./operations";
-import { Operations, Ledger } from "./operationsInterfaces";
+import {
+  AccountsImpl,
+  InstancesImpl,
+  PrivateEndpointConnectionsImpl,
+  PrivateLinkResourcesImpl,
+  PrivateEndpointConnectionProxiesImpl,
+  OperationsImpl
+} from "./operations";
+import {
+  Accounts,
+  Instances,
+  PrivateEndpointConnections,
+  PrivateLinkResources,
+  PrivateEndpointConnectionProxies,
+  Operations
+} from "./operationsInterfaces";
 import * as Parameters from "./models/parameters";
 import * as Mappers from "./models/mappers";
 import {
-  ConfidentialLedgerOptionalParams,
+  DeviceUpdateOptionalParams,
   CheckNameAvailabilityRequest,
   CheckNameAvailabilityOptionalParams,
   CheckNameAvailabilityOperationResponse
 } from "./models";
 
-export class ConfidentialLedger extends coreClient.ServiceClient {
+export class DeviceUpdate extends coreClient.ServiceClient {
   $host: string;
   apiVersion: string;
   subscriptionId: string;
 
   /**
-   * Initializes a new instance of the ConfidentialLedger class.
+   * Initializes a new instance of the DeviceUpdate class.
    * @param credentials Subscription credentials which uniquely identify client subscription.
-   * @param subscriptionId The Azure subscription ID. This is a GUID-formatted string (e.g.
-   *                       00000000-0000-0000-0000-000000000000)
+   * @param subscriptionId The Azure subscription ID.
    * @param options The parameter options
    */
   constructor(
     credentials: coreAuth.TokenCredential,
     subscriptionId: string,
-    options?: ConfidentialLedgerOptionalParams
+    options?: DeviceUpdateOptionalParams
   ) {
     if (credentials === undefined) {
       throw new Error("'credentials' cannot be null");
@@ -53,12 +66,12 @@ export class ConfidentialLedger extends coreClient.ServiceClient {
     if (!options) {
       options = {};
     }
-    const defaults: ConfidentialLedgerOptionalParams = {
+    const defaults: DeviceUpdateOptionalParams = {
       requestContentType: "application/json; charset=utf-8",
       credential: credentials
     };
 
-    const packageDetails = `azsdk-js-arm-confidentialledger/1.0.0-beta.1`;
+    const packageDetails = `azsdk-js-arm-deviceupdate/1.0.0-beta.1`;
     const userAgentPrefix =
       options.userAgentOptions && options.userAgentOptions.userAgentPrefix
         ? `${options.userAgentOptions.userAgentPrefix} ${packageDetails}`
@@ -105,9 +118,15 @@ export class ConfidentialLedger extends coreClient.ServiceClient {
 
     // Assigning values to Constant parameters
     this.$host = options.$host || "https://management.azure.com";
-    this.apiVersion = options.apiVersion || "2022-05-13";
+    this.apiVersion = options.apiVersion || "2022-04-01-preview";
+    this.accounts = new AccountsImpl(this);
+    this.instances = new InstancesImpl(this);
+    this.privateEndpointConnections = new PrivateEndpointConnectionsImpl(this);
+    this.privateLinkResources = new PrivateLinkResourcesImpl(this);
+    this.privateEndpointConnectionProxies = new PrivateEndpointConnectionProxiesImpl(
+      this
+    );
     this.operations = new OperationsImpl(this);
-    this.ledger = new LedgerImpl(this);
     this.addCustomApiVersionPolicy(options.apiVersion);
   }
 
@@ -140,29 +159,33 @@ export class ConfidentialLedger extends coreClient.ServiceClient {
   }
 
   /**
-   * To check whether a resource name is available.
-   * @param nameAvailabilityRequest Name availability request payload.
+   * Checks ADU resource name availability.
+   * @param request Check Name Availability Request.
    * @param options The options parameters.
    */
   checkNameAvailability(
-    nameAvailabilityRequest: CheckNameAvailabilityRequest,
+    request: CheckNameAvailabilityRequest,
     options?: CheckNameAvailabilityOptionalParams
   ): Promise<CheckNameAvailabilityOperationResponse> {
     return this.sendOperationRequest(
-      { nameAvailabilityRequest, options },
+      { request, options },
       checkNameAvailabilityOperationSpec
     );
   }
 
+  accounts: Accounts;
+  instances: Instances;
+  privateEndpointConnections: PrivateEndpointConnections;
+  privateLinkResources: PrivateLinkResources;
+  privateEndpointConnectionProxies: PrivateEndpointConnectionProxies;
   operations: Operations;
-  ledger: Ledger;
 }
 // Operation Specifications
 const serializer = coreClient.createSerializer(Mappers, /* isXml */ false);
 
 const checkNameAvailabilityOperationSpec: coreClient.OperationSpec = {
   path:
-    "/subscriptions/{subscriptionId}/providers/Microsoft.ConfidentialLedger/checkNameAvailability",
+    "/subscriptions/{subscriptionId}/providers/Microsoft.DeviceUpdate/checknameavailability",
   httpMethod: "POST",
   responses: {
     200: {
@@ -172,10 +195,10 @@ const checkNameAvailabilityOperationSpec: coreClient.OperationSpec = {
       bodyMapper: Mappers.ErrorResponse
     }
   },
-  requestBody: Parameters.nameAvailabilityRequest,
+  requestBody: Parameters.request,
   queryParameters: [Parameters.apiVersion],
   urlParameters: [Parameters.$host, Parameters.subscriptionId],
-  headerParameters: [Parameters.accept, Parameters.contentType],
+  headerParameters: [Parameters.contentType, Parameters.accept],
   mediaType: "json",
   serializer
 };

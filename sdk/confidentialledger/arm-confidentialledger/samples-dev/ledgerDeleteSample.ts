@@ -8,7 +8,7 @@
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-import { ConfidentialLedger } from "@azure/arm-confidentialledger";
+import { ConfidentialLedgerXXXClient } from "@azure/arm-confidentialledger";
 import { DefaultAzureCredential } from "@azure/identity";
 
 /**
@@ -22,7 +22,7 @@ async function confidentialLedgerDelete() {
   const resourceGroupName = "DummyResourceGroupName";
   const ledgerName = "DummyLedgerName";
   const credential = new DefaultAzureCredential();
-  const client = new ConfidentialLedger(credential, subscriptionId);
+  const client = new ConfidentialLedgerXXXClient(credential, subscriptionId);
   const result = await client.ledger.beginDeleteAndWait(
     resourceGroupName,
     ledgerName

@@ -10,7 +10,7 @@
 // Licensed under the MIT License.
 import {
   CheckNameAvailabilityRequest,
-  ConfidentialLedger
+  ConfidentialLedgerXXXClient
 } from "@azure/arm-confidentialledger";
 import { DefaultAzureCredential } from "@azure/identity";
 
@@ -27,7 +27,7 @@ async function checkNameAvailability() {
     type: "Microsoft.ConfidentialLedger/ledgers"
   };
   const credential = new DefaultAzureCredential();
-  const client = new ConfidentialLedger(credential, subscriptionId);
+  const client = new ConfidentialLedgerXXXClient(credential, subscriptionId);
   const result = await client.checkNameAvailability(nameAvailabilityRequest);
   console.log(result);
 }

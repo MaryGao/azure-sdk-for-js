@@ -10,7 +10,7 @@
 // Licensed under the MIT License.
 import {
   ConfidentialLedger,
-  ConfidentialLedger
+  ConfidentialLedgerXXXClient
 } from "@azure/arm-confidentialledger";
 import { DefaultAzureCredential } from "@azure/identity";
 
@@ -49,7 +49,7 @@ async function confidentialLedgerUpdate() {
     }
   };
   const credential = new DefaultAzureCredential();
-  const client = new ConfidentialLedger(credential, subscriptionId);
+  const client = new ConfidentialLedgerXXXClient(credential, subscriptionId);
   const result = await client.ledger.beginUpdateAndWait(
     resourceGroupName,
     ledgerName,

@@ -51,11 +51,17 @@ export type ConfidentialLedger = Resource & ResourceLocation & Tags & {
     properties?: LedgerProperties;
 };
 
+// @public
+export interface ConfidentialLedgerList {
+    nextLink?: string;
+    value?: ConfidentialLedger[];
+}
+
 // @public (undocumented)
-export class ConfidentialLedgerClient extends coreClient.ServiceClient {
+export class ConfidentialLedgerXXXClient extends coreClient.ServiceClient {
     // (undocumented)
     $host: string;
-    constructor(credentials: coreAuth.TokenCredential, subscriptionId: string, options?: ConfidentialLedgerClientOptionalParams);
+    constructor(credentials: coreAuth.TokenCredential, subscriptionId: string, options?: ConfidentialLedgerXXXClientOptionalParams);
     // (undocumented)
     apiVersion: string;
     checkNameAvailability(nameAvailabilityRequest: CheckNameAvailabilityRequest, options?: CheckNameAvailabilityOptionalParams): Promise<CheckNameAvailabilityOperationResponse>;
@@ -68,16 +74,10 @@ export class ConfidentialLedgerClient extends coreClient.ServiceClient {
 }
 
 // @public
-export interface ConfidentialLedgerClientOptionalParams extends coreClient.ServiceClientOptions {
+export interface ConfidentialLedgerXXXClientOptionalParams extends coreClient.ServiceClientOptions {
     $host?: string;
     apiVersion?: string;
     endpoint?: string;
-}
-
-// @public
-export interface ConfidentialLedgerList {
-    nextLink?: string;
-    value?: ConfidentialLedger[];
 }
 
 // @public

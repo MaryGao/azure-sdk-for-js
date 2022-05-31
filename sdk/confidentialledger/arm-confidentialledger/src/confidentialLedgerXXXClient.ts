@@ -19,19 +19,19 @@ import { Operations, Ledger } from "./operationsInterfaces";
 import * as Parameters from "./models/parameters";
 import * as Mappers from "./models/mappers";
 import {
-  ConfidentialLedgerOptionalParams,
+  ConfidentialLedgerXXXClientOptionalParams,
   CheckNameAvailabilityRequest,
   CheckNameAvailabilityOptionalParams,
   CheckNameAvailabilityOperationResponse
 } from "./models";
 
-export class ConfidentialLedger extends coreClient.ServiceClient {
+export class ConfidentialLedgerXXXClient extends coreClient.ServiceClient {
   $host: string;
   apiVersion: string;
   subscriptionId: string;
 
   /**
-   * Initializes a new instance of the ConfidentialLedger class.
+   * Initializes a new instance of the ConfidentialLedgerXXXClient class.
    * @param credentials Subscription credentials which uniquely identify client subscription.
    * @param subscriptionId The Azure subscription ID. This is a GUID-formatted string (e.g.
    *                       00000000-0000-0000-0000-000000000000)
@@ -40,7 +40,7 @@ export class ConfidentialLedger extends coreClient.ServiceClient {
   constructor(
     credentials: coreAuth.TokenCredential,
     subscriptionId: string,
-    options?: ConfidentialLedgerOptionalParams
+    options?: ConfidentialLedgerXXXClientOptionalParams
   ) {
     if (credentials === undefined) {
       throw new Error("'credentials' cannot be null");
@@ -53,12 +53,12 @@ export class ConfidentialLedger extends coreClient.ServiceClient {
     if (!options) {
       options = {};
     }
-    const defaults: ConfidentialLedgerOptionalParams = {
+    const defaults: ConfidentialLedgerXXXClientOptionalParams = {
       requestContentType: "application/json; charset=utf-8",
       credential: credentials
     };
 
-    const packageDetails = `azsdk-js-arm-confidentialledger/1.0.0-beta.1`;
+    const packageDetails = `azsdk-js-arm-confidentialledger/1.0.0`;
     const userAgentPrefix =
       options.userAgentOptions && options.userAgentOptions.userAgentPrefix
         ? `${options.userAgentOptions.userAgentPrefix} ${packageDetails}`

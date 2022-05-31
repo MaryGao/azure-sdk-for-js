@@ -2,8 +2,8 @@
   "name": "@azure/arm-confidentialledger",
   "sdk-type": "mgmt",
   "author": "Microsoft Corporation",
-  "description": "A generated SDK for ConfidentialLedger.",
-  "version": "1.0.0-beta.1",
+  "description": "A generated SDK for ConfidentialLedgerXXXClient.",
+  "version": "1.0.0",
   "engines": {
     "node": ">=12.0.0"
   },
@@ -25,10 +25,10 @@
   ],
   "license": "MIT",
   "main": "./dist/index.js",
-  "module": "./dist-esm/index.js",
+  "module": "./dist-esm/src/index.js",
   "types": "./types/arm-confidentialledger.d.ts",
   "devDependencies": {
-    "@microsoft/api-extractor": "^7.18.11",
+    "@microsoft/api-extractor": "7.18.11",
     "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-multi-entry": "^4.1.0",
@@ -43,6 +43,8 @@
     "@azure-tools/test-recorder": "^2.0.0",
     "@azure-tools/test-credential": "^1.0.0",
     "mocha": "^7.1.1",
+    "@types/chai": "^4.2.8",
+    "chai": "^4.2.0",
     "cross-env": "^7.0.2",
     "@azure/dev-tool": "^1.0.0"
   },
@@ -103,10 +105,18 @@
   "//metadata": {
     "constantPaths": [
       {
-        "path": "src/confidentialLedger.ts",
+        "path": "src/confidentialLedgerXXXClient.ts",
         "prefix": "packageDetails"
       }
     ]
   },
-  "autoPublish": true
+  "autoPublish": true,
+  "//sampleConfiguration": {
+    "productName": "",
+    "productSlugs": [
+      "azure"
+    ],
+    "disableDocsMs": true,
+    "apiRefLink": "https://docs.microsoft.com/javascript/api/@azure/arm-confidentialledger?view=azure-node-preview"
+  }
 }

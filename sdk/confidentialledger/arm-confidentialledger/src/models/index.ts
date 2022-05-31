@@ -431,7 +431,7 @@ export interface LedgerListBySubscriptionNextOptionalParams
 export type LedgerListBySubscriptionNextResponse = ConfidentialLedgerList;
 
 /** Optional parameters. */
-export interface ConfidentialLedgerOptionalParams
+export interface ConfidentialLedgerXXXClientOptionalParams
   extends coreClient.ServiceClientOptions {
   /** server parameter */
   $host?: string;

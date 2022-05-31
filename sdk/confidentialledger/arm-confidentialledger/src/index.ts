@@ -8,5 +8,5 @@
 
 /// <reference lib="esnext.asynciterable" />
 export * from "./models";
-export { ConfidentialLedger } from "./confidentialLedger";
+export { ConfidentialLedgerXXXClient } from "./confidentialLedgerXXXClient";
 export * from "./operationsInterfaces";

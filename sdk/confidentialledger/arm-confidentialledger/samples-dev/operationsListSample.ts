@@ -8,7 +8,7 @@
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-import { ConfidentialLedger } from "@azure/arm-confidentialledger";
+import { ConfidentialLedgerXXXClient } from "@azure/arm-confidentialledger";
 import { DefaultAzureCredential } from "@azure/identity";
 
 /**
@@ -20,7 +20,7 @@ import { DefaultAzureCredential } from "@azure/identity";
 async function operationsGet() {
   const subscriptionId = "00000000-0000-0000-0000-000000000000";
   const credential = new DefaultAzureCredential();
-  const client = new ConfidentialLedger(credential, subscriptionId);
+  const client = new ConfidentialLedgerXXXClient(credential, subscriptionId);
   const resArray = new Array();
   for await (let item of client.operations.list()) {
     resArray.push(item);

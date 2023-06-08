@@ -10,15 +10,17 @@
 // Licensed under the MIT License.
 const { EventGridManagementClient } = require("@azure/arm-eventgrid");
 const { DefaultAzureCredential } = require("@azure/identity");
+require("dotenv").config();
 
 /**
  * This sample demonstrates how to List all global event subscriptions under an Azure subscription for a topic type.
  *
  * @summary List all global event subscriptions under an Azure subscription for a topic type.
- * x-ms-original-file: specification/eventgrid/resource-manager/Microsoft.EventGrid/preview/2021-10-15-preview/examples/EventSubscriptions_ListGlobalBySubscriptionForTopicType.json
+ * x-ms-original-file: specification/eventgrid/resource-manager/Microsoft.EventGrid/preview/2023-06-01-preview/examples/EventSubscriptions_ListGlobalBySubscriptionForTopicType.json
  */
 async function eventSubscriptionsListGlobalBySubscriptionForTopicType() {
-  const subscriptionId = "5b4b650e-28b9-4790-b3ab-ddbd88d727c4";
+  const subscriptionId =
+    process.env["EVENTGRID_SUBSCRIPTION_ID"] || "8f6b6269-84f2-4d09-9e31-1127efcd1e40";
   const topicTypeName = "Microsoft.Resources.Subscriptions";
   const credential = new DefaultAzureCredential();
   const client = new EventGridManagementClient(credential, subscriptionId);
@@ -31,4 +33,8 @@ async function eventSubscriptionsListGlobalBySubscriptionForTopicType() {
   console.log(resArray);
 }
 
-eventSubscriptionsListGlobalBySubscriptionForTopicType().catch(console.error);
+async function main() {
+  eventSubscriptionsListGlobalBySubscriptionForTopicType();
+}
+
+main().catch(console.error);

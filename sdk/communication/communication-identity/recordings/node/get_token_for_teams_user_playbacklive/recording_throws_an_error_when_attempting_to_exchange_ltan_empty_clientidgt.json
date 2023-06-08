@@ -1,7 +1,7 @@
 {
   "Entries": [
     {
-      "RequestUri": "https://endpoint/teamsUser/:exchangeAccessToken?api-version=2022-06-01",
+      "RequestUri": "https://endpoint/teamsUser/:exchangeAccessToken?api-version=2022-10-01",
       "RequestMethod": "POST",
       "RequestHeaders": {
         "Accept": "application/json",
@@ -10,10 +10,10 @@
         "Connection": "keep-alive",
         "Content-Length": "62",
         "Content-Type": "application/json",
-        "User-Agent": "azsdk-js-communication-identity/1.1.0 core-rest-pipeline/1.8.1 Node/v17.9.0 OS/(x64-Darwin-21.4.0)",
+        "User-Agent": "azsdk-js-communication-identity/1.2.1 core-rest-pipeline/1.10.2 Node/v18.12.0 OS/(x64-Windows_NT-10.0.22621)",
         "x-ms-client-request-id": "sanitized",
-        "x-ms-content-sha256": "GOstAoi1vzQXx8BIrrCVl\u002BAWWPNdzSwQdk6PGOCpVzI=",
-        "x-ms-date": "Wed, 18 May 2022 11:19:31 GMT"
+        "x-ms-content-sha256": "Y5Un7DNoLFoOgsdBcgaC760pVMknpNMAapLQ4SyEoBg=",
+        "x-ms-date": "Mon, 16 Jan 2023 10:12:04 GMT"
       },
       "RequestBody": {
         "token": "sanitized",
@@ -23,15 +23,15 @@
       "StatusCode": 400,
       "ResponseHeaders": {
         "Content-Type": "application/json",
-        "Date": "Wed, 18 May 2022 11:19:30 GMT",
-        "MS-CV": "VKDL8/boh02W2oS0qpzO7w.0",
+        "Date": "Mon, 16 Jan 2023 10:12:04 GMT",
+        "MS-CV": "E7URU8VrEEiftciTjdz54Q.0",
         "Request-Context": "appId=",
         "Strict-Transport-Security": "max-age=2592000",
         "Transfer-Encoding": "chunked",
-        "X-Azure-Ref": "0Q9aEYgAAAADUi7tZaHU\u002BRLdDePdwmhRJTFRTRURHRTEyMTgAZjA5YTRjMTMtMjFmMS00OGVjLTljZjctNjY1NDU2ODRiNjQy",
+        "X-Azure-Ref": "09SLFYwAAAABBYCsc2An/TJsUruKqExP1SEVMMDFFREdFMjAxNAA5ZmM3YjUxOS1hOGNjLTRmODktOTM1ZS1jOTE0OGFlMDllODE=",
         "X-Cache": "CONFIG_NOCACHE",
         "x-ms-client-request-id": "sanitized",
-        "X-Processing-Time": "33ms"
+        "X-Processing-Time": "108ms"
       },
       "ResponseBody": {
         "error": {

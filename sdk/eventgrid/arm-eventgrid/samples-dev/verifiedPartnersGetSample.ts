@@ -10,15 +10,20 @@
 // Licensed under the MIT License.
 import { EventGridManagementClient } from "@azure/arm-eventgrid";
 import { DefaultAzureCredential } from "@azure/identity";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 /**
  * This sample demonstrates how to Get properties of a verified partner.
  *
  * @summary Get properties of a verified partner.
- * x-ms-original-file: specification/eventgrid/resource-manager/Microsoft.EventGrid/preview/2021-10-15-preview/examples/VerifiedPartners_Get.json
+ * x-ms-original-file: specification/eventgrid/resource-manager/Microsoft.EventGrid/preview/2023-06-01-preview/examples/VerifiedPartners_Get.json
  */
 async function verifiedPartnersGet() {
-  const subscriptionId = "00000000-0000-0000-0000-000000000000";
+  const subscriptionId =
+    process.env["EVENTGRID_SUBSCRIPTION_ID"] ||
+    "00000000-0000-0000-0000-000000000000";
   const verifiedPartnerName = "Contoso.Finance";
   const credential = new DefaultAzureCredential();
   const client = new EventGridManagementClient(credential, subscriptionId);
@@ -26,4 +31,8 @@ async function verifiedPartnersGet() {
   console.log(result);
 }
 
-verifiedPartnersGet().catch(console.error);
+async function main() {
+  verifiedPartnersGet();
+}
+
+main().catch(console.error);

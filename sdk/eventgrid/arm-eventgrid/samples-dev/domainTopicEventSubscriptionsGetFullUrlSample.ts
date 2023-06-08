@@ -10,16 +10,22 @@
 // Licensed under the MIT License.
 import { EventGridManagementClient } from "@azure/arm-eventgrid";
 import { DefaultAzureCredential } from "@azure/identity";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 /**
  * This sample demonstrates how to Get the full endpoint URL for a nested event subscription for domain topic.
  *
  * @summary Get the full endpoint URL for a nested event subscription for domain topic.
- * x-ms-original-file: specification/eventgrid/resource-manager/Microsoft.EventGrid/preview/2021-10-15-preview/examples/DomainTopicEventSubscriptions_GetFullUrl.json
+ * x-ms-original-file: specification/eventgrid/resource-manager/Microsoft.EventGrid/preview/2023-06-01-preview/examples/DomainTopicEventSubscriptions_GetFullUrl.json
  */
 async function domainTopicEventSubscriptionsGetFullUrl() {
-  const subscriptionId = "5b4b650e-28b9-4790-b3ab-ddbd88d727c4";
-  const resourceGroupName = "examplerg";
+  const subscriptionId =
+    process.env["EVENTGRID_SUBSCRIPTION_ID"] ||
+    "8f6b6269-84f2-4d09-9e31-1127efcd1e40";
+  const resourceGroupName =
+    process.env["EVENTGRID_RESOURCE_GROUP"] || "examplerg";
   const domainName = "exampleDomain1";
   const topicName = "exampleDomainTopic1";
   const eventSubscriptionName = "examplesubscription1";
@@ -34,4 +40,8 @@ async function domainTopicEventSubscriptionsGetFullUrl() {
   console.log(result);
 }
 
-domainTopicEventSubscriptionsGetFullUrl().catch(console.error);
+async function main() {
+  domainTopicEventSubscriptionsGetFullUrl();
+}
+
+main().catch(console.error);

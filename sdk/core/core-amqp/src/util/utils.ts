@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AbortError, AbortSignalLike } from "@azure/abort-controller";
 import { CancellableAsyncLock, CancellableAsyncLockImpl } from "./lock";
-import { StandardAbortMessage } from "./constants";
+import { AbortSignalLike } from "@azure/abort-controller";
 import { WebSocketImpl } from "rhea-promise";
-import { isDefined } from "./typeGuards";
+import { delay as wrapperDelay } from "@azure/core-util";
 
 /**
  * @internal
@@ -123,14 +122,12 @@ export const defaultCancellableLock: CancellableAsyncLock = new CancellableAsync
  * the promise with the given value.
  */
 export class Timeout {
-  // Node and browsers return different types from setTimeout
-  // Any is the easiest way to avoid type errors in either platform
-  private _timer?: any;
+  private _timer?: ReturnType<typeof setTimeout>;
 
   set<T>(t: number, value?: T): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       this.clear();
-      const callback = value ? () => reject(new Error(`${value}`)) : resolve;
+      const callback: (args: any) => void = value ? () => reject(new Error(`${value}`)) : resolve;
       this._timer = setTimeout(callback, t);
     });
   }
@@ -176,47 +173,19 @@ export class Timeout {
  * @param value - The value to be resolved with after a timeout of t milliseconds.
  * @returns - Resolved promise
  */
-export function delay<T>(
+export async function delay<T>(
   delayInMs: number,
   abortSignal?: AbortSignalLike,
   abortErrorMsg?: string,
   value?: T
 ): Promise<T | void> {
-  return new Promise((resolve, reject) => {
-    let timer: ReturnType<typeof setTimeout> | undefined = undefined;
-    let onAborted: (() => void) | undefined = undefined;
-
-    const rejectOnAbort = (): void => {
-      return reject(new AbortError(abortErrorMsg ? abortErrorMsg : StandardAbortMessage));
-    };
-
-    const removeListeners = (): void => {
-      if (abortSignal && onAborted) {
-        abortSignal.removeEventListener("abort", onAborted);
-      }
-    };
-
-    onAborted = (): void => {
-      if (isDefined(timer)) {
-        clearTimeout(timer);
-      }
-      removeListeners();
-      return rejectOnAbort();
-    };
-
-    if (abortSignal && abortSignal.aborted) {
-      return rejectOnAbort();
-    }
-
-    timer = setTimeout(() => {
-      removeListeners();
-      resolve(value);
-    }, delayInMs);
-
-    if (abortSignal) {
-      abortSignal.addEventListener("abort", onAborted);
-    }
+  await wrapperDelay(delayInMs, {
+    abortSignal: abortSignal,
+    abortErrorMsg: abortErrorMsg,
   });
+  if (value !== undefined) {
+    return value;
+  }
 }
 
 /**

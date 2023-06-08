@@ -6,14 +6,14 @@ Microsoft Azure Confidential Compute Ledger Control Plane REST API version 2020-
 
 [Source code](https://github.com/Azure/azure-sdk-for-js/tree/main/sdk/confidentialledger/arm-confidentialledger) |
 [Package (NPM)](https://www.npmjs.com/package/@azure/arm-confidentialledger) |
-[API reference documentation](https://docs.microsoft.com/javascript/api/@azure/arm-confidentialledger) |
+[API reference documentation](https://docs.microsoft.com/javascript/api/@azure/arm-confidentialledger?view=azure-node-preview) |
 [Samples](https://github.com/Azure-Samples/azure-samples-js-management)
 
 ## Getting started
 
 ### Currently supported environments
 
-- [LTS versions of Node.js](https://nodejs.org/about/releases/)
+- [LTS versions of Node.js](https://github.com/nodejs/release#release-schedule)
 - Latest versions of Safari, Chrome, Edge and Firefox.
 
 See our [support policy](https://github.com/Azure/azure-sdk-for-js/blob/main/SUPPORT.md) for more details.

@@ -32,6 +32,7 @@ import {
   DataFlowDebugSessionImpl,
   ManagedVirtualNetworksImpl,
   ManagedPrivateEndpointsImpl,
+  CredentialOperationsImpl,
   PrivateEndPointConnectionsImpl,
   PrivateEndpointConnectionImpl,
   PrivateLinkResourcesImpl,
@@ -55,6 +56,7 @@ import {
   DataFlowDebugSession,
   ManagedVirtualNetworks,
   ManagedPrivateEndpoints,
+  CredentialOperations,
   PrivateEndPointConnections,
   PrivateEndpointConnection,
   PrivateLinkResources,
@@ -94,47 +96,53 @@ export class DataFactoryManagementClient extends coreClient.ServiceClient {
       credential: credentials
     };
 
-    const packageDetails = `azsdk-js-arm-datafactory/10.6.1`;
+    const packageDetails = `azsdk-js-arm-datafactory/11.1.1`;
     const userAgentPrefix =
       options.userAgentOptions && options.userAgentOptions.userAgentPrefix
         ? `${options.userAgentOptions.userAgentPrefix} ${packageDetails}`
         : `${packageDetails}`;
 
-    if (!options.credentialScopes) {
-      options.credentialScopes = ["https://management.azure.com/.default"];
-    }
     const optionsWithDefaults = {
       ...defaults,
       ...options,
       userAgentOptions: {
         userAgentPrefix
       },
-      baseUri:
+      endpoint:
         options.endpoint ?? options.baseUri ?? "https://management.azure.com"
     };
     super(optionsWithDefaults);
 
+    let bearerTokenAuthenticationPolicyFound: boolean = false;
     if (options?.pipeline && options.pipeline.getOrderedPolicies().length > 0) {
       const pipelinePolicies: coreRestPipeline.PipelinePolicy[] = options.pipeline.getOrderedPolicies();
-      const bearerTokenAuthenticationPolicyFound = pipelinePolicies.some(
+      bearerTokenAuthenticationPolicyFound = pipelinePolicies.some(
         (pipelinePolicy) =>
           pipelinePolicy.name ===
           coreRestPipeline.bearerTokenAuthenticationPolicyName
       );
-      if (!bearerTokenAuthenticationPolicyFound) {
-        this.pipeline.removePolicy({
-          name: coreRestPipeline.bearerTokenAuthenticationPolicyName
-        });
-        this.pipeline.addPolicy(
-          coreRestPipeline.bearerTokenAuthenticationPolicy({
-            scopes: `${optionsWithDefaults.baseUri}/.default`,
-            challengeCallbacks: {
-              authorizeRequestOnChallenge:
-                coreClient.authorizeRequestOnClaimChallenge
-            }
-          })
-        );
-      }
+    }
+    if (
+      !options ||
+      !options.pipeline ||
+      options.pipeline.getOrderedPolicies().length == 0 ||
+      !bearerTokenAuthenticationPolicyFound
+    ) {
+      this.pipeline.removePolicy({
+        name: coreRestPipeline.bearerTokenAuthenticationPolicyName
+      });
+      this.pipeline.addPolicy(
+        coreRestPipeline.bearerTokenAuthenticationPolicy({
+          credential: credentials,
+          scopes:
+            optionsWithDefaults.credentialScopes ??
+            `${optionsWithDefaults.endpoint}/.default`,
+          challengeCallbacks: {
+            authorizeRequestOnChallenge:
+              coreClient.authorizeRequestOnClaimChallenge
+          }
+        })
+      );
     }
     // Parameter assignments
     this.subscriptionId = subscriptionId;
@@ -161,6 +169,7 @@ export class DataFactoryManagementClient extends coreClient.ServiceClient {
     this.dataFlowDebugSession = new DataFlowDebugSessionImpl(this);
     this.managedVirtualNetworks = new ManagedVirtualNetworksImpl(this);
     this.managedPrivateEndpoints = new ManagedPrivateEndpointsImpl(this);
+    this.credentialOperations = new CredentialOperationsImpl(this);
     this.privateEndPointConnections = new PrivateEndPointConnectionsImpl(this);
     this.privateEndpointConnection = new PrivateEndpointConnectionImpl(this);
     this.privateLinkResources = new PrivateLinkResourcesImpl(this);
@@ -183,7 +192,7 @@ export class DataFactoryManagementClient extends coreClient.ServiceClient {
         if (param.length > 1) {
           const newParams = param[1].split("&").map((item) => {
             if (item.indexOf("api-version") > -1) {
-              return item.replace(/(?<==).*$/, apiVersion);
+              return "api-version=" + apiVersion;
             } else {
               return item;
             }
@@ -213,6 +222,7 @@ export class DataFactoryManagementClient extends coreClient.ServiceClient {
   dataFlowDebugSession: DataFlowDebugSession;
   managedVirtualNetworks: ManagedVirtualNetworks;
   managedPrivateEndpoints: ManagedPrivateEndpoints;
+  credentialOperations: CredentialOperations;
   privateEndPointConnections: PrivateEndPointConnections;
   privateEndpointConnection: PrivateEndpointConnection;
   privateLinkResources: PrivateLinkResources;

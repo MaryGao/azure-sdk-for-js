@@ -10,20 +10,33 @@
 // Licensed under the MIT License.
 import { ContainerApp, ContainerAppsAPIClient } from "@azure/arm-appcontainers";
 import { DefaultAzureCredential } from "@azure/identity";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 /**
  * This sample demonstrates how to Patches a Container App using JSON Merge Patch
  *
  * @summary Patches a Container App using JSON Merge Patch
- * x-ms-original-file: specification/app/resource-manager/Microsoft.App/stable/2022-03-01/examples/ContainerApps_Patch.json
+ * x-ms-original-file: specification/app/resource-manager/Microsoft.App/preview/2022-11-01-preview/examples/ContainerApps_Patch.json
  */
 async function patchContainerApp() {
-  const subscriptionId = "34adfa4f-cedf-4dc0-ba29-b6d1a69ab345";
-  const resourceGroupName = "rg";
+  const subscriptionId =
+    process.env["APPCONTAINERS_SUBSCRIPTION_ID"] ||
+    "34adfa4f-cedf-4dc0-ba29-b6d1a69ab345";
+  const resourceGroupName = process.env["APPCONTAINERS_RESOURCE_GROUP"] || "rg";
   const containerAppName = "testcontainerApp0";
   const containerAppEnvelope: ContainerApp = {
     configuration: {
-      dapr: { appPort: 3000, appProtocol: "http", enabled: true },
+      dapr: {
+        appPort: 3000,
+        appProtocol: "http",
+        enableApiLogging: true,
+        enabled: true,
+        httpMaxRequestSize: 10,
+        httpReadBufferSize: 30,
+        logLevel: "debug"
+      },
       ingress: {
         customDomains: [
           {
@@ -40,6 +53,23 @@ async function patchContainerApp() {
           }
         ],
         external: true,
+        ipSecurityRestrictions: [
+          {
+            name: "Allow work IP A subnet",
+            description:
+              "Allowing all IP's within the subnet below to access containerapp",
+            action: "Allow",
+            ipAddressRange: "192.168.1.1/32"
+          },
+          {
+            name: "Allow work IP B subnet",
+            description:
+              "Allowing all IP's within the subnet below to access containerapp",
+            action: "Allow",
+            ipAddressRange: "192.168.1.1/8"
+          }
+        ],
+        stickySessions: { affinity: "sticky" },
         targetPort: 3000,
         traffic: [
           {
@@ -48,7 +78,8 @@ async function patchContainerApp() {
             weight: 100
           }
         ]
-      }
+      },
+      maxInactiveRevisions: 10
     },
     location: "East US",
     tags: { tag1: "value1", tag2: "value2" },
@@ -69,6 +100,13 @@ async function patchContainerApp() {
               periodSeconds: 3
             }
           ]
+        }
+      ],
+      initContainers: [
+        {
+          name: "testinitcontainerApp0",
+          image: "repo/testcontainerApp0:v4",
+          resources: { cpu: 0.2, memory: "100Mi" }
         }
       ],
       scale: {
@@ -93,4 +131,8 @@ async function patchContainerApp() {
   console.log(result);
 }
 
-patchContainerApp().catch(console.error);
+async function main() {
+  patchContainerApp();
+}
+
+main().catch(console.error);

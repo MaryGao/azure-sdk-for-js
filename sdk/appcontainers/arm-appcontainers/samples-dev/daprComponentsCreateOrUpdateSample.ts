@@ -13,16 +13,61 @@ import {
   ContainerAppsAPIClient
 } from "@azure/arm-appcontainers";
 import { DefaultAzureCredential } from "@azure/identity";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 /**
  * This sample demonstrates how to Creates or updates a Dapr Component in a Managed Environment.
  *
  * @summary Creates or updates a Dapr Component in a Managed Environment.
- * x-ms-original-file: specification/app/resource-manager/Microsoft.App/stable/2022-03-01/examples/DaprComponents_CreateOrUpdate.json
+ * x-ms-original-file: specification/app/resource-manager/Microsoft.App/preview/2022-11-01-preview/examples/DaprComponents_CreateOrUpdate_SecretStoreComponent.json
  */
-async function createOrUpdateDaprComponent() {
-  const subscriptionId = "8efdecc5-919e-44eb-b179-915dca89ebf9";
-  const resourceGroupName = "examplerg";
+async function createOrUpdateDaprComponentWithSecretStoreComponent() {
+  const subscriptionId =
+    process.env["APPCONTAINERS_SUBSCRIPTION_ID"] ||
+    "8efdecc5-919e-44eb-b179-915dca89ebf9";
+  const resourceGroupName =
+    process.env["APPCONTAINERS_RESOURCE_GROUP"] || "examplerg";
+  const environmentName = "myenvironment";
+  const componentName = "reddog";
+  const daprComponentEnvelope: DaprComponent = {
+    componentType: "state.azure.cosmosdb",
+    ignoreErrors: false,
+    initTimeout: "50s",
+    metadata: [
+      { name: "url", value: "<COSMOS-URL>" },
+      { name: "database", value: "itemsDB" },
+      { name: "collection", value: "items" },
+      { name: "masterkey", secretRef: "masterkey" }
+    ],
+    scopes: ["container-app-1", "container-app-2"],
+    secretStoreComponent: "my-secret-store",
+    version: "v1"
+  };
+  const credential = new DefaultAzureCredential();
+  const client = new ContainerAppsAPIClient(credential, subscriptionId);
+  const result = await client.daprComponents.createOrUpdate(
+    resourceGroupName,
+    environmentName,
+    componentName,
+    daprComponentEnvelope
+  );
+  console.log(result);
+}
+
+/**
+ * This sample demonstrates how to Creates or updates a Dapr Component in a Managed Environment.
+ *
+ * @summary Creates or updates a Dapr Component in a Managed Environment.
+ * x-ms-original-file: specification/app/resource-manager/Microsoft.App/preview/2022-11-01-preview/examples/DaprComponents_CreateOrUpdate_Secrets.json
+ */
+async function createOrUpdateDaprComponentWithSecrets() {
+  const subscriptionId =
+    process.env["APPCONTAINERS_SUBSCRIPTION_ID"] ||
+    "8efdecc5-919e-44eb-b179-915dca89ebf9";
+  const resourceGroupName =
+    process.env["APPCONTAINERS_RESOURCE_GROUP"] || "examplerg";
   const environmentName = "myenvironment";
   const componentName = "reddog";
   const daprComponentEnvelope: DaprComponent = {
@@ -50,4 +95,9 @@ async function createOrUpdateDaprComponent() {
   console.log(result);
 }
 
-createOrUpdateDaprComponent().catch(console.error);
+async function main() {
+  createOrUpdateDaprComponentWithSecretStoreComponent();
+  createOrUpdateDaprComponentWithSecrets();
+}
+
+main().catch(console.error);

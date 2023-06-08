@@ -91,9 +91,10 @@ Authenticating user accounts is the easiest way to get started with minimal set 
 
 | Credential with example                                                           | Usage                                                                                                                                                                                                                                                                                                                  | Setup                                                                                                                                                                                                    |
 | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|[AzureDeveloperCliCredential](#authenticatin-a-user-account-with-azure-developer-cli) | Authenticate in a development environment with Azure Developer CLI. | [Install the Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) and login using the [`azd auth login` command](https://learn.microsoft.com/azure/developer/azure-developer-cli/reference?source=recommendations#azd-auth-login).
 | [AzureCliCredential](#authenticating-a-user-account-with-azure-cli)               | Authenticate in a development environment with the Azure CLI.                                                                                                                                                                                                                                                          | [Install Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli) and [login using az cli command](https://docs.microsoft.com/cli/azure/authenticate-azure-cli)                                |
 | [AzurePowerShellCredential](#authenticating-a-user-account-with-azure-powershell) | Authenticate in a development environment with Azure PowerShell.                                                                                                                                                                                                                                                       | [Install Azure PowerShell](https://docs.microsoft.com/powershell/azure/install-az-ps) and [login using the `Connect-AzAccount` cmdlet](https://docs.microsoft.com/powershell/azure/authenticate-azureps) |
-| [DefaultAzureCredential](#authenticating-with-defaultazurecredential)             | Tries `AzureCliCredential`, `AzurePowerShellCredential`, and other credentials sequentially until one of them succeeds. Use this to have your application authenticate using developer tools, service principals or managed identity based on what is available in the current environment without changing your code. |
+| [DefaultAzureCredential](#authenticating-with-defaultazurecredential)             | Tries `AzureDeveloperCliCredential`, `AzureCliCredential`, `AzurePowerShellCredential`, and other credentials sequentially until one of them succeeds. Use this to have your application authenticate using developer tools, service principals, or managed identity based on what's available in the current environment without changing your code. |
 
 ### Authenticating Service Principals
 
@@ -110,6 +111,7 @@ To learn more, read [Application and service principal objects in Azure Active D
 | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [ClientSecretCredential](#authenticating-a-service-principal-with-a-client-secret)           | Authenticates a service principal using a secret.                                                                                                                                                                                                                                                                                               |
 | [ClientCertificateCredential](#authenticating-a-service-principal-with-a-client-certificate) | Authenticates a service principal using a certificate.                                                                                                                                                                                                                                                                                          |
+| [ClientAssertionCredential](#authenticating-a-service-principal-with-a-client-assertion) | Authenticating a service principal with a client assertion. |
 | [EnvironmentCredential](#authenticating-a-service-principal-with-environment-credentials)    | Authenticates a service principal or user via credential information specified in environment variables.                                                                                                                                                                                                                                        |
 | [DefaultAzureCredential](#authenticating-with-defaultazurecredential)                        | Tries `EnvironmentCredential`, `AzureCliCredential`, `AzurePowerShellCredential`, and other credentials sequentially until one of them succeeds. Use this to have your application authenticate using developer tools, service principals, or managed identity based on what's available in the current environment without changing your code. |
 
@@ -119,7 +121,8 @@ If your application is hosted in Azure, you can make use of [Managed Identity](h
 
 | Credential with example                                                     | Usage                                                                                                                                                                                                                                                                                                                                                                        |
 | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [ManagedIdentityCredential](#authenticating-in-azure-with-managed-identity) | Authenticate in a virtual machine, App Service, Functions app, Cloud Shell, or AKS environment on Azure, with system-assigned managed identity, user-assigned managed identity, or app registration (when working with AKS pod identity).                                                                                                                                    |
+|[WorkloadIdentityCredential](#authenticating-in-azure-with-workload-identity) | Authenticate in Azure Kubernetes environment with [Azure Active Directory (Azure AD) workload identities (preview)](https://learn.microsoft.com/azure/active-directory/workload-identities/workload-identities-overview), which [integrates with the Kubernetes native capabilities](https://learn.microsoft.com/azure/aks/workload-identity-overview) to federate with any external identity providers. |
+| [ManagedIdentityCredential](#authenticating-in-azure-with-managed-identity) | Authenticate in a virtual machine, App Service, Functions app, Cloud Shell, or AKS environment on Azure, with system-assigned managed identity, user-assigned managed identity, or app registration (when working with AKS pod identity).    |
 | [DefaultAzureCredential](#authenticating-with-defaultazurecredential)       | Tries `EnvironmentCredential`, `ManagedIdentityCredential`, `AzureCliCredential`, `AzurePowerShellCredential`, and other credentials sequentially until one of them succeeds. Use this to have your application authenticate using developer tools, service principals or managed identity based on what is available in the current environment without changing your code. |
 
 ### Examples
@@ -257,6 +260,83 @@ function withClientCertificateCredential() {
 }
 ```
 
+#### Authenticating a service principal with a client assertion
+
+This example demonstrates authenticating the `SecretClient` from the [@azure/keyvault-secrets][secrets_client_library] client library using the `ClientAssertionCredential`.
+
+You'll need to:
+
+- [Create an application registration][quickstart-register-app]
+- [Create a Service Principal with the Azure CLI][service_principal_azure_cli] or [Create an Azure service principal with Azure PowerShell][service_principal_azure_powershell]
+- [Register the certificate with the Microsoft Identity platform][register_certificate_app_registration]
+
+To learn more about service principals, see [Application and service principal objects in Azure Active Directory][app-register-service-principal].
+
+```ts
+/**
+ *  Authenticate with a client assertion.
+ */
+function withClientAssertionCredential() {
+  let credential = new ClientAssertionCredential(
+    "<YOUR_TENANT_ID>",
+    "<YOUR_CLIENT_ID>",
+    <yourGetAssertionCallbackFunction()>
+  );
+  const client = new SecretClient("https://key-vault-name.vault.azure.net", credential);
+}
+```
+
+You'll need to implement your own `getAssertion()` callback function that will return an [assertion in an encoded JWT format][client_assertion_jwt].
+
+##### Creating a callback function to return assertion
+
+This example demonstrates a callback function for creating an assertion from a client certificate. The default value of authority host should be `https://login.microsoftonline.com/${tenantId}`.
+
+```ts
+ async function getAssertion(): Promise<string> {
+      const jwtoken = await createJWTTokenFromCertificate("<AUTHORITY_HOST>", "<YOUR_CLIENT_ID>", "<YOUR_CERTIFICATE_PATH>");
+      return jwtoken;
+}
+```
+
+For example, the following function creates an encoded and signed JWT assertion token from the client certificate:
+
+```ts
+import * as tls from "tls";
+import * as net from "net";
+import * as fs from "fs";
+import * as uuid from "uuid";
+import * as jwt from "jsonwebtoken";
+import ms from 'ms';
+
+async function createJWTTokenFromCertificate(authorityHost: string,
+  clientId: string,
+  certificatePath: string) {
+
+  const privateKeyPemCert = fs.readFileSync(certificatePath);
+  const audience = `${authorityHost}/v2.0`;
+  const secureContext = tls.createSecureContext({
+    cert: privateKeyPemCert,
+  });
+  const secureSocket = new tls.TLSSocket(new net.Socket(), { secureContext });
+  secureSocket.destroy();
+  const cert = secureSocket.getCertificate() as tls.PeerCertificate;
+  const signedCert = jwt.sign({}, privateKeyPemCert, {
+    header: {
+      alg:"RS256",
+      typ: "JWT",
+      x5t: Buffer.from(cert.fingerprint256, "hex").toString("base64")
+    },
+    algorithm: "RS256",
+    audience: audience,
+    jwtid: uuid.v4(),
+    expiresIn: ms('1 h'),
+    subject: clientId,
+    issuer: clientId
+  })  
+  return signedCert;  
+}
+```
 #### Authenticating a user account with device code flow
 
 This example demonstrates authenticating the `SecretClient` from the [@azure/keyvault-secrets][secrets_client_library] client library using the `DeviceCodeCredential`. The `DeviceCodeCredential` offers a credential that can be used with little to no setup. The user can use the browser of their choice to complete the authentication process.
@@ -439,6 +519,61 @@ function withAzurePowerShellCredential() {
   // options or parameters, and uses the current user session within the Az.Account PowerShell
   // module.
   const credential = new AzurePowerShellCredential();
+
+  const client = new SecretClient("https://key-vault-name.vault.azure.net", credential);
+}
+```
+
+#### Authenticating a User Account with Azure Developer CLI
+
+This example demonstrates authenticating the `SecretClient` from the [@azure/keyvault-secrets][secrets_client_library] client library using the `AzureDeveloperCliCredential` on a workstation with the Azure Developer CLI installed and signed in.
+
+##### Configure Azure Developer CLI
+
+Sign in using the [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/reference?source=recommendations#azd-auth-login):
+
+```bash
+# As a user:
+azd auth login
+
+# As a service principal:
+azd auth login --client-id <client-id> --client-secret <client-secret> --tenant-id <tenant-id>
+```
+
+##### Use Azure Developer CLI Credential
+
+```ts
+/**
+ * Authenticate with Azure Developer CLI.
+ */
+function withAzureDeveloperCliCredential() {
+  // As you can see in this example, the AzureDeveloperCliCredential does not take any parameters,
+  // instead relying on the Azure Developer CLI authenticated user to authenticate.
+  const credential = new AzureDeveloperCliCredential();
+
+  const client = new SecretClient("https://key-vault-name.vault.azure.net", credential);
+}
+```
+
+#### Authenticating in Azure with Workload Identity
+
+This example demonstrates authenticating the `SecretClient` from the [@azure/keyvault-secrets][secrets_client_library] using the `WorkloadIdentityCredential` in an AKS environment.
+
+```ts
+/**
+ * Authenticate with workload identity.
+ */
+function withWorkloadIdentityCredential() {
+  const credential = new WorkloadIdentityCredential()
+
+  const client = new SecretClient("https://key-vault-name.vault.azure.net", credential);
+}
+
+/**
+ * Authenticate with default Azure identity.
+ */ 
+function withDefaultAzureCredential() {
+  const credential = new DefaultAzureCredential({workloadIdentityClientId: "<WORKLOAD_IDENTITY_CLIENT_ID>"})
 
   const client = new SecretClient("https://key-vault-name.vault.azure.net", credential);
 }
@@ -1203,3 +1338,5 @@ To learn more about Azure Authentication for National Clouds, see [National clou
 [msal_browser_readme]: https://github.com/sadasant/microsoft-authentication-library-for-js/tree/master/lib/msal-browser
 [msal_browser_npm]: https://www.npmjs.com/package/@azure/msal-browser
 [core_auth]: https://www.npmjs.com/package/@azure/core-auth
+[register_certificate_app_registration]: https://docs.microsoft.com/azure/active-directory/develop/active-directory-certificate-credentials#register-your-certificate-with-microsoft-identity-platform
+[client_assertion_jwt]: https://docs.microsoft.com/azure/active-directory/develop/active-directory-certificate-credentials

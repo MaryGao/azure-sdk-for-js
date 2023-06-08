@@ -5,7 +5,7 @@
  * @summary Sends an email with a txt file attachment
  */
 
-import { EmailClient, EmailMessage } from "@azure/communication-email"
+import { EmailClient, EmailMessage } from "@azure/communication-email";
 
 // Load the .env file (you will need to set these environment variables)
 import * as dotenv from "dotenv";
@@ -20,35 +20,32 @@ const sendEmailWithAttachments = async (): Promise<void> => {
   const emailClient: EmailClient = new EmailClient(connectionString);
 
   // Create the Email Message to be sent
-  const emailMessage: EmailMessage = {
-    sender: senderAddress,
+  const message: EmailMessage = {
+    senderAddress: senderAddress,
     content: {
       subject: "This is the subject",
       plainText: "This is the body",
       html: "<html><h1>This is the body</h1></html>",
     },
     recipients: {
-      to: [
-        {
-          email: recipientAddress,
-          displayName: "Customer Name",
-        },
-      ],
+      to: [{ address: recipientAddress, displayName: "Customer Name" }],
     },
     attachments: [
       {
         name: "readme.txt",
-        attachmentType: "txt",
-        contentBytesBase64: "ZW1haWwgdGVzdCBhdHRhY2htZW50",
+        contentType: "text/plain",
+        contentInBase64: "ZW1haWwgdGVzdCBhdHRhY2htZW50",
       },
     ],
   };
 
   try {
     // Send the email message
-    const response = await emailClient.send(emailMessage);
+    const poller = await emailClient.beginSend(message);
+    const response = await poller.pollUntilDone();
 
-    console.log("Message ID: " + response.messageId);
+    // Get the OperationId so that it can be used for tracking the message for troubleshooting
+    console.log("Operation ID: " + response.id);
   } catch (error) {
     console.log(error);
   }

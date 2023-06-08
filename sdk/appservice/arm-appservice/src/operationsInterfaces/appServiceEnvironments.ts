@@ -7,7 +7,7 @@
  */
 
 import { PagedAsyncIterableIterator } from "@azure/core-paging";
-import { PollerLike, PollOperationState } from "@azure/core-lro";
+import { SimplePollerLike, OperationState } from "@azure/core-lro";
 import {
   AppServiceEnvironmentResource,
   AppServiceEnvironmentsListOptionalParams,
@@ -54,6 +54,13 @@ import {
   AppServiceEnvironmentsUpdateResponse,
   AppServiceEnvironmentsGetVipInfoOptionalParams,
   AppServiceEnvironmentsGetVipInfoResponse,
+  AppServiceEnvironmentsGetAseCustomDnsSuffixConfigurationOptionalParams,
+  AppServiceEnvironmentsGetAseCustomDnsSuffixConfigurationResponse,
+  CustomDnsSuffixConfiguration,
+  AppServiceEnvironmentsUpdateAseCustomDnsSuffixConfigurationOptionalParams,
+  AppServiceEnvironmentsUpdateAseCustomDnsSuffixConfigurationResponse,
+  AppServiceEnvironmentsDeleteAseCustomDnsSuffixConfigurationOptionalParams,
+  AppServiceEnvironmentsDeleteAseCustomDnsSuffixConfigurationResponse,
   AppServiceEnvironmentsGetAseV3NetworkingConfigurationOptionalParams,
   AppServiceEnvironmentsGetAseV3NetworkingConfigurationResponse,
   AseV3NetworkingConfiguration,
@@ -69,6 +76,8 @@ import {
   AppServiceEnvironmentsCreateOrUpdateMultiRolePoolResponse,
   AppServiceEnvironmentsUpdateMultiRolePoolOptionalParams,
   AppServiceEnvironmentsUpdateMultiRolePoolResponse,
+  AppServiceEnvironmentsTestUpgradeAvailableNotificationOptionalParams,
+  AppServiceEnvironmentsUpgradeOptionalParams,
   AppServiceEnvironmentsListOperationsOptionalParams,
   AppServiceEnvironmentsListOperationsResponse,
   AppServiceEnvironmentsGetPrivateEndpointConnectionOptionalParams,
@@ -369,8 +378,8 @@ export interface AppServiceEnvironments {
     hostingEnvironmentEnvelope: AppServiceEnvironmentResource,
     options?: AppServiceEnvironmentsCreateOrUpdateOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<AppServiceEnvironmentsCreateOrUpdateResponse>,
+    SimplePollerLike<
+      OperationState<AppServiceEnvironmentsCreateOrUpdateResponse>,
       AppServiceEnvironmentsCreateOrUpdateResponse
     >
   >;
@@ -397,7 +406,7 @@ export interface AppServiceEnvironments {
     resourceGroupName: string,
     name: string,
     options?: AppServiceEnvironmentsDeleteOptionalParams
-  ): Promise<PollerLike<PollOperationState<void>, void>>;
+  ): Promise<SimplePollerLike<OperationState<void>, void>>;
   /**
    * Description for Delete an App Service Environment.
    * @param resourceGroupName Name of the resource group to which the resource belongs.
@@ -433,6 +442,45 @@ export interface AppServiceEnvironments {
     name: string,
     options?: AppServiceEnvironmentsGetVipInfoOptionalParams
   ): Promise<AppServiceEnvironmentsGetVipInfoResponse>;
+  /**
+   * Get Custom Dns Suffix configuration of an App Service Environment
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Name of the App Service Environment.
+   * @param options The options parameters.
+   */
+  getAseCustomDnsSuffixConfiguration(
+    resourceGroupName: string,
+    name: string,
+    options?: AppServiceEnvironmentsGetAseCustomDnsSuffixConfigurationOptionalParams
+  ): Promise<AppServiceEnvironmentsGetAseCustomDnsSuffixConfigurationResponse>;
+  /**
+   * Update Custom Dns Suffix configuration of an App Service Environment
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Name of the App Service Environment.
+   * @param customDnsSuffixConfiguration Full view of the custom domain suffix configuration for ASEv3.
+   * @param options The options parameters.
+   */
+  updateAseCustomDnsSuffixConfiguration(
+    resourceGroupName: string,
+    name: string,
+    customDnsSuffixConfiguration: CustomDnsSuffixConfiguration,
+    options?: AppServiceEnvironmentsUpdateAseCustomDnsSuffixConfigurationOptionalParams
+  ): Promise<
+    AppServiceEnvironmentsUpdateAseCustomDnsSuffixConfigurationResponse
+  >;
+  /**
+   * Delete Custom Dns Suffix configuration of an App Service Environment
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Name of the App Service Environment.
+   * @param options The options parameters.
+   */
+  deleteAseCustomDnsSuffixConfiguration(
+    resourceGroupName: string,
+    name: string,
+    options?: AppServiceEnvironmentsDeleteAseCustomDnsSuffixConfigurationOptionalParams
+  ): Promise<
+    AppServiceEnvironmentsDeleteAseCustomDnsSuffixConfigurationResponse
+  >;
   /**
    * Description for Get networking configuration of an App Service Environment
    * @param resourceGroupName Name of the resource group to which the resource belongs.
@@ -505,10 +553,8 @@ export interface AppServiceEnvironments {
     multiRolePoolEnvelope: WorkerPoolResource,
     options?: AppServiceEnvironmentsCreateOrUpdateMultiRolePoolOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<
-        AppServiceEnvironmentsCreateOrUpdateMultiRolePoolResponse
-      >,
+    SimplePollerLike<
+      OperationState<AppServiceEnvironmentsCreateOrUpdateMultiRolePoolResponse>,
       AppServiceEnvironmentsCreateOrUpdateMultiRolePoolResponse
     >
   >;
@@ -538,6 +584,39 @@ export interface AppServiceEnvironments {
     multiRolePoolEnvelope: WorkerPoolResource,
     options?: AppServiceEnvironmentsUpdateMultiRolePoolOptionalParams
   ): Promise<AppServiceEnvironmentsUpdateMultiRolePoolResponse>;
+  /**
+   * Send a test notification that an upgrade is available for this App Service Environment.
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Name of the App Service Environment.
+   * @param options The options parameters.
+   */
+  testUpgradeAvailableNotification(
+    resourceGroupName: string,
+    name: string,
+    options?: AppServiceEnvironmentsTestUpgradeAvailableNotificationOptionalParams
+  ): Promise<void>;
+  /**
+   * Description for Initiate an upgrade of an App Service Environment if one is available.
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Name of the App Service Environment.
+   * @param options The options parameters.
+   */
+  beginUpgrade(
+    resourceGroupName: string,
+    name: string,
+    options?: AppServiceEnvironmentsUpgradeOptionalParams
+  ): Promise<SimplePollerLike<OperationState<void>, void>>;
+  /**
+   * Description for Initiate an upgrade of an App Service Environment if one is available.
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Name of the App Service Environment.
+   * @param options The options parameters.
+   */
+  beginUpgradeAndWait(
+    resourceGroupName: string,
+    name: string,
+    options?: AppServiceEnvironmentsUpgradeOptionalParams
+  ): Promise<void>;
   /**
    * Description for List all currently running operations on the App Service Environment.
    * @param resourceGroupName Name of the resource group to which the resource belongs.
@@ -577,8 +656,8 @@ export interface AppServiceEnvironments {
     privateEndpointWrapper: PrivateLinkConnectionApprovalRequestResource,
     options?: AppServiceEnvironmentsApproveOrRejectPrivateEndpointConnectionOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<
+    SimplePollerLike<
+      OperationState<
         AppServiceEnvironmentsApproveOrRejectPrivateEndpointConnectionResponse
       >,
       AppServiceEnvironmentsApproveOrRejectPrivateEndpointConnectionResponse
@@ -614,8 +693,8 @@ export interface AppServiceEnvironments {
     privateEndpointConnectionName: string,
     options?: AppServiceEnvironmentsDeletePrivateEndpointConnectionOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<
+    SimplePollerLike<
+      OperationState<
         AppServiceEnvironmentsDeletePrivateEndpointConnectionResponse
       >,
       AppServiceEnvironmentsDeletePrivateEndpointConnectionResponse
@@ -684,10 +763,8 @@ export interface AppServiceEnvironments {
     workerPoolEnvelope: WorkerPoolResource,
     options?: AppServiceEnvironmentsCreateOrUpdateWorkerPoolOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<
-        AppServiceEnvironmentsCreateOrUpdateWorkerPoolResponse
-      >,
+    SimplePollerLike<
+      OperationState<AppServiceEnvironmentsCreateOrUpdateWorkerPoolResponse>,
       AppServiceEnvironmentsCreateOrUpdateWorkerPoolResponse
     >
   >;

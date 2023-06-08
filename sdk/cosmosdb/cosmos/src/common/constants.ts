@@ -102,6 +102,11 @@ export const Constants = {
     // Response header that holds the serialized version of query metrics.
     QueryMetrics: "x-ms-documentdb-query-metrics",
 
+    // IndexMetrics
+    // Request header to tell backend to give you index metrics.
+    PopulateIndexMetrics: "x-ms-cosmos-populateindexmetrics",
+    // Response header that holds the serialized version of index metrics.
+    IndexUtilization: "x-ms-cosmos-index-utilization",
     // Version headers and values
     Version: "x-ms-version",
 
@@ -168,6 +173,7 @@ export const Constants = {
   // GlobalDB related constants
   WritableLocations: "writableLocations",
   ReadableLocations: "readableLocations",
+  LocationUnavailableExpirationTimeInMs: 5 * 60 * 1000, // 5 minutes
 
   // ServiceDocument Resource
   ENABLE_MULTIPLE_WRITABLE_LOCATIONS: "enableMultipleWriteLocations",
@@ -179,10 +185,15 @@ export const Constants = {
   ThrottleRetryCount: "x-ms-throttle-retry-count",
   ThrottleRetryWaitTimeInMs: "x-ms-throttle-retry-wait-time-ms",
 
+  // Platform
   CurrentVersion: "2020-07-15",
-
+  AzureNamespace: "Azure.Cosmos",
+  AzurePackageName: "@azure/cosmos",
   SDKName: "azure-cosmos-js",
-  SDKVersion: "3.16.2",
+  SDKVersion: "3.17.4",
+
+  // Bulk Operations
+  DefaultMaxBulkRequestBodySizeInBytes: 220201,
 
   Quota: {
     CollectionSize: "collectionSize",
@@ -251,6 +262,7 @@ export enum ResourceType {
   trigger = "triggers",
   item = "docs",
   pkranges = "pkranges",
+  partitionkey = "partitionKey",
 }
 
 /**

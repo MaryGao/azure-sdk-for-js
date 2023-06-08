@@ -7,7 +7,7 @@
  */
 
 import { PagedAsyncIterableIterator } from "@azure/core-paging";
-import { PollerLike, PollOperationState } from "@azure/core-lro";
+import { SimplePollerLike, OperationState } from "@azure/core-lro";
 import {
   PartnerDestination,
   PartnerDestinationsListBySubscriptionOptionalParams,
@@ -61,7 +61,25 @@ export interface PartnerDestinations {
    * @param partnerDestination Partner destination create information.
    * @param options The options parameters.
    */
-  createOrUpdate(
+  beginCreateOrUpdate(
+    resourceGroupName: string,
+    partnerDestinationName: string,
+    partnerDestination: PartnerDestination,
+    options?: PartnerDestinationsCreateOrUpdateOptionalParams
+  ): Promise<
+    SimplePollerLike<
+      OperationState<PartnerDestinationsCreateOrUpdateResponse>,
+      PartnerDestinationsCreateOrUpdateResponse
+    >
+  >;
+  /**
+   * Asynchronously creates a new partner destination with the specified parameters.
+   * @param resourceGroupName The name of the resource group within the user's subscription.
+   * @param partnerDestinationName Name of the partner destination.
+   * @param partnerDestination Partner destination create information.
+   * @param options The options parameters.
+   */
+  beginCreateOrUpdateAndWait(
     resourceGroupName: string,
     partnerDestinationName: string,
     partnerDestination: PartnerDestination,
@@ -77,7 +95,7 @@ export interface PartnerDestinations {
     resourceGroupName: string,
     partnerDestinationName: string,
     options?: PartnerDestinationsDeleteOptionalParams
-  ): Promise<PollerLike<PollOperationState<void>, void>>;
+  ): Promise<SimplePollerLike<OperationState<void>, void>>;
   /**
    * Delete existing partner destination.
    * @param resourceGroupName The name of the resource group within the user's subscription.
@@ -96,7 +114,25 @@ export interface PartnerDestinations {
    * @param partnerDestinationUpdateParameters Partner destination update information.
    * @param options The options parameters.
    */
-  update(
+  beginUpdate(
+    resourceGroupName: string,
+    partnerDestinationName: string,
+    partnerDestinationUpdateParameters: PartnerDestinationUpdateParameters,
+    options?: PartnerDestinationsUpdateOptionalParams
+  ): Promise<
+    SimplePollerLike<
+      OperationState<PartnerDestinationsUpdateResponse>,
+      PartnerDestinationsUpdateResponse
+    >
+  >;
+  /**
+   * Asynchronously updates a partner destination with the specified parameters.
+   * @param resourceGroupName The name of the resource group within the user's subscription.
+   * @param partnerDestinationName Name of the partner destination.
+   * @param partnerDestinationUpdateParameters Partner destination update information.
+   * @param options The options parameters.
+   */
+  beginUpdateAndWait(
     resourceGroupName: string,
     partnerDestinationName: string,
     partnerDestinationUpdateParameters: PartnerDestinationUpdateParameters,

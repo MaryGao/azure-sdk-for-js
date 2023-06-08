@@ -6,14 +6,15 @@
  * Changes may cause incorrect behavior and will be lost if the code is regenerated.
  */
 
-import { PagedAsyncIterableIterator } from "@azure/core-paging";
+import { PagedAsyncIterableIterator, PageSettings } from "@azure/core-paging";
+import { setContinuationToken } from "../pagingHelper";
 import { EnvironmentContainers } from "../operationsInterfaces";
 import * as coreClient from "@azure/core-client";
 import * as Mappers from "../models/mappers";
 import * as Parameters from "../models/parameters";
 import { AzureMachineLearningWorkspaces } from "../azureMachineLearningWorkspaces";
 import {
-  EnvironmentContainerData,
+  EnvironmentContainer,
   EnvironmentContainersListNextOptionalParams,
   EnvironmentContainersListOptionalParams,
   EnvironmentContainersListResponse,
@@ -48,7 +49,7 @@ export class EnvironmentContainersImpl implements EnvironmentContainers {
     resourceGroupName: string,
     workspaceName: string,
     options?: EnvironmentContainersListOptionalParams
-  ): PagedAsyncIterableIterator<EnvironmentContainerData> {
+  ): PagedAsyncIterableIterator<EnvironmentContainer> {
     const iter = this.listPagingAll(resourceGroupName, workspaceName, options);
     return {
       next() {
@@ -57,8 +58,16 @@ export class EnvironmentContainersImpl implements EnvironmentContainers {
       [Symbol.asyncIterator]() {
         return this;
       },
-      byPage: () => {
-        return this.listPagingPage(resourceGroupName, workspaceName, options);
+      byPage: (settings?: PageSettings) => {
+        if (settings?.maxPageSize) {
+          throw new Error("maxPageSize is not supported by this operation.");
+        }
+        return this.listPagingPage(
+          resourceGroupName,
+          workspaceName,
+          options,
+          settings
+        );
       }
     };
   }
@@ -66,11 +75,18 @@ export class EnvironmentContainersImpl implements EnvironmentContainers {
   private async *listPagingPage(
     resourceGroupName: string,
     workspaceName: string,
-    options?: EnvironmentContainersListOptionalParams
-  ): AsyncIterableIterator<EnvironmentContainerData[]> {
-    let result = await this._list(resourceGroupName, workspaceName, options);
-    yield result.value || [];
-    let continuationToken = result.nextLink;
+    options?: EnvironmentContainersListOptionalParams,
+    settings?: PageSettings
+  ): AsyncIterableIterator<EnvironmentContainer[]> {
+    let result: EnvironmentContainersListResponse;
+    let continuationToken = settings?.continuationToken;
+    if (!continuationToken) {
+      result = await this._list(resourceGroupName, workspaceName, options);
+      let page = result.value || [];
+      continuationToken = result.nextLink;
+      setContinuationToken(page, continuationToken);
+      yield page;
+    }
     while (continuationToken) {
       result = await this._listNext(
         resourceGroupName,
@@ -79,7 +95,9 @@ export class EnvironmentContainersImpl implements EnvironmentContainers {
         options
       );
       continuationToken = result.nextLink;
-      yield result.value || [];
+      let page = result.value || [];
+      setContinuationToken(page, continuationToken);
+      yield page;
     }
   }
 
@@ -87,7 +105,7 @@ export class EnvironmentContainersImpl implements EnvironmentContainers {
     resourceGroupName: string,
     workspaceName: string,
     options?: EnvironmentContainersListOptionalParams
-  ): AsyncIterableIterator<EnvironmentContainerData> {
+  ): AsyncIterableIterator<EnvironmentContainer> {
     for await (const page of this.listPagingPage(
       resourceGroupName,
       workspaceName,
@@ -164,7 +182,7 @@ export class EnvironmentContainersImpl implements EnvironmentContainers {
     resourceGroupName: string,
     workspaceName: string,
     name: string,
-    body: EnvironmentContainerData,
+    body: EnvironmentContainer,
     options?: EnvironmentContainersCreateOrUpdateOptionalParams
   ): Promise<EnvironmentContainersCreateOrUpdateResponse> {
     return this.client.sendOperationRequest(
@@ -249,7 +267,7 @@ const getOperationSpec: coreClient.OperationSpec = {
   httpMethod: "GET",
   responses: {
     200: {
-      bodyMapper: Mappers.EnvironmentContainerData
+      bodyMapper: Mappers.EnvironmentContainer
     },
     default: {
       bodyMapper: Mappers.ErrorResponse
@@ -272,10 +290,10 @@ const createOrUpdateOperationSpec: coreClient.OperationSpec = {
   httpMethod: "PUT",
   responses: {
     200: {
-      bodyMapper: Mappers.EnvironmentContainerData
+      bodyMapper: Mappers.EnvironmentContainer
     },
     201: {
-      bodyMapper: Mappers.EnvironmentContainerData
+      bodyMapper: Mappers.EnvironmentContainer
     },
     default: {
       bodyMapper: Mappers.ErrorResponse

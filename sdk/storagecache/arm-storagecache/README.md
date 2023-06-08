@@ -6,14 +6,14 @@ A Storage Cache provides scalable caching service for NAS clients, serving data 
 
 [Source code](https://github.com/Azure/azure-sdk-for-js/tree/main/sdk/storagecache/arm-storagecache) |
 [Package (NPM)](https://www.npmjs.com/package/@azure/arm-storagecache) |
-[API reference documentation](https://docs.microsoft.com/javascript/api/@azure/arm-storagecache) |
+[API reference documentation](https://docs.microsoft.com/javascript/api/@azure/arm-storagecache?view=azure-node-preview) |
 [Samples](https://github.com/Azure-Samples/azure-samples-js-management)
 
 ## Getting started
 
 ### Currently supported environments
 
-- [LTS versions of Node.js](https://nodejs.org/about/releases/)
+- [LTS versions of Node.js](https://github.com/nodejs/release#release-schedule)
 - Latest versions of Safari, Chrome, Edge and Firefox.
 
 See our [support policy](https://github.com/Azure/azure-sdk-for-js/blob/main/SUPPORT.md) for more details.

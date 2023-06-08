@@ -10,6 +10,8 @@ import { PagedAsyncIterableIterator } from "@azure/core-paging";
 import {
   ShortCode,
   ShortCodesGetShortCodesOptionalParams,
+  ShortCodeCost,
+  ShortCodesGetCostsOptionalParams,
   USProgramBrief,
   ShortCodesGetUSProgramBriefsOptionalParams,
   ProgramBriefAttachment,
@@ -21,6 +23,8 @@ import {
   ShortCodesGetUSProgramBriefResponse,
   ShortCodesSubmitUSProgramBriefOptionalParams,
   ShortCodesSubmitUSProgramBriefResponse,
+  AttachmentType,
+  FileType,
   ShortCodesCreateOrReplaceUSProgramBriefAttachmentOptionalParams,
   ShortCodesCreateOrReplaceUSProgramBriefAttachmentResponse,
   ShortCodesGetUSProgramBriefAttachmentOptionalParams,
@@ -38,6 +42,13 @@ export interface ShortCodesOperations {
   listShortCodes(
     options?: ShortCodesGetShortCodesOptionalParams
   ): PagedAsyncIterableIterator<ShortCode>;
+  /**
+   * This method supports pagination via the "skip" and "top" query parameters.
+   * @param options The options parameters.
+   */
+  listCosts(
+    options?: ShortCodesGetCostsOptionalParams
+  ): PagedAsyncIterableIterator<ShortCodeCost>;
   /**
    * Gets the list of US Program Briefs for the current resource.
    * @param options The options parameters.
@@ -95,12 +106,23 @@ export interface ShortCodesOperations {
    * @param programBriefId Program Brief Id. Must be a valid GUID
    * @param attachmentId Attachment Id. Must be a valid GUID
    * @param id Program Brief Attachment Id.
+   * @param fileName The name of the file being attached
+   *                 e.g. 'myFile01'
+   * @param fileType The type of file being attached
+   *                 e.g. 'pdf', 'jpg', 'png'
+   * @param fileContentBase64 File content as base 64 encoded string
+   * @param type Attachment type describing the purpose of the attachment
+   *             e.g. 'callToAction', 'termsOfService'
    * @param options The options parameters.
    */
   createOrReplaceUSProgramBriefAttachment(
     programBriefId: string,
     attachmentId: string,
     id: string,
+    fileName: string,
+    fileType: FileType,
+    fileContentBase64: string,
+    type: AttachmentType,
     options?: ShortCodesCreateOrReplaceUSProgramBriefAttachmentOptionalParams
   ): Promise<ShortCodesCreateOrReplaceUSProgramBriefAttachmentResponse>;
   /**

@@ -6,14 +6,15 @@
  * Changes may cause incorrect behavior and will be lost if the code is regenerated.
  */
 
-import { PagedAsyncIterableIterator } from "@azure/core-paging";
+import { PagedAsyncIterableIterator, PageSettings } from "@azure/core-paging";
+import { setContinuationToken } from "../pagingHelper";
 import { EnvironmentVersions } from "../operationsInterfaces";
 import * as coreClient from "@azure/core-client";
 import * as Mappers from "../models/mappers";
 import * as Parameters from "../models/parameters";
 import { AzureMachineLearningWorkspaces } from "../azureMachineLearningWorkspaces";
 import {
-  EnvironmentVersionData,
+  EnvironmentVersion,
   EnvironmentVersionsListNextOptionalParams,
   EnvironmentVersionsListOptionalParams,
   EnvironmentVersionsListResponse,
@@ -50,7 +51,7 @@ export class EnvironmentVersionsImpl implements EnvironmentVersions {
     workspaceName: string,
     name: string,
     options?: EnvironmentVersionsListOptionalParams
-  ): PagedAsyncIterableIterator<EnvironmentVersionData> {
+  ): PagedAsyncIterableIterator<EnvironmentVersion> {
     const iter = this.listPagingAll(
       resourceGroupName,
       workspaceName,
@@ -64,12 +65,16 @@ export class EnvironmentVersionsImpl implements EnvironmentVersions {
       [Symbol.asyncIterator]() {
         return this;
       },
-      byPage: () => {
+      byPage: (settings?: PageSettings) => {
+        if (settings?.maxPageSize) {
+          throw new Error("maxPageSize is not supported by this operation.");
+        }
         return this.listPagingPage(
           resourceGroupName,
           workspaceName,
           name,
-          options
+          options,
+          settings
         );
       }
     };
@@ -79,16 +84,23 @@ export class EnvironmentVersionsImpl implements EnvironmentVersions {
     resourceGroupName: string,
     workspaceName: string,
     name: string,
-    options?: EnvironmentVersionsListOptionalParams
-  ): AsyncIterableIterator<EnvironmentVersionData[]> {
-    let result = await this._list(
-      resourceGroupName,
-      workspaceName,
-      name,
-      options
-    );
-    yield result.value || [];
-    let continuationToken = result.nextLink;
+    options?: EnvironmentVersionsListOptionalParams,
+    settings?: PageSettings
+  ): AsyncIterableIterator<EnvironmentVersion[]> {
+    let result: EnvironmentVersionsListResponse;
+    let continuationToken = settings?.continuationToken;
+    if (!continuationToken) {
+      result = await this._list(
+        resourceGroupName,
+        workspaceName,
+        name,
+        options
+      );
+      let page = result.value || [];
+      continuationToken = result.nextLink;
+      setContinuationToken(page, continuationToken);
+      yield page;
+    }
     while (continuationToken) {
       result = await this._listNext(
         resourceGroupName,
@@ -98,7 +110,9 @@ export class EnvironmentVersionsImpl implements EnvironmentVersions {
         options
       );
       continuationToken = result.nextLink;
-      yield result.value || [];
+      let page = result.value || [];
+      setContinuationToken(page, continuationToken);
+      yield page;
     }
   }
 
@@ -107,7 +121,7 @@ export class EnvironmentVersionsImpl implements EnvironmentVersions {
     workspaceName: string,
     name: string,
     options?: EnvironmentVersionsListOptionalParams
-  ): AsyncIterableIterator<EnvironmentVersionData> {
+  ): AsyncIterableIterator<EnvironmentVersion> {
     for await (const page of this.listPagingPage(
       resourceGroupName,
       workspaceName,
@@ -193,7 +207,7 @@ export class EnvironmentVersionsImpl implements EnvironmentVersions {
     workspaceName: string,
     name: string,
     version: string,
-    body: EnvironmentVersionData,
+    body: EnvironmentVersion,
     options?: EnvironmentVersionsCreateOrUpdateOptionalParams
   ): Promise<EnvironmentVersionsCreateOrUpdateResponse> {
     return this.client.sendOperationRequest(
@@ -284,7 +298,7 @@ const getOperationSpec: coreClient.OperationSpec = {
   httpMethod: "GET",
   responses: {
     200: {
-      bodyMapper: Mappers.EnvironmentVersionData
+      bodyMapper: Mappers.EnvironmentVersion
     },
     default: {
       bodyMapper: Mappers.ErrorResponse
@@ -308,10 +322,10 @@ const createOrUpdateOperationSpec: coreClient.OperationSpec = {
   httpMethod: "PUT",
   responses: {
     200: {
-      bodyMapper: Mappers.EnvironmentVersionData
+      bodyMapper: Mappers.EnvironmentVersion
     },
     201: {
-      bodyMapper: Mappers.EnvironmentVersionData
+      bodyMapper: Mappers.EnvironmentVersion
     },
     default: {
       bodyMapper: Mappers.ErrorResponse

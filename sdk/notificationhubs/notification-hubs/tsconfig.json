@@ -4,8 +4,14 @@
     "outDir": "./dist-esm",
     "declarationDir": "./types",
     "paths": {
-      "@azure/notification-hubs": ["./src/index"]
-    }
+      "@azure/notification-hubs": ["./src/index.js"]
+    },
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "rootDir": "."
+  },
+  "ts-node": {
+    "esm": true
   },
   "include": ["src/**/*.ts", "test/**/*.ts", "samples-dev/**/*.ts"]
 }

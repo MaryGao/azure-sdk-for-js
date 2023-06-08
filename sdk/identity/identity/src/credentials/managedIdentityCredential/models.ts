@@ -2,12 +2,7 @@
 // Licensed under the MIT license.
 
 import { AccessToken, GetTokenOptions } from "@azure/core-auth";
-import { IdentityClient, TokenResponseParsedBody } from "../../client/identityClient";
-
-/**
- * @internal
- */
-export type MSIExpiresInParser = (requestBody: TokenResponseParsedBody) => number;
+import { IdentityClient } from "../../client/identityClient";
 
 /**
  * @internal
@@ -21,8 +16,16 @@ export interface MSIConfiguration {
 
 /**
  * @internal
+ * Represents an access token for {@link ManagedIdentity} for internal usage,
+ * with an expiration time and the time in which token should refresh.
+ */
+export declare interface MSIToken extends AccessToken {}
+
+/**
+ * @internal
  */
 export interface MSI {
+  name: string;
   isAvailable(options: {
     scopes: string | string[];
     identityClient?: IdentityClient;
@@ -33,5 +36,5 @@ export interface MSI {
   getToken(
     configuration: MSIConfiguration,
     getTokenOptions?: GetTokenOptions
-  ): Promise<AccessToken | null>;
+  ): Promise<MSIToken | null>;
 }

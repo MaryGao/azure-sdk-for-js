@@ -10,15 +10,20 @@
 // Licensed under the MIT License.
 import { MonitorClient } from "@azure/arm-monitor";
 import { DefaultAzureCredential } from "@azure/identity";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 /**
  * This sample demonstrates how to Lists the autoscale settings for a subscription
  *
  * @summary Lists the autoscale settings for a subscription
- * x-ms-original-file: specification/monitor/resource-manager/Microsoft.Insights/stable/2015-04-01/examples/listAutoscaleSettingBySubscription.json
+ * x-ms-original-file: specification/monitor/resource-manager/Microsoft.Insights/stable/2022-10-01/examples/listAutoscaleSettingBySubscription.json
  */
-async function listAutoscaleSettings() {
-  const subscriptionId = "b67f7fec-69fc-4974-9099-a26bd6ffeda3";
+async function listAutoscaleSettingsBySubs() {
+  const subscriptionId =
+    process.env["MONITOR_SUBSCRIPTION_ID"] ||
+    "b67f7fec-69fc-4974-9099-a26bd6ffeda3";
   const credential = new DefaultAzureCredential();
   const client = new MonitorClient(credential, subscriptionId);
   const resArray = new Array();
@@ -28,4 +33,8 @@ async function listAutoscaleSettings() {
   console.log(resArray);
 }
 
-listAutoscaleSettings().catch(console.error);
+async function main() {
+  listAutoscaleSettingsBySubs();
+}
+
+main().catch(console.error);

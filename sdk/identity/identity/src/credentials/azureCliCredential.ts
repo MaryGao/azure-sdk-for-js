@@ -1,16 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { TokenCredential, GetTokenOptions, AccessToken } from "@azure/core-auth";
-
-import { tracingClient } from "../util/tracing";
-import { CredentialUnavailableError } from "../errors";
-import { credentialLogger, formatSuccess, formatError } from "../util/logging";
-import child_process from "child_process";
+import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
+import { credentialLogger, formatError, formatSuccess } from "../util/logging";
 import { ensureValidScope, getScopeResource } from "../util/scopeUtils";
 import { AzureCliCredentialOptions } from "./azureCliCredentialOptions";
-import { processMultiTenantRequest } from "../util/validateMultiTenant";
-import { checkTenantId } from "../util/checkTenantId";
+import { CredentialUnavailableError } from "../errors";
+import child_process from "child_process";
+import {
+  processMultiTenantRequest,
+  resolveAddionallyAllowedTenantIds,
+} from "../util/tenantIdUtils";
+import { tracingClient } from "../util/tracing";
 
 /**
  * Mockable reference to the CLI credential cliCredentialFunctions
@@ -38,7 +39,8 @@ export const cliCredentialInternals = {
    */
   async getAzureCliAccessToken(
     resource: string,
-    tenantId?: string
+    tenantId?: string,
+    timeout?: number
   ): Promise<{ stdout: string; stderr: string; error: Error | null }> {
     let tenantSection: string[] = [];
     if (tenantId) {
@@ -57,7 +59,7 @@ export const cliCredentialInternals = {
             resource,
             ...tenantSection,
           ],
-          { cwd: cliCredentialInternals.getSafeWorkingDir(), shell: true },
+          { cwd: cliCredentialInternals.getSafeWorkingDir(), shell: true, timeout },
           (error, stdout, stderr) => {
             resolve({ stdout: stdout, stderr: stderr, error });
           }
@@ -79,6 +81,8 @@ const logger = credentialLogger("AzureCliCredential");
  */
 export class AzureCliCredential implements TokenCredential {
   private tenantId?: string;
+  private additionallyAllowedTenantIds: string[];
+  private timeout?: number;
 
   /**
    * Creates an instance of the {@link AzureCliCredential}.
@@ -90,6 +94,10 @@ export class AzureCliCredential implements TokenCredential {
    */
   constructor(options?: AzureCliCredentialOptions) {
     this.tenantId = options?.tenantId;
+    this.additionallyAllowedTenantIds = resolveAddionallyAllowedTenantIds(
+      options?.additionallyAllowedTenants
+    );
+    this.timeout = options?.processTimeoutInMs;
   }
 
   /**
@@ -104,10 +112,11 @@ export class AzureCliCredential implements TokenCredential {
     scopes: string | string[],
     options: GetTokenOptions = {}
   ): Promise<AccessToken> {
-    const tenantId = processMultiTenantRequest(this.tenantId, options);
-    if (tenantId) {
-      checkTenantId(logger, tenantId);
-    }
+    const tenantId = processMultiTenantRequest(
+      this.tenantId,
+      options,
+      this.additionallyAllowedTenantIds
+    );
 
     const scope = typeof scopes === "string" ? scopes : scopes[0];
     logger.getToken.info(`Using the scope ${scope}`);
@@ -116,7 +125,11 @@ export class AzureCliCredential implements TokenCredential {
 
     return tracingClient.withSpan(`${this.constructor.name}.getToken`, options, async () => {
       try {
-        const obj = await cliCredentialInternals.getAzureCliAccessToken(resource, tenantId);
+        const obj = await cliCredentialInternals.getAzureCliAccessToken(
+          resource,
+          tenantId,
+          this.timeout
+        );
         const specificScope = obj.stderr?.match("(.*)az login --scope(.*)");
         const isLoginError = obj.stderr?.match("(.*)az login(.*)") && !specificScope;
         const isNotInstallError =
@@ -155,7 +168,7 @@ export class AzureCliCredential implements TokenCredential {
         const error =
           err.name === "CredentialUnavailableError"
             ? err
-            : new Error(
+            : new CredentialUnavailableError(
                 (err as Error).message || "Unknown error while trying to retrieve the access token"
               );
         logger.getToken.info(formatError(scopes, error));

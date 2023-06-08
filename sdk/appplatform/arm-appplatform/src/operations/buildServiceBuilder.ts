@@ -6,24 +6,31 @@
  * Changes may cause incorrect behavior and will be lost if the code is regenerated.
  */
 
-import { PagedAsyncIterableIterator } from "@azure/core-paging";
+import { PagedAsyncIterableIterator, PageSettings } from "@azure/core-paging";
+import { setContinuationToken } from "../pagingHelper";
 import { BuildServiceBuilder } from "../operationsInterfaces";
 import * as coreClient from "@azure/core-client";
 import * as Mappers from "../models/mappers";
 import * as Parameters from "../models/parameters";
 import { AppPlatformManagementClient } from "../appPlatformManagementClient";
-import { PollerLike, PollOperationState, LroEngine } from "@azure/core-lro";
-import { LroImpl } from "../lroImpl";
+import {
+  SimplePollerLike,
+  OperationState,
+  createHttpPoller
+} from "@azure/core-lro";
+import { createLroSpec } from "../lroImpl";
 import {
   BuilderResource,
   BuildServiceBuilderListNextOptionalParams,
   BuildServiceBuilderListOptionalParams,
+  BuildServiceBuilderListResponse,
   BuildServiceBuilderGetOptionalParams,
   BuildServiceBuilderGetResponse,
   BuildServiceBuilderCreateOrUpdateOptionalParams,
   BuildServiceBuilderCreateOrUpdateResponse,
   BuildServiceBuilderDeleteOptionalParams,
-  BuildServiceBuilderListResponse,
+  BuildServiceBuilderListDeploymentsOptionalParams,
+  BuildServiceBuilderListDeploymentsResponse,
   BuildServiceBuilderListNextResponse
 } from "../models";
 
@@ -67,12 +74,16 @@ export class BuildServiceBuilderImpl implements BuildServiceBuilder {
       [Symbol.asyncIterator]() {
         return this;
       },
-      byPage: () => {
+      byPage: (settings?: PageSettings) => {
+        if (settings?.maxPageSize) {
+          throw new Error("maxPageSize is not supported by this operation.");
+        }
         return this.listPagingPage(
           resourceGroupName,
           serviceName,
           buildServiceName,
-          options
+          options,
+          settings
         );
       }
     };
@@ -82,16 +93,23 @@ export class BuildServiceBuilderImpl implements BuildServiceBuilder {
     resourceGroupName: string,
     serviceName: string,
     buildServiceName: string,
-    options?: BuildServiceBuilderListOptionalParams
+    options?: BuildServiceBuilderListOptionalParams,
+    settings?: PageSettings
   ): AsyncIterableIterator<BuilderResource[]> {
-    let result = await this._list(
-      resourceGroupName,
-      serviceName,
-      buildServiceName,
-      options
-    );
-    yield result.value || [];
-    let continuationToken = result.nextLink;
+    let result: BuildServiceBuilderListResponse;
+    let continuationToken = settings?.continuationToken;
+    if (!continuationToken) {
+      result = await this._list(
+        resourceGroupName,
+        serviceName,
+        buildServiceName,
+        options
+      );
+      let page = result.value || [];
+      continuationToken = result.nextLink;
+      setContinuationToken(page, continuationToken);
+      yield page;
+    }
     while (continuationToken) {
       result = await this._listNext(
         resourceGroupName,
@@ -101,7 +119,9 @@ export class BuildServiceBuilderImpl implements BuildServiceBuilder {
         options
       );
       continuationToken = result.nextLink;
-      yield result.value || [];
+      let page = result.value || [];
+      setContinuationToken(page, continuationToken);
+      yield page;
     }
   }
 
@@ -167,8 +187,8 @@ export class BuildServiceBuilderImpl implements BuildServiceBuilder {
     builderResource: BuilderResource,
     options?: BuildServiceBuilderCreateOrUpdateOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<BuildServiceBuilderCreateOrUpdateResponse>,
+    SimplePollerLike<
+      OperationState<BuildServiceBuilderCreateOrUpdateResponse>,
       BuildServiceBuilderCreateOrUpdateResponse
     >
   > {
@@ -178,7 +198,7 @@ export class BuildServiceBuilderImpl implements BuildServiceBuilder {
     ): Promise<BuildServiceBuilderCreateOrUpdateResponse> => {
       return this.client.sendOperationRequest(args, spec);
     };
-    const sendOperation = async (
+    const sendOperationFn = async (
       args: coreClient.OperationArguments,
       spec: coreClient.OperationSpec
     ) => {
@@ -211,9 +231,9 @@ export class BuildServiceBuilderImpl implements BuildServiceBuilder {
       };
     };
 
-    const lro = new LroImpl(
-      sendOperation,
-      {
+    const lro = createLroSpec({
+      sendOperationFn,
+      args: {
         resourceGroupName,
         serviceName,
         buildServiceName,
@@ -221,10 +241,13 @@ export class BuildServiceBuilderImpl implements BuildServiceBuilder {
         builderResource,
         options
       },
-      createOrUpdateOperationSpec
-    );
-    const poller = new LroEngine(lro, {
-      resumeFrom: options?.resumeFrom,
+      spec: createOrUpdateOperationSpec
+    });
+    const poller = await createHttpPoller<
+      BuildServiceBuilderCreateOrUpdateResponse,
+      OperationState<BuildServiceBuilderCreateOrUpdateResponse>
+    >(lro, {
+      restoreFrom: options?.resumeFrom,
       intervalInMs: options?.updateIntervalInMs
     });
     await poller.poll();
@@ -275,14 +298,14 @@ export class BuildServiceBuilderImpl implements BuildServiceBuilder {
     buildServiceName: string,
     builderName: string,
     options?: BuildServiceBuilderDeleteOptionalParams
-  ): Promise<PollerLike<PollOperationState<void>, void>> {
+  ): Promise<SimplePollerLike<OperationState<void>, void>> {
     const directSendOperation = async (
       args: coreClient.OperationArguments,
       spec: coreClient.OperationSpec
     ): Promise<void> => {
       return this.client.sendOperationRequest(args, spec);
     };
-    const sendOperation = async (
+    const sendOperationFn = async (
       args: coreClient.OperationArguments,
       spec: coreClient.OperationSpec
     ) => {
@@ -315,19 +338,19 @@ export class BuildServiceBuilderImpl implements BuildServiceBuilder {
       };
     };
 
-    const lro = new LroImpl(
-      sendOperation,
-      {
+    const lro = createLroSpec({
+      sendOperationFn,
+      args: {
         resourceGroupName,
         serviceName,
         buildServiceName,
         builderName,
         options
       },
-      deleteOperationSpec
-    );
-    const poller = new LroEngine(lro, {
-      resumeFrom: options?.resumeFrom,
+      spec: deleteOperationSpec
+    });
+    const poller = await createHttpPoller<void, OperationState<void>>(lro, {
+      restoreFrom: options?.resumeFrom,
       intervalInMs: options?.updateIntervalInMs
     });
     await poller.poll();
@@ -377,6 +400,34 @@ export class BuildServiceBuilderImpl implements BuildServiceBuilder {
     return this.client.sendOperationRequest(
       { resourceGroupName, serviceName, buildServiceName, options },
       listOperationSpec
+    );
+  }
+
+  /**
+   * List deployments that are using the builder.
+   * @param resourceGroupName The name of the resource group that contains the resource. You can obtain
+   *                          this value from the Azure Resource Manager API or the portal.
+   * @param serviceName The name of the Service resource.
+   * @param buildServiceName The name of the build service resource.
+   * @param builderName The name of the builder resource.
+   * @param options The options parameters.
+   */
+  listDeployments(
+    resourceGroupName: string,
+    serviceName: string,
+    buildServiceName: string,
+    builderName: string,
+    options?: BuildServiceBuilderListDeploymentsOptionalParams
+  ): Promise<BuildServiceBuilderListDeploymentsResponse> {
+    return this.client.sendOperationRequest(
+      {
+        resourceGroupName,
+        serviceName,
+        buildServiceName,
+        builderName,
+        options
+      },
+      listDeploymentsOperationSpec
     );
   }
 
@@ -512,6 +563,30 @@ const listOperationSpec: coreClient.OperationSpec = {
   headerParameters: [Parameters.accept],
   serializer
 };
+const listDeploymentsOperationSpec: coreClient.OperationSpec = {
+  path:
+    "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.AppPlatform/Spring/{serviceName}/buildServices/{buildServiceName}/builders/{builderName}/listUsingDeployments",
+  httpMethod: "POST",
+  responses: {
+    200: {
+      bodyMapper: Mappers.DeploymentList
+    },
+    default: {
+      bodyMapper: Mappers.CloudError
+    }
+  },
+  queryParameters: [Parameters.apiVersion],
+  urlParameters: [
+    Parameters.$host,
+    Parameters.subscriptionId,
+    Parameters.resourceGroupName,
+    Parameters.serviceName,
+    Parameters.buildServiceName,
+    Parameters.builderName
+  ],
+  headerParameters: [Parameters.accept],
+  serializer
+};
 const listNextOperationSpec: coreClient.OperationSpec = {
   path: "{nextLink}",
   httpMethod: "GET",
@@ -523,7 +598,6 @@ const listNextOperationSpec: coreClient.OperationSpec = {
       bodyMapper: Mappers.CloudError
     }
   },
-  queryParameters: [Parameters.apiVersion],
   urlParameters: [
     Parameters.$host,
     Parameters.subscriptionId,

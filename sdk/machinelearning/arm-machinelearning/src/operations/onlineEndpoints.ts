@@ -6,7 +6,8 @@
  * Changes may cause incorrect behavior and will be lost if the code is regenerated.
  */
 
-import { PagedAsyncIterableIterator } from "@azure/core-paging";
+import { PagedAsyncIterableIterator, PageSettings } from "@azure/core-paging";
+import { setContinuationToken } from "../pagingHelper";
 import { OnlineEndpoints } from "../operationsInterfaces";
 import * as coreClient from "@azure/core-client";
 import * as Mappers from "../models/mappers";
@@ -15,14 +16,14 @@ import { AzureMachineLearningWorkspaces } from "../azureMachineLearningWorkspace
 import { PollerLike, PollOperationState, LroEngine } from "@azure/core-lro";
 import { LroImpl } from "../lroImpl";
 import {
-  OnlineEndpointData,
+  OnlineEndpoint,
   OnlineEndpointsListNextOptionalParams,
   OnlineEndpointsListOptionalParams,
   OnlineEndpointsListResponse,
   OnlineEndpointsDeleteOptionalParams,
   OnlineEndpointsGetOptionalParams,
   OnlineEndpointsGetResponse,
-  PartialOnlineEndpointPartialTrackedResource,
+  PartialMinimalTrackedResourceWithIdentity,
   OnlineEndpointsUpdateOptionalParams,
   OnlineEndpointsUpdateResponse,
   OnlineEndpointsCreateOrUpdateOptionalParams,
@@ -59,7 +60,7 @@ export class OnlineEndpointsImpl implements OnlineEndpoints {
     resourceGroupName: string,
     workspaceName: string,
     options?: OnlineEndpointsListOptionalParams
-  ): PagedAsyncIterableIterator<OnlineEndpointData> {
+  ): PagedAsyncIterableIterator<OnlineEndpoint> {
     const iter = this.listPagingAll(resourceGroupName, workspaceName, options);
     return {
       next() {
@@ -68,8 +69,16 @@ export class OnlineEndpointsImpl implements OnlineEndpoints {
       [Symbol.asyncIterator]() {
         return this;
       },
-      byPage: () => {
-        return this.listPagingPage(resourceGroupName, workspaceName, options);
+      byPage: (settings?: PageSettings) => {
+        if (settings?.maxPageSize) {
+          throw new Error("maxPageSize is not supported by this operation.");
+        }
+        return this.listPagingPage(
+          resourceGroupName,
+          workspaceName,
+          options,
+          settings
+        );
       }
     };
   }
@@ -77,11 +86,18 @@ export class OnlineEndpointsImpl implements OnlineEndpoints {
   private async *listPagingPage(
     resourceGroupName: string,
     workspaceName: string,
-    options?: OnlineEndpointsListOptionalParams
-  ): AsyncIterableIterator<OnlineEndpointData[]> {
-    let result = await this._list(resourceGroupName, workspaceName, options);
-    yield result.value || [];
-    let continuationToken = result.nextLink;
+    options?: OnlineEndpointsListOptionalParams,
+    settings?: PageSettings
+  ): AsyncIterableIterator<OnlineEndpoint[]> {
+    let result: OnlineEndpointsListResponse;
+    let continuationToken = settings?.continuationToken;
+    if (!continuationToken) {
+      result = await this._list(resourceGroupName, workspaceName, options);
+      let page = result.value || [];
+      continuationToken = result.nextLink;
+      setContinuationToken(page, continuationToken);
+      yield page;
+    }
     while (continuationToken) {
       result = await this._listNext(
         resourceGroupName,
@@ -90,7 +106,9 @@ export class OnlineEndpointsImpl implements OnlineEndpoints {
         options
       );
       continuationToken = result.nextLink;
-      yield result.value || [];
+      let page = result.value || [];
+      setContinuationToken(page, continuationToken);
+      yield page;
     }
   }
 
@@ -98,7 +116,7 @@ export class OnlineEndpointsImpl implements OnlineEndpoints {
     resourceGroupName: string,
     workspaceName: string,
     options?: OnlineEndpointsListOptionalParams
-  ): AsyncIterableIterator<OnlineEndpointData> {
+  ): AsyncIterableIterator<OnlineEndpoint> {
     for await (const page of this.listPagingPage(
       resourceGroupName,
       workspaceName,
@@ -243,7 +261,7 @@ export class OnlineEndpointsImpl implements OnlineEndpoints {
     resourceGroupName: string,
     workspaceName: string,
     endpointName: string,
-    body: PartialOnlineEndpointPartialTrackedResource,
+    body: PartialMinimalTrackedResourceWithIdentity,
     options?: OnlineEndpointsUpdateOptionalParams
   ): Promise<
     PollerLike<
@@ -315,7 +333,7 @@ export class OnlineEndpointsImpl implements OnlineEndpoints {
     resourceGroupName: string,
     workspaceName: string,
     endpointName: string,
-    body: PartialOnlineEndpointPartialTrackedResource,
+    body: PartialMinimalTrackedResourceWithIdentity,
     options?: OnlineEndpointsUpdateOptionalParams
   ): Promise<OnlineEndpointsUpdateResponse> {
     const poller = await this.beginUpdate(
@@ -340,7 +358,7 @@ export class OnlineEndpointsImpl implements OnlineEndpoints {
     resourceGroupName: string,
     workspaceName: string,
     endpointName: string,
-    body: OnlineEndpointData,
+    body: OnlineEndpoint,
     options?: OnlineEndpointsCreateOrUpdateOptionalParams
   ): Promise<
     PollerLike<
@@ -412,7 +430,7 @@ export class OnlineEndpointsImpl implements OnlineEndpoints {
     resourceGroupName: string,
     workspaceName: string,
     endpointName: string,
-    body: OnlineEndpointData,
+    body: OnlineEndpoint,
     options?: OnlineEndpointsCreateOrUpdateOptionalParams
   ): Promise<OnlineEndpointsCreateOrUpdateResponse> {
     const poller = await this.beginCreateOrUpdate(
@@ -639,7 +657,7 @@ const getOperationSpec: coreClient.OperationSpec = {
   httpMethod: "GET",
   responses: {
     200: {
-      bodyMapper: Mappers.OnlineEndpointData
+      bodyMapper: Mappers.OnlineEndpoint
     },
     default: {
       bodyMapper: Mappers.ErrorResponse
@@ -662,22 +680,22 @@ const updateOperationSpec: coreClient.OperationSpec = {
   httpMethod: "PATCH",
   responses: {
     200: {
-      bodyMapper: Mappers.OnlineEndpointData
+      bodyMapper: Mappers.OnlineEndpoint
     },
     201: {
-      bodyMapper: Mappers.OnlineEndpointData
+      bodyMapper: Mappers.OnlineEndpoint
     },
     202: {
-      bodyMapper: Mappers.OnlineEndpointData
+      bodyMapper: Mappers.OnlineEndpoint
     },
     204: {
-      bodyMapper: Mappers.OnlineEndpointData
+      bodyMapper: Mappers.OnlineEndpoint
     },
     default: {
       bodyMapper: Mappers.ErrorResponse
     }
   },
-  requestBody: Parameters.body16,
+  requestBody: Parameters.body,
   queryParameters: [Parameters.apiVersion],
   urlParameters: [
     Parameters.$host,
@@ -696,22 +714,22 @@ const createOrUpdateOperationSpec: coreClient.OperationSpec = {
   httpMethod: "PUT",
   responses: {
     200: {
-      bodyMapper: Mappers.OnlineEndpointData
+      bodyMapper: Mappers.OnlineEndpoint
     },
     201: {
-      bodyMapper: Mappers.OnlineEndpointData
+      bodyMapper: Mappers.OnlineEndpoint
     },
     202: {
-      bodyMapper: Mappers.OnlineEndpointData
+      bodyMapper: Mappers.OnlineEndpoint
     },
     204: {
-      bodyMapper: Mappers.OnlineEndpointData
+      bodyMapper: Mappers.OnlineEndpoint
     },
     default: {
       bodyMapper: Mappers.ErrorResponse
     }
   },
-  requestBody: Parameters.body17,
+  requestBody: Parameters.body16,
   queryParameters: [Parameters.apiVersion],
   urlParameters: [
     Parameters.$host,
@@ -760,7 +778,7 @@ const regenerateKeysOperationSpec: coreClient.OperationSpec = {
       bodyMapper: Mappers.ErrorResponse
     }
   },
-  requestBody: Parameters.body18,
+  requestBody: Parameters.body17,
   queryParameters: [Parameters.apiVersion],
   urlParameters: [
     Parameters.$host,

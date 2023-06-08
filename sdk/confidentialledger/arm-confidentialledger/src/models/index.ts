@@ -133,6 +133,8 @@ export interface LedgerProperties {
    * NOTE: This property will not be serialized. It can only be populated by the server.
    */
   readonly ledgerInternalNamespace?: string;
+  /** Object representing RunningState for Ledger. */
+  runningState?: RunningState;
   /** Type of Confidential Ledger */
   ledgerType?: LedgerType;
   /**
@@ -164,25 +166,25 @@ export interface CertBasedSecurityPrincipal {
   ledgerRoleName?: LedgerRoleName;
 }
 
-/** An Azure resource. */
+/** Common fields that are returned in the response for all Azure Resource Manager resources */
 export interface Resource {
   /**
-   * Name of the Resource.
-   * NOTE: This property will not be serialized. It can only be populated by the server.
-   */
-  readonly name?: string;
-  /**
-   * Fully qualified resource Id for the resource.
+   * Fully qualified resource ID for the resource. Ex - /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}
    * NOTE: This property will not be serialized. It can only be populated by the server.
    */
   readonly id?: string;
   /**
-   * The type of the resource.
+   * The name of the resource
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly name?: string;
+  /**
+   * The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or "Microsoft.Storage/storageAccounts"
    * NOTE: This property will not be serialized. It can only be populated by the server.
    */
   readonly type?: string;
   /**
-   * Metadata pertaining to creation and last modification of the resource
+   * Azure Resource Manager metadata containing createdBy and modifiedBy information.
    * NOTE: This property will not be serialized. It can only be populated by the server.
    */
   readonly systemData?: SystemData;
@@ -204,18 +206,6 @@ export interface SystemData {
   lastModifiedAt?: Date;
 }
 
-/** Location of the ARM Resource */
-export interface ResourceLocation {
-  /** The Azure location where the Confidential Ledger is running. */
-  location?: string;
-}
-
-/** Tags for Confidential Ledger Resource */
-export interface Tags {
-  /** Additional tags for Confidential Ledger */
-  tags?: { [propertyName: string]: string };
-}
-
 /** Object that includes an array of Confidential Ledgers and a possible link for next set. */
 export interface ConfidentialLedgerList {
   /** List of Confidential Ledgers */
@@ -224,17 +214,93 @@ export interface ConfidentialLedgerList {
   nextLink?: string;
 }
 
+/** Additional Managed CCF properties. */
+export interface ManagedCCFProperties {
+  /**
+   * Unique name for the Managed CCF.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly appName?: string;
+  /**
+   * Endpoint for calling Managed CCF Service.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly appUri?: string;
+  /**
+   * Endpoint for accessing network identity.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly identityServiceUri?: string;
+  /** List of member identity certificates for  Managed CCF */
+  memberIdentityCertificates?: MemberIdentityCertificate[];
+  /** Deployment Type of Managed CCF */
+  deploymentType?: DeploymentType;
+  /**
+   * Provisioning state of Ledger Resource
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly provisioningState?: ProvisioningState;
+  /** Number of CCF nodes in the Managed CCF. */
+  nodeCount?: number;
+}
+
+/** Object representing MemberIdentityCertificate for Managed CCF. */
+export interface MemberIdentityCertificate {
+  /** Member Identity Certificate */
+  certificate?: string;
+  /** Member Identity Certificate Encryption Key */
+  encryptionkey?: string;
+  /** Anything */
+  tags?: any;
+}
+
+/** Object representing DeploymentType for Managed CCF. */
+export interface DeploymentType {
+  /** Unique name for the Managed CCF. */
+  languageRuntime?: LanguageRuntime;
+  /** Source Uri containing ManagedCCF code */
+  appSourceUri?: string;
+}
+
+/** Object that includes an array of Managed CCF and a possible link for next set. */
+export interface ManagedCCFList {
+  /** List of Managed CCF */
+  value?: ManagedCCF[];
+  /** The URL the client should use to fetch the next page (per server side paging). */
+  nextLink?: string;
+}
+
+/** Tags for Managed CCF Certificates */
+export interface CertificateTags {
+  /** Additional tags for Managed CCF Certificates */
+  tags?: { [propertyName: string]: string };
+}
+
+/** The resource model definition for an Azure Resource Manager tracked top level resource which has 'tags' and a 'location' */
+export interface TrackedResource extends Resource {
+  /** Resource tags. */
+  tags?: { [propertyName: string]: string };
+  /** The geo-location where the resource lives */
+  location: string;
+}
+
 /** Confidential Ledger. Contains the properties of Confidential Ledger Resource. */
-export type ConfidentialLedger = Resource &
-  ResourceLocation &
-  Tags & {
-    /** Properties of Confidential Ledger Resource. */
-    properties?: LedgerProperties;
-  };
+export interface ConfidentialLedger extends TrackedResource {
+  /** Properties of Confidential Ledger Resource. */
+  properties?: LedgerProperties;
+}
+
+/** Managed CCF. Contains the properties of Managed CCF Resource. */
+export interface ManagedCCF extends TrackedResource {
+  /** Properties of Managed CCF Resource. */
+  properties?: ManagedCCFProperties;
+}
 
 /** Known values of {@link CheckNameAvailabilityReason} that the service accepts. */
 export enum KnownCheckNameAvailabilityReason {
+  /** Invalid */
   Invalid = "Invalid",
+  /** AlreadyExists */
   AlreadyExists = "AlreadyExists"
 }
 
@@ -248,10 +314,40 @@ export enum KnownCheckNameAvailabilityReason {
  */
 export type CheckNameAvailabilityReason = string;
 
+/** Known values of {@link RunningState} that the service accepts. */
+export enum KnownRunningState {
+  /** Active */
+  Active = "Active",
+  /** Paused */
+  Paused = "Paused",
+  /** Unknown */
+  Unknown = "Unknown",
+  /** Pausing */
+  Pausing = "Pausing",
+  /** Resuming */
+  Resuming = "Resuming"
+}
+
+/**
+ * Defines values for RunningState. \
+ * {@link KnownRunningState} can be used interchangeably with RunningState,
+ *  this enum contains the known values that the service supports.
+ * ### Known values supported by the service
+ * **Active** \
+ * **Paused** \
+ * **Unknown** \
+ * **Pausing** \
+ * **Resuming**
+ */
+export type RunningState = string;
+
 /** Known values of {@link LedgerType} that the service accepts. */
 export enum KnownLedgerType {
+  /** Unknown */
   Unknown = "Unknown",
+  /** Public */
   Public = "Public",
+  /** Private */
   Private = "Private"
 }
 
@@ -268,12 +364,19 @@ export type LedgerType = string;
 
 /** Known values of {@link ProvisioningState} that the service accepts. */
 export enum KnownProvisioningState {
+  /** Unknown */
   Unknown = "Unknown",
+  /** Succeeded */
   Succeeded = "Succeeded",
+  /** Failed */
   Failed = "Failed",
+  /** Canceled */
   Canceled = "Canceled",
+  /** Creating */
   Creating = "Creating",
+  /** Deleting */
   Deleting = "Deleting",
+  /** Updating */
   Updating = "Updating"
 }
 
@@ -294,8 +397,11 @@ export type ProvisioningState = string;
 
 /** Known values of {@link LedgerRoleName} that the service accepts. */
 export enum KnownLedgerRoleName {
+  /** Reader */
   Reader = "Reader",
+  /** Contributor */
   Contributor = "Contributor",
+  /** Administrator */
   Administrator = "Administrator"
 }
 
@@ -312,9 +418,13 @@ export type LedgerRoleName = string;
 
 /** Known values of {@link CreatedByType} that the service accepts. */
 export enum KnownCreatedByType {
+  /** User */
   User = "User",
+  /** Application */
   Application = "Application",
+  /** ManagedIdentity */
   ManagedIdentity = "ManagedIdentity",
+  /** Key */
   Key = "Key"
 }
 
@@ -329,6 +439,24 @@ export enum KnownCreatedByType {
  * **Key**
  */
 export type CreatedByType = string;
+
+/** Known values of {@link LanguageRuntime} that the service accepts. */
+export enum KnownLanguageRuntime {
+  /** CPP */
+  CPP = "CPP",
+  /** JS */
+  JS = "JS"
+}
+
+/**
+ * Defines values for LanguageRuntime. \
+ * {@link KnownLanguageRuntime} can be used interchangeably with LanguageRuntime,
+ *  this enum contains the known values that the service supports.
+ * ### Known values supported by the service
+ * **CPP** \
+ * **JS**
+ */
+export type LanguageRuntime = string;
 
 /** Optional parameters. */
 export interface OperationsListOptionalParams
@@ -412,23 +540,88 @@ export type LedgerListBySubscriptionResponse = ConfidentialLedgerList;
 
 /** Optional parameters. */
 export interface LedgerListByResourceGroupNextOptionalParams
-  extends coreClient.OperationOptions {
-  /** The filter to apply on the list operation. eg. $filter=ledgerType eq 'Public' */
-  filter?: string;
-}
+  extends coreClient.OperationOptions {}
 
 /** Contains response data for the listByResourceGroupNext operation. */
 export type LedgerListByResourceGroupNextResponse = ConfidentialLedgerList;
 
 /** Optional parameters. */
 export interface LedgerListBySubscriptionNextOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listBySubscriptionNext operation. */
+export type LedgerListBySubscriptionNextResponse = ConfidentialLedgerList;
+
+/** Optional parameters. */
+export interface ManagedCCFGetOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the get operation. */
+export type ManagedCCFGetResponse = ManagedCCF;
+
+/** Optional parameters. */
+export interface ManagedCCFDeleteOptionalParams
+  extends coreClient.OperationOptions {
+  /** Delay to wait until next poll, in milliseconds. */
+  updateIntervalInMs?: number;
+  /** A serialized poller which can be used to resume an existing paused Long-Running-Operation. */
+  resumeFrom?: string;
+}
+
+/** Optional parameters. */
+export interface ManagedCCFCreateOptionalParams
+  extends coreClient.OperationOptions {
+  /** Delay to wait until next poll, in milliseconds. */
+  updateIntervalInMs?: number;
+  /** A serialized poller which can be used to resume an existing paused Long-Running-Operation. */
+  resumeFrom?: string;
+}
+
+/** Contains response data for the create operation. */
+export type ManagedCCFCreateResponse = ManagedCCF;
+
+/** Optional parameters. */
+export interface ManagedCCFUpdateOptionalParams
+  extends coreClient.OperationOptions {
+  /** Delay to wait until next poll, in milliseconds. */
+  updateIntervalInMs?: number;
+  /** A serialized poller which can be used to resume an existing paused Long-Running-Operation. */
+  resumeFrom?: string;
+}
+
+/** Optional parameters. */
+export interface ManagedCCFListByResourceGroupOptionalParams
   extends coreClient.OperationOptions {
   /** The filter to apply on the list operation. eg. $filter=ledgerType eq 'Public' */
   filter?: string;
 }
 
+/** Contains response data for the listByResourceGroup operation. */
+export type ManagedCCFListByResourceGroupResponse = ManagedCCFList;
+
+/** Optional parameters. */
+export interface ManagedCCFListBySubscriptionOptionalParams
+  extends coreClient.OperationOptions {
+  /** The filter to apply on the list operation. eg. $filter=ledgerType eq 'Public' */
+  filter?: string;
+}
+
+/** Contains response data for the listBySubscription operation. */
+export type ManagedCCFListBySubscriptionResponse = ManagedCCFList;
+
+/** Optional parameters. */
+export interface ManagedCCFListByResourceGroupNextOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listByResourceGroupNext operation. */
+export type ManagedCCFListByResourceGroupNextResponse = ManagedCCFList;
+
+/** Optional parameters. */
+export interface ManagedCCFListBySubscriptionNextOptionalParams
+  extends coreClient.OperationOptions {}
+
 /** Contains response data for the listBySubscriptionNext operation. */
-export type LedgerListBySubscriptionNextResponse = ConfidentialLedgerList;
+export type ManagedCCFListBySubscriptionNextResponse = ManagedCCFList;
 
 /** Optional parameters. */
 export interface ConfidentialLedgerClientOptionalParams

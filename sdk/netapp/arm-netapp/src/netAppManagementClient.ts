@@ -27,7 +27,6 @@ import {
   AccountBackupsImpl,
   BackupPoliciesImpl,
   VolumeQuotaRulesImpl,
-  VaultsImpl,
   VolumeGroupsImpl,
   SubvolumesImpl
 } from "./operations";
@@ -44,7 +43,6 @@ import {
   AccountBackups,
   BackupPolicies,
   VolumeQuotaRules,
-  Vaults,
   VolumeGroups,
   Subvolumes
 } from "./operationsInterfaces";
@@ -58,8 +56,7 @@ export class NetAppManagementClient extends coreClient.ServiceClient {
   /**
    * Initializes a new instance of the NetAppManagementClient class.
    * @param credentials Subscription credentials which uniquely identify client subscription.
-   * @param subscriptionId Subscription credentials which uniquely identify Microsoft Azure subscription.
-   *                       The subscription ID forms part of the URI for every service call.
+   * @param subscriptionId The ID of the target subscription.
    * @param options The parameter options
    */
   constructor(
@@ -83,54 +80,60 @@ export class NetAppManagementClient extends coreClient.ServiceClient {
       credential: credentials
     };
 
-    const packageDetails = `azsdk-js-arm-netapp/16.0.1`;
+    const packageDetails = `azsdk-js-arm-netapp/18.0.1`;
     const userAgentPrefix =
       options.userAgentOptions && options.userAgentOptions.userAgentPrefix
         ? `${options.userAgentOptions.userAgentPrefix} ${packageDetails}`
         : `${packageDetails}`;
 
-    if (!options.credentialScopes) {
-      options.credentialScopes = ["https://management.azure.com/.default"];
-    }
     const optionsWithDefaults = {
       ...defaults,
       ...options,
       userAgentOptions: {
         userAgentPrefix
       },
-      baseUri:
+      endpoint:
         options.endpoint ?? options.baseUri ?? "https://management.azure.com"
     };
     super(optionsWithDefaults);
 
+    let bearerTokenAuthenticationPolicyFound: boolean = false;
     if (options?.pipeline && options.pipeline.getOrderedPolicies().length > 0) {
       const pipelinePolicies: coreRestPipeline.PipelinePolicy[] = options.pipeline.getOrderedPolicies();
-      const bearerTokenAuthenticationPolicyFound = pipelinePolicies.some(
+      bearerTokenAuthenticationPolicyFound = pipelinePolicies.some(
         (pipelinePolicy) =>
           pipelinePolicy.name ===
           coreRestPipeline.bearerTokenAuthenticationPolicyName
       );
-      if (!bearerTokenAuthenticationPolicyFound) {
-        this.pipeline.removePolicy({
-          name: coreRestPipeline.bearerTokenAuthenticationPolicyName
-        });
-        this.pipeline.addPolicy(
-          coreRestPipeline.bearerTokenAuthenticationPolicy({
-            scopes: `${optionsWithDefaults.baseUri}/.default`,
-            challengeCallbacks: {
-              authorizeRequestOnChallenge:
-                coreClient.authorizeRequestOnClaimChallenge
-            }
-          })
-        );
-      }
+    }
+    if (
+      !options ||
+      !options.pipeline ||
+      options.pipeline.getOrderedPolicies().length == 0 ||
+      !bearerTokenAuthenticationPolicyFound
+    ) {
+      this.pipeline.removePolicy({
+        name: coreRestPipeline.bearerTokenAuthenticationPolicyName
+      });
+      this.pipeline.addPolicy(
+        coreRestPipeline.bearerTokenAuthenticationPolicy({
+          credential: credentials,
+          scopes:
+            optionsWithDefaults.credentialScopes ??
+            `${optionsWithDefaults.endpoint}/.default`,
+          challengeCallbacks: {
+            authorizeRequestOnChallenge:
+              coreClient.authorizeRequestOnClaimChallenge
+          }
+        })
+      );
     }
     // Parameter assignments
     this.subscriptionId = subscriptionId;
 
     // Assigning values to Constant parameters
     this.$host = options.$host || "https://management.azure.com";
-    this.apiVersion = options.apiVersion || "2022-01-01";
+    this.apiVersion = options.apiVersion || "2022-09-01";
     this.operations = new OperationsImpl(this);
     this.netAppResource = new NetAppResourceImpl(this);
     this.netAppResourceQuotaLimits = new NetAppResourceQuotaLimitsImpl(this);
@@ -143,7 +146,6 @@ export class NetAppManagementClient extends coreClient.ServiceClient {
     this.accountBackups = new AccountBackupsImpl(this);
     this.backupPolicies = new BackupPoliciesImpl(this);
     this.volumeQuotaRules = new VolumeQuotaRulesImpl(this);
-    this.vaults = new VaultsImpl(this);
     this.volumeGroups = new VolumeGroupsImpl(this);
     this.subvolumes = new SubvolumesImpl(this);
     this.addCustomApiVersionPolicy(options.apiVersion);
@@ -164,7 +166,7 @@ export class NetAppManagementClient extends coreClient.ServiceClient {
         if (param.length > 1) {
           const newParams = param[1].split("&").map((item) => {
             if (item.indexOf("api-version") > -1) {
-              return item.replace(/(?<==).*$/, apiVersion);
+              return "api-version=" + apiVersion;
             } else {
               return item;
             }
@@ -189,7 +191,6 @@ export class NetAppManagementClient extends coreClient.ServiceClient {
   accountBackups: AccountBackups;
   backupPolicies: BackupPolicies;
   volumeQuotaRules: VolumeQuotaRules;
-  vaults: Vaults;
   volumeGroups: VolumeGroups;
   subvolumes: Subvolumes;
 }

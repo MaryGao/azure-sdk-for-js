@@ -18,7 +18,7 @@ The Azure Monitor Query client library is used to execute read-only queries agai
 
 ### Supported environments
 
-- [LTS versions of Node.js](https://nodejs.org/about/releases/)
+- [LTS versions of Node.js](https://github.com/nodejs/release#release-schedule)
 - Latest versions of Safari, Chrome, Edge, and Firefox
 
 For more details, see our [support policy](https://github.com/Azure/azure-sdk-for-js/blob/main/SUPPORT.md).
@@ -26,7 +26,10 @@ For more details, see our [support policy](https://github.com/Azure/azure-sdk-fo
 ### Prerequisites
 
 - An [Azure subscription][azure_subscription]
-- To query Logs, you need an [Azure Log Analytics workspace][azure_monitor_create_using_portal].
+- A [TokenCredential](https://docs.microsoft.com/javascript/api/@azure/core-auth/tokencredential?view=azure-node-latest) implementation, such as an [Azure Identity library credential type](https://docs.microsoft.com/javascript/api/overview/azure/identity-readme?view=azure-node-latest#credential-classes).
+- To query Logs, you need one of the following things:
+  - An [Azure Log Analytics workspace][azure_monitor_create_using_portal]
+  - An Azure resource of any kind (Storage Account, Key Vault, Cosmos DB, etc.)
 - To query Metrics, you need an Azure resource of any kind (Storage Account, Key Vault, Cosmos DB, etc.).
 
 ### Install the package
@@ -52,6 +55,28 @@ const logsQueryClient = new LogsQueryClient(credential);
 const metricsQueryClient = new MetricsQueryClient(credential);
 ```
 
+#### Configure clients for non-public Azure clouds
+
+By default, `LogsQueryClient` and `MetricsQueryClient` are configured to connect to the public Azure cloud. These can be configured to connect to non-public Azure clouds by passing in the correct `endpoint` argument. For example:
+
+```ts
+import { DefaultAzureCredential } from "@azure/identity";
+import { LogsQueryClient, MetricsQueryClient } from "@azure/monitor-query";
+
+const credential = new DefaultAzureCredential();
+
+const logsQueryClient = new LogsQueryClient(credential, {
+  endpoint: "https://api.loganalytics.azure.cn/v1",
+});
+
+// or
+const metricsQueryClient = new MetricsQueryClient(credential{
+  endpoint: "https://management.chinacloudapi.cn",
+});
+```
+
+**Note**: Currently, `MetricsQueryClient` uses the Azure Resource Manager (ARM) endpoint for querying metrics, so you will need the corresponding management endpoint for your cloud when using this client. This is subject to change in the future.
+
 ### Execute the query
 
 For examples of Logs and Metrics queries, see the [Examples](#examples) section.
@@ -60,7 +85,7 @@ For examples of Logs and Metrics queries, see the [Examples](#examples) section.
 
 ### Logs query rate limits and throttling
 
-The Log Analytics service applies throttling when the request rate is too high. Limits, such as the maximum number of rows returned, are also applied on the Kusto queries. For more information, see [Query API](https://docs.microsoft.com/azure/azure-monitor/service-limits#la-query-api).
+The Log Analytics service applies throttling when the request rate is too high. Limits, such as the maximum number of rows returned, are also applied on the Kusto queries. For more information, see [Query API](https://learn.microsoft.com/azure/azure-monitor/service-limits#la-query-api).
 
 ### Metrics data structure
 
@@ -100,7 +125,7 @@ const logsQueryClient = new LogsQueryClient(new DefaultAzureCredential());
 async function run() {
   const kustoQuery = "AppEvents | limit 1";
   const result = await logsQueryClient.queryWorkspace(azureLogAnalyticsWorkspaceId, kustoQuery, {
-    duration: Durations.twentyFourHours
+    duration: Durations.twentyFourHours,
   });
 
   if (result.status === LogsQueryResultStatus.Success) {
@@ -209,25 +234,25 @@ export async function main() {
     {
       workspaceId: monitorWorkspaceId,
       query: kqlQuery,
-      timespan: { duration: "P1D" }
+      timespan: { duration: "P1D" },
     },
     {
       workspaceId: monitorWorkspaceId,
       query: "AzureActivity | summarize count()",
-      timespan: { duration: "PT1H" }
+      timespan: { duration: "PT1H" },
     },
     {
       workspaceId: monitorWorkspaceId,
       query:
         "AppRequests | take 10 | summarize avgRequestDuration=avg(DurationMs) by bin(TimeGenerated, 10m), _ResourceId",
-      timespan: { duration: "PT1H" }
+      timespan: { duration: "PT1H" },
     },
     {
       workspaceId: monitorWorkspaceId,
       query: "AppRequests | take 2",
       timespan: { duration: "PT1H" },
-      includeQueryStatistics: true
-    }
+      includeQueryStatistics: true,
+    },
   ];
 
   const result = await logsQueryClient.queryBatch(queriesBatch);
@@ -369,19 +394,17 @@ async function processTables(tablesFromResult: LogsTable[]) {
 
 A full sample can be found [here](https://github.com/Azure/azure-sdk-for-js/blob/main/sdk/monitor/monitor-query/samples/v1/typescript/src/logsQueryBatch.ts).
 
-For information on request throttling at the Log Analytics service level, see [Rate limits](https://dev.loganalytics.io/documentation/Using-the-API/Limits).
-
 ### Advanced logs query scenarios
 
 #### Set logs query timeout
 
-Some logs queries take longer than 3 minutes to execute. The default server timeout is 3 minutes. You can increase the server timeout to a maximum of 10 minutes. In the following example, the `LogsQueryOptions` object's `serverTimeoutInSeconds` property is used to decrease the server timeout to 1 minute:
+Some logs queries take longer than 3 minutes to execute. The default server timeout is 3 minutes. You can increase the server timeout to a maximum of 10 minutes. In the following example, the `LogsQueryOptions` object's `serverTimeoutInSeconds` property is used to increase the server timeout to 10 minutes:
 
 ```ts
 // setting optional parameters
 const queryLogsOptions: LogsQueryOptions = {
   // explicitly control the amount of time the server can spend processing the query.
-  serverTimeoutInSeconds: 60
+  serverTimeoutInSeconds: 600, // 600 seconds = 10 minutes
 };
 
 const result = await logsQueryClient.queryWorkspace(
@@ -408,7 +431,7 @@ For example, the following query executes in three workspaces:
 
 ```ts
 const queryLogsOptions: LogsQueryOptions = {
-  additionalWorkspaces: ["<workspace2>", "<workspace3>"]
+  additionalWorkspaces: ["<workspace2>", "<workspace3>"],
 };
 
 const kustoQuery = "AppEvents | limit 10";
@@ -451,22 +474,22 @@ const logsQueryClient = new LogsQueryClient(new DefaultAzureCredential());
 const kustoQuery = "AzureActivity | top 10 by TimeGenerated";
 
 const result = await logsQueryClient.queryWorkspace(
-    monitorWorkspaceId,
-    kustoQuery,
-    { duration: Durations.oneDay },
-    {
-      includeQueryStatistics: true
-    }
-  );
+  monitorWorkspaceId,
+  kustoQuery,
+  { duration: Durations.oneDay },
+  {
+    includeQueryStatistics: true,
+  }
+);
 
 const executionTime =
-    result.statistics && result.statistics.query && result.statistics.query.executionTime;
+  result.statistics && result.statistics.query && result.statistics.query.executionTime;
 
 console.log(
-    `Results for query '${kustoQuery}', execution time: ${
-      executionTime == null ? "unknown" : executionTime
-    }`
-  );
+  `Results for query '${kustoQuery}', execution time: ${
+    executionTime == null ? "unknown" : executionTime
+  }`
+);
 ```
 
 Because the structure of the `statistics` payload varies by query, a `Record<string, unknown>` return type is used. It contains the raw JSON response. The statistics are found within the `query` property of the JSON. For example:
@@ -580,7 +603,7 @@ export async function main() {
       [firstMetricName, secondMetricName],
       {
         granularity: "PT1M",
-        timespan: { duration: Durations.fiveMinutes }
+        timespan: { duration: Durations.fiveMinutes },
       }
     );
 
@@ -661,10 +684,10 @@ export async function main() {
     ["MatchedEventCount"],
     {
       timespan: {
-        duration: Durations.fiveMinutes
+        duration: Durations.fiveMinutes,
       },
       granularity: "PT1M",
-      aggregations: ["Count"]
+      aggregations: ["Count"],
     }
   );
 
@@ -695,17 +718,7 @@ A full sample can be found [here](https://github.com/Azure/azure-sdk-for-js/blob
 
 ## Troubleshooting
 
-### Logging
-
-Enabling logging may help uncover useful information about failures. To see a log of HTTP requests and responses, set the `AZURE_LOG_LEVEL` environment variable to `info`. Alternatively, logging can be enabled at runtime by calling `setLogLevel` in the `@azure/logger`:
-
-```ts
-import { setLogLevel } from "@azure/logger";
-
-setLogLevel("info");
-```
-
-For detailed instructions on how to enable logs, see the [@azure/logger package docs](https://github.com/Azure/azure-sdk-for-js/tree/main/sdk/core/logger).
+To diagnose various failure scenarios, see the [troubleshooting guide](https://github.com/Azure/azure-sdk-for-js/blob/main/sdk/monitor/monitor-query/TROUBLESHOOTING.md).
 
 ## Next steps
 

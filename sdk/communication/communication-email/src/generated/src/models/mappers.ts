@@ -6,15 +6,15 @@
  * Changes may cause incorrect behavior and will be lost if the code is regenerated.
  */
 
-import * as coreHttp from "@azure/core-http";
+import * as coreClient from "@azure/core-client";
 
-export const SendStatusResult: coreHttp.CompositeMapper = {
+export const EmailSendResult: coreClient.CompositeMapper = {
   type: {
     name: "Composite",
-    className: "SendStatusResult",
+    className: "EmailSendResult",
     modelProperties: {
-      messageId: {
-        serializedName: "messageId",
+      id: {
+        serializedName: "id",
         required: true,
         type: {
           name: "String"
@@ -26,42 +26,33 @@ export const SendStatusResult: coreHttp.CompositeMapper = {
         type: {
           name: "String"
         }
-      }
-    }
-  }
-};
-
-export const CommunicationErrorResponse: coreHttp.CompositeMapper = {
-  type: {
-    name: "Composite",
-    className: "CommunicationErrorResponse",
-    modelProperties: {
+      },
       error: {
         serializedName: "error",
         type: {
           name: "Composite",
-          className: "CommunicationError"
+          className: "ErrorDetail"
         }
       }
     }
   }
 };
 
-export const CommunicationError: coreHttp.CompositeMapper = {
+export const ErrorDetail: coreClient.CompositeMapper = {
   type: {
     name: "Composite",
-    className: "CommunicationError",
+    className: "ErrorDetail",
     modelProperties: {
       code: {
         serializedName: "code",
-        required: true,
+        readOnly: true,
         type: {
           name: "String"
         }
       },
       message: {
         serializedName: "message",
-        required: true,
+        readOnly: true,
         type: {
           name: "String"
         }
@@ -79,37 +70,84 @@ export const CommunicationError: coreHttp.CompositeMapper = {
         type: {
           name: "Sequence",
           element: {
-            type: { name: "Composite", className: "CommunicationError" }
+            type: {
+              name: "Composite",
+              className: "ErrorDetail"
+            }
           }
         }
       },
-      innerError: {
-        serializedName: "innererror",
+      additionalInfo: {
+        serializedName: "additionalInfo",
+        readOnly: true,
         type: {
-          name: "Composite",
-          className: "CommunicationError"
+          name: "Sequence",
+          element: {
+            type: {
+              name: "Composite",
+              className: "ErrorAdditionalInfo"
+            }
+          }
         }
       }
     }
   }
 };
 
-export const EmailMessage: coreHttp.CompositeMapper = {
+export const ErrorAdditionalInfo: coreClient.CompositeMapper = {
+  type: {
+    name: "Composite",
+    className: "ErrorAdditionalInfo",
+    modelProperties: {
+      type: {
+        serializedName: "type",
+        readOnly: true,
+        type: {
+          name: "String"
+        }
+      },
+      info: {
+        serializedName: "info",
+        readOnly: true,
+        type: {
+          name: "Dictionary",
+          value: { type: { name: "any" } }
+        }
+      }
+    }
+  }
+};
+
+export const ErrorResponse: coreClient.CompositeMapper = {
+  type: {
+    name: "Composite",
+    className: "ErrorResponse",
+    modelProperties: {
+      error: {
+        serializedName: "error",
+        type: {
+          name: "Composite",
+          className: "ErrorDetail"
+        }
+      }
+    }
+  }
+};
+
+export const EmailMessage: coreClient.CompositeMapper = {
   type: {
     name: "Composite",
     className: "EmailMessage",
     modelProperties: {
-      customHeaders: {
+      headers: {
         serializedName: "headers",
         type: {
-          name: "Sequence",
-          element: {
-            type: { name: "Composite", className: "EmailCustomHeader" }
-          }
+          name: "Dictionary",
+          value: { type: { name: "String" } }
         }
       },
-      sender: {
-        serializedName: "sender",
+      senderAddress: {
+        serializedName: "senderAddress",
         required: true,
         type: {
           name: "String"
@@ -120,13 +158,6 @@ export const EmailMessage: coreHttp.CompositeMapper = {
         type: {
           name: "Composite",
           className: "EmailContent"
-        }
-      },
-      importance: {
-        defaultValue: "normal",
-        serializedName: "importance",
-        type: {
-          name: "String"
         }
       },
       recipients: {
@@ -140,18 +171,28 @@ export const EmailMessage: coreHttp.CompositeMapper = {
         serializedName: "attachments",
         type: {
           name: "Sequence",
-          element: { type: { name: "Composite", className: "EmailAttachment" } }
+          element: {
+            type: {
+              name: "Composite",
+              className: "EmailAttachment"
+            }
+          }
         }
       },
       replyTo: {
         serializedName: "replyTo",
         type: {
           name: "Sequence",
-          element: { type: { name: "Composite", className: "EmailAddress" } }
+          element: {
+            type: {
+              name: "Composite",
+              className: "EmailAddress"
+            }
+          }
         }
       },
       disableUserEngagementTracking: {
-        serializedName: "disableUserEngagementTracking",
+        serializedName: "userEngagementTrackingDisabled",
         type: {
           name: "Boolean"
         }
@@ -160,30 +201,7 @@ export const EmailMessage: coreHttp.CompositeMapper = {
   }
 };
 
-export const EmailCustomHeader: coreHttp.CompositeMapper = {
-  type: {
-    name: "Composite",
-    className: "EmailCustomHeader",
-    modelProperties: {
-      name: {
-        serializedName: "name",
-        required: true,
-        type: {
-          name: "String"
-        }
-      },
-      value: {
-        serializedName: "value",
-        required: true,
-        type: {
-          name: "String"
-        }
-      }
-    }
-  }
-};
-
-export const EmailContent: coreHttp.CompositeMapper = {
+export const EmailContent: coreClient.CompositeMapper = {
   type: {
     name: "Composite",
     className: "EmailContent",
@@ -211,44 +229,58 @@ export const EmailContent: coreHttp.CompositeMapper = {
   }
 };
 
-export const EmailRecipients: coreHttp.CompositeMapper = {
+export const EmailRecipients: coreClient.CompositeMapper = {
   type: {
     name: "Composite",
     className: "EmailRecipients",
     modelProperties: {
       to: {
         serializedName: "to",
-        required: true,
         type: {
           name: "Sequence",
-          element: { type: { name: "Composite", className: "EmailAddress" } }
+          element: {
+            type: {
+              name: "Composite",
+              className: "EmailAddress"
+            }
+          }
         }
       },
-      cC: {
-        serializedName: "cC",
+      cc: {
+        serializedName: "cc",
         type: {
           name: "Sequence",
-          element: { type: { name: "Composite", className: "EmailAddress" } }
+          element: {
+            type: {
+              name: "Composite",
+              className: "EmailAddress"
+            }
+          }
         }
       },
-      bCC: {
-        serializedName: "bCC",
+      bcc: {
+        serializedName: "bcc",
         type: {
           name: "Sequence",
-          element: { type: { name: "Composite", className: "EmailAddress" } }
+          element: {
+            type: {
+              name: "Composite",
+              className: "EmailAddress"
+            }
+          }
         }
       }
     }
   }
 };
 
-export const EmailAddress: coreHttp.CompositeMapper = {
+export const EmailAddress: coreClient.CompositeMapper = {
   type: {
     name: "Composite",
     className: "EmailAddress",
     modelProperties: {
-      email: {
-        serializedName: "email",
+      address: {
+        serializedName: "address",
         required: true,
         type: {
           name: "String"
@@ -264,7 +296,7 @@ export const EmailAddress: coreHttp.CompositeMapper = {
   }
 };
 
-export const EmailAttachment: coreHttp.CompositeMapper = {
+export const EmailAttachment: coreClient.CompositeMapper = {
   type: {
     name: "Composite",
     className: "EmailAttachment",
@@ -276,15 +308,15 @@ export const EmailAttachment: coreHttp.CompositeMapper = {
           name: "String"
         }
       },
-      attachmentType: {
-        serializedName: "attachmentType",
+      contentType: {
+        serializedName: "contentType",
         required: true,
         type: {
           name: "String"
         }
       },
-      contentBytesBase64: {
-        serializedName: "contentBytesBase64",
+      contentInBase64: {
+        serializedName: "contentInBase64",
         required: true,
         type: {
           name: "String"
@@ -294,10 +326,10 @@ export const EmailAttachment: coreHttp.CompositeMapper = {
   }
 };
 
-export const EmailGetSendStatusHeaders: coreHttp.CompositeMapper = {
+export const EmailGetSendResultHeaders: coreClient.CompositeMapper = {
   type: {
     name: "Composite",
-    className: "EmailGetSendStatusHeaders",
+    className: "EmailGetSendResultHeaders",
     modelProperties: {
       retryAfter: {
         serializedName: "retry-after",
@@ -309,17 +341,26 @@ export const EmailGetSendStatusHeaders: coreHttp.CompositeMapper = {
   }
 };
 
-export const EmailSendHeaders: coreHttp.CompositeMapper = {
+export const EmailGetSendResultExceptionHeaders: coreClient.CompositeMapper = {
+  type: {
+    name: "Composite",
+    className: "EmailGetSendResultExceptionHeaders",
+    modelProperties: {
+      xMsErrorCode: {
+        serializedName: "x-ms-error-code",
+        type: {
+          name: "String"
+        }
+      }
+    }
+  }
+};
+
+export const EmailSendHeaders: coreClient.CompositeMapper = {
   type: {
     name: "Composite",
     className: "EmailSendHeaders",
     modelProperties: {
-      repeatabilityResult: {
-        serializedName: "repeatability-result",
-        type: {
-          name: "String"
-        }
-      },
       operationLocation: {
         serializedName: "operation-location",
         type: {
@@ -331,9 +372,18 @@ export const EmailSendHeaders: coreHttp.CompositeMapper = {
         type: {
           name: "Number"
         }
-      },
-      xMsRequestId: {
-        serializedName: "x-ms-request-id",
+      }
+    }
+  }
+};
+
+export const EmailSendExceptionHeaders: coreClient.CompositeMapper = {
+  type: {
+    name: "Composite",
+    className: "EmailSendExceptionHeaders",
+    modelProperties: {
+      xMsErrorCode: {
+        serializedName: "x-ms-error-code",
         type: {
           name: "String"
         }

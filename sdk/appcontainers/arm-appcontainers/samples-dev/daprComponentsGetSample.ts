@@ -10,16 +10,22 @@
 // Licensed under the MIT License.
 import { ContainerAppsAPIClient } from "@azure/arm-appcontainers";
 import { DefaultAzureCredential } from "@azure/identity";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 /**
  * This sample demonstrates how to Get a dapr component.
  *
  * @summary Get a dapr component.
- * x-ms-original-file: specification/app/resource-manager/Microsoft.App/stable/2022-03-01/examples/DaprComponents_Get.json
+ * x-ms-original-file: specification/app/resource-manager/Microsoft.App/preview/2022-11-01-preview/examples/DaprComponents_Get_SecretStoreComponent.json
  */
-async function getDaprComponent() {
-  const subscriptionId = "8efdecc5-919e-44eb-b179-915dca89ebf9";
-  const resourceGroupName = "examplerg";
+async function getDaprComponentWithSecretStoreComponent() {
+  const subscriptionId =
+    process.env["APPCONTAINERS_SUBSCRIPTION_ID"] ||
+    "8efdecc5-919e-44eb-b179-915dca89ebf9";
+  const resourceGroupName =
+    process.env["APPCONTAINERS_RESOURCE_GROUP"] || "examplerg";
   const environmentName = "myenvironment";
   const componentName = "reddog";
   const credential = new DefaultAzureCredential();
@@ -32,4 +38,33 @@ async function getDaprComponent() {
   console.log(result);
 }
 
-getDaprComponent().catch(console.error);
+/**
+ * This sample demonstrates how to Get a dapr component.
+ *
+ * @summary Get a dapr component.
+ * x-ms-original-file: specification/app/resource-manager/Microsoft.App/preview/2022-11-01-preview/examples/DaprComponents_Get_Secrets.json
+ */
+async function getDaprComponentWithSecrets() {
+  const subscriptionId =
+    process.env["APPCONTAINERS_SUBSCRIPTION_ID"] ||
+    "8efdecc5-919e-44eb-b179-915dca89ebf9";
+  const resourceGroupName =
+    process.env["APPCONTAINERS_RESOURCE_GROUP"] || "examplerg";
+  const environmentName = "myenvironment";
+  const componentName = "reddog";
+  const credential = new DefaultAzureCredential();
+  const client = new ContainerAppsAPIClient(credential, subscriptionId);
+  const result = await client.daprComponents.get(
+    resourceGroupName,
+    environmentName,
+    componentName
+  );
+  console.log(result);
+}
+
+async function main() {
+  getDaprComponentWithSecretStoreComponent();
+  getDaprComponentWithSecrets();
+}
+
+main().catch(console.error);

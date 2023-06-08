@@ -6,9 +6,9 @@
 
 import * as coreAuth from '@azure/core-auth';
 import * as coreClient from '@azure/core-client';
+import { OperationState } from '@azure/core-lro';
 import { PagedAsyncIterableIterator } from '@azure/core-paging';
-import { PollerLike } from '@azure/core-lro';
-import { PollOperationState } from '@azure/core-lro';
+import { SimplePollerLike } from '@azure/core-lro';
 
 // @public
 export type ActionType = string;
@@ -53,6 +53,8 @@ export class CommunicationServiceManagementClient extends coreClient.ServiceClie
     // (undocumented)
     operations: Operations;
     // (undocumented)
+    senderUsernames: SenderUsernames;
+    // (undocumented)
     subscriptionId: string;
 }
 
@@ -64,15 +66,15 @@ export interface CommunicationServiceManagementClientOptionalParams extends core
 }
 
 // @public
-export type CommunicationServiceResource = TrackedResource & {
-    readonly provisioningState?: CommunicationServicesProvisioningState;
-    readonly hostName?: string;
+export interface CommunicationServiceResource extends TrackedResource {
     dataLocation?: string;
-    readonly notificationHubId?: string;
-    readonly version?: string;
+    readonly hostName?: string;
     readonly immutableResourceId?: string;
     linkedDomains?: string[];
-};
+    readonly notificationHubId?: string;
+    readonly provisioningState?: CommunicationServicesProvisioningState;
+    readonly version?: string;
+}
 
 // @public
 export interface CommunicationServiceResourceList {
@@ -81,26 +83,24 @@ export interface CommunicationServiceResourceList {
 }
 
 // @public
-export type CommunicationServiceResourceUpdate = TaggedResource & {
+export interface CommunicationServiceResourceUpdate extends TaggedResource {
     linkedDomains?: string[];
-};
+}
 
 // @public
 export interface CommunicationServices {
-    beginCreateOrUpdate(resourceGroupName: string, communicationServiceName: string, parameters: CommunicationServiceResource, options?: CommunicationServicesCreateOrUpdateOptionalParams): Promise<PollerLike<PollOperationState<CommunicationServicesCreateOrUpdateResponse>, CommunicationServicesCreateOrUpdateResponse>>;
+    beginCreateOrUpdate(resourceGroupName: string, communicationServiceName: string, parameters: CommunicationServiceResource, options?: CommunicationServicesCreateOrUpdateOptionalParams): Promise<SimplePollerLike<OperationState<CommunicationServicesCreateOrUpdateResponse>, CommunicationServicesCreateOrUpdateResponse>>;
     beginCreateOrUpdateAndWait(resourceGroupName: string, communicationServiceName: string, parameters: CommunicationServiceResource, options?: CommunicationServicesCreateOrUpdateOptionalParams): Promise<CommunicationServicesCreateOrUpdateResponse>;
-    beginDelete(resourceGroupName: string, communicationServiceName: string, options?: CommunicationServicesDeleteOptionalParams): Promise<PollerLike<PollOperationState<void>, void>>;
+    beginDelete(resourceGroupName: string, communicationServiceName: string, options?: CommunicationServicesDeleteOptionalParams): Promise<SimplePollerLike<OperationState<void>, void>>;
     beginDeleteAndWait(resourceGroupName: string, communicationServiceName: string, options?: CommunicationServicesDeleteOptionalParams): Promise<void>;
-    beginRegenerateKey(resourceGroupName: string, communicationServiceName: string, parameters: RegenerateKeyParameters, options?: CommunicationServicesRegenerateKeyOptionalParams): Promise<PollerLike<PollOperationState<CommunicationServicesRegenerateKeyResponse>, CommunicationServicesRegenerateKeyResponse>>;
-    beginRegenerateKeyAndWait(resourceGroupName: string, communicationServiceName: string, parameters: RegenerateKeyParameters, options?: CommunicationServicesRegenerateKeyOptionalParams): Promise<CommunicationServicesRegenerateKeyResponse>;
-    beginUpdate(resourceGroupName: string, communicationServiceName: string, parameters: CommunicationServiceResourceUpdate, options?: CommunicationServicesUpdateOptionalParams): Promise<PollerLike<PollOperationState<CommunicationServicesUpdateResponse>, CommunicationServicesUpdateResponse>>;
-    beginUpdateAndWait(resourceGroupName: string, communicationServiceName: string, parameters: CommunicationServiceResourceUpdate, options?: CommunicationServicesUpdateOptionalParams): Promise<CommunicationServicesUpdateResponse>;
     checkNameAvailability(nameAvailabilityParameters: NameAvailabilityParameters, options?: CommunicationServicesCheckNameAvailabilityOptionalParams): Promise<CommunicationServicesCheckNameAvailabilityResponse>;
     get(resourceGroupName: string, communicationServiceName: string, options?: CommunicationServicesGetOptionalParams): Promise<CommunicationServicesGetResponse>;
     linkNotificationHub(resourceGroupName: string, communicationServiceName: string, options?: CommunicationServicesLinkNotificationHubOptionalParams): Promise<CommunicationServicesLinkNotificationHubResponse>;
     listByResourceGroup(resourceGroupName: string, options?: CommunicationServicesListByResourceGroupOptionalParams): PagedAsyncIterableIterator<CommunicationServiceResource>;
     listBySubscription(options?: CommunicationServicesListBySubscriptionOptionalParams): PagedAsyncIterableIterator<CommunicationServiceResource>;
     listKeys(resourceGroupName: string, communicationServiceName: string, options?: CommunicationServicesListKeysOptionalParams): Promise<CommunicationServicesListKeysResponse>;
+    regenerateKey(resourceGroupName: string, communicationServiceName: string, parameters: RegenerateKeyParameters, options?: CommunicationServicesRegenerateKeyOptionalParams): Promise<CommunicationServicesRegenerateKeyResponse>;
+    update(resourceGroupName: string, communicationServiceName: string, parameters: CommunicationServiceResourceUpdate, options?: CommunicationServicesUpdateOptionalParams): Promise<CommunicationServicesUpdateResponse>;
 }
 
 // @public
@@ -189,28 +189,14 @@ export type CommunicationServicesListKeysResponse = CommunicationServiceKeys;
 export type CommunicationServicesProvisioningState = string;
 
 // @public
-export interface CommunicationServicesRegenerateKeyHeaders {
-    azureAsyncOperation?: string;
-}
-
-// @public
 export interface CommunicationServicesRegenerateKeyOptionalParams extends coreClient.OperationOptions {
-    resumeFrom?: string;
-    updateIntervalInMs?: number;
 }
 
 // @public
 export type CommunicationServicesRegenerateKeyResponse = CommunicationServiceKeys;
 
 // @public
-export interface CommunicationServicesUpdateHeaders {
-    azureAsyncOperation?: string;
-}
-
-// @public
 export interface CommunicationServicesUpdateOptionalParams extends coreClient.OperationOptions {
-    resumeFrom?: string;
-    updateIntervalInMs?: number;
 }
 
 // @public
@@ -249,19 +235,16 @@ export interface DomainPropertiesVerificationStates {
 }
 
 // @public
-export type DomainResource = TrackedResource & {
-    readonly provisioningState?: DomainsProvisioningState;
+export interface DomainResource extends TrackedResource {
     readonly dataLocation?: string;
+    domainManagement?: DomainManagement;
     readonly fromSenderDomain?: string;
     readonly mailFromSenderDomain?: string;
-    domainManagement?: DomainManagement;
-    readonly verificationStates?: DomainPropertiesVerificationStates;
-    readonly verificationRecords?: DomainPropertiesVerificationRecords;
-    validSenderUsernames?: {
-        [propertyName: string]: string;
-    };
+    readonly provisioningState?: DomainsProvisioningState;
     userEngagementTracking?: UserEngagementTracking;
-};
+    readonly verificationRecords?: DomainPropertiesVerificationRecords;
+    readonly verificationStates?: DomainPropertiesVerificationStates;
+}
 
 // @public
 export interface DomainResourceList {
@@ -271,15 +254,15 @@ export interface DomainResourceList {
 
 // @public
 export interface Domains {
-    beginCancelVerification(resourceGroupName: string, emailServiceName: string, domainName: string, parameters: VerificationParameter, options?: DomainsCancelVerificationOptionalParams): Promise<PollerLike<PollOperationState<DomainsCancelVerificationResponse>, DomainsCancelVerificationResponse>>;
+    beginCancelVerification(resourceGroupName: string, emailServiceName: string, domainName: string, parameters: VerificationParameter, options?: DomainsCancelVerificationOptionalParams): Promise<SimplePollerLike<OperationState<DomainsCancelVerificationResponse>, DomainsCancelVerificationResponse>>;
     beginCancelVerificationAndWait(resourceGroupName: string, emailServiceName: string, domainName: string, parameters: VerificationParameter, options?: DomainsCancelVerificationOptionalParams): Promise<DomainsCancelVerificationResponse>;
-    beginCreateOrUpdate(resourceGroupName: string, emailServiceName: string, domainName: string, parameters: DomainResource, options?: DomainsCreateOrUpdateOptionalParams): Promise<PollerLike<PollOperationState<DomainsCreateOrUpdateResponse>, DomainsCreateOrUpdateResponse>>;
+    beginCreateOrUpdate(resourceGroupName: string, emailServiceName: string, domainName: string, parameters: DomainResource, options?: DomainsCreateOrUpdateOptionalParams): Promise<SimplePollerLike<OperationState<DomainsCreateOrUpdateResponse>, DomainsCreateOrUpdateResponse>>;
     beginCreateOrUpdateAndWait(resourceGroupName: string, emailServiceName: string, domainName: string, parameters: DomainResource, options?: DomainsCreateOrUpdateOptionalParams): Promise<DomainsCreateOrUpdateResponse>;
-    beginDelete(resourceGroupName: string, emailServiceName: string, domainName: string, options?: DomainsDeleteOptionalParams): Promise<PollerLike<PollOperationState<void>, void>>;
+    beginDelete(resourceGroupName: string, emailServiceName: string, domainName: string, options?: DomainsDeleteOptionalParams): Promise<SimplePollerLike<OperationState<void>, void>>;
     beginDeleteAndWait(resourceGroupName: string, emailServiceName: string, domainName: string, options?: DomainsDeleteOptionalParams): Promise<void>;
-    beginInitiateVerification(resourceGroupName: string, emailServiceName: string, domainName: string, parameters: VerificationParameter, options?: DomainsInitiateVerificationOptionalParams): Promise<PollerLike<PollOperationState<DomainsInitiateVerificationResponse>, DomainsInitiateVerificationResponse>>;
+    beginInitiateVerification(resourceGroupName: string, emailServiceName: string, domainName: string, parameters: VerificationParameter, options?: DomainsInitiateVerificationOptionalParams): Promise<SimplePollerLike<OperationState<DomainsInitiateVerificationResponse>, DomainsInitiateVerificationResponse>>;
     beginInitiateVerificationAndWait(resourceGroupName: string, emailServiceName: string, domainName: string, parameters: VerificationParameter, options?: DomainsInitiateVerificationOptionalParams): Promise<DomainsInitiateVerificationResponse>;
-    beginUpdate(resourceGroupName: string, emailServiceName: string, domainName: string, parameters: UpdateDomainRequestParameters, options?: DomainsUpdateOptionalParams): Promise<PollerLike<PollOperationState<DomainsUpdateResponse>, DomainsUpdateResponse>>;
+    beginUpdate(resourceGroupName: string, emailServiceName: string, domainName: string, parameters: UpdateDomainRequestParameters, options?: DomainsUpdateOptionalParams): Promise<SimplePollerLike<OperationState<DomainsUpdateResponse>, DomainsUpdateResponse>>;
     beginUpdateAndWait(resourceGroupName: string, emailServiceName: string, domainName: string, parameters: UpdateDomainRequestParameters, options?: DomainsUpdateOptionalParams): Promise<DomainsUpdateResponse>;
     get(resourceGroupName: string, emailServiceName: string, domainName: string, options?: DomainsGetOptionalParams): Promise<DomainsGetResponse>;
     listByEmailServiceResource(resourceGroupName: string, emailServiceName: string, options?: DomainsListByEmailServiceResourceOptionalParams): PagedAsyncIterableIterator<DomainResource>;
@@ -377,10 +360,10 @@ export interface DomainsUpdateOptionalParams extends coreClient.OperationOptions
 export type DomainsUpdateResponse = DomainResource;
 
 // @public
-export type EmailServiceResource = TrackedResource & {
-    readonly provisioningState?: EmailServicesProvisioningState;
+export interface EmailServiceResource extends TrackedResource {
     dataLocation?: string;
-};
+    readonly provisioningState?: EmailServicesProvisioningState;
+}
 
 // @public
 export interface EmailServiceResourceList {
@@ -389,15 +372,16 @@ export interface EmailServiceResourceList {
 }
 
 // @public
-export type EmailServiceResourceUpdate = TaggedResource;
+export interface EmailServiceResourceUpdate extends TaggedResource {
+}
 
 // @public
 export interface EmailServices {
-    beginCreateOrUpdate(resourceGroupName: string, emailServiceName: string, parameters: EmailServiceResource, options?: EmailServicesCreateOrUpdateOptionalParams): Promise<PollerLike<PollOperationState<EmailServicesCreateOrUpdateResponse>, EmailServicesCreateOrUpdateResponse>>;
+    beginCreateOrUpdate(resourceGroupName: string, emailServiceName: string, parameters: EmailServiceResource, options?: EmailServicesCreateOrUpdateOptionalParams): Promise<SimplePollerLike<OperationState<EmailServicesCreateOrUpdateResponse>, EmailServicesCreateOrUpdateResponse>>;
     beginCreateOrUpdateAndWait(resourceGroupName: string, emailServiceName: string, parameters: EmailServiceResource, options?: EmailServicesCreateOrUpdateOptionalParams): Promise<EmailServicesCreateOrUpdateResponse>;
-    beginDelete(resourceGroupName: string, emailServiceName: string, options?: EmailServicesDeleteOptionalParams): Promise<PollerLike<PollOperationState<void>, void>>;
+    beginDelete(resourceGroupName: string, emailServiceName: string, options?: EmailServicesDeleteOptionalParams): Promise<SimplePollerLike<OperationState<void>, void>>;
     beginDeleteAndWait(resourceGroupName: string, emailServiceName: string, options?: EmailServicesDeleteOptionalParams): Promise<void>;
-    beginUpdate(resourceGroupName: string, emailServiceName: string, parameters: EmailServiceResourceUpdate, options?: EmailServicesUpdateOptionalParams): Promise<PollerLike<PollOperationState<EmailServicesUpdateResponse>, EmailServicesUpdateResponse>>;
+    beginUpdate(resourceGroupName: string, emailServiceName: string, parameters: EmailServiceResourceUpdate, options?: EmailServicesUpdateOptionalParams): Promise<SimplePollerLike<OperationState<EmailServicesUpdateResponse>, EmailServicesUpdateResponse>>;
     beginUpdateAndWait(resourceGroupName: string, emailServiceName: string, parameters: EmailServiceResourceUpdate, options?: EmailServicesUpdateOptionalParams): Promise<EmailServicesUpdateResponse>;
     get(resourceGroupName: string, emailServiceName: string, options?: EmailServicesGetOptionalParams): Promise<EmailServicesGetResponse>;
     listByResourceGroup(resourceGroupName: string, options?: EmailServicesListByResourceGroupOptionalParams): PagedAsyncIterableIterator<EmailServiceResource>;
@@ -512,156 +496,119 @@ export interface ErrorResponse {
 }
 
 // @public
+export function getContinuationToken(page: unknown): string | undefined;
+
+// @public
 type KeyType_2 = "Primary" | "Secondary";
 export { KeyType_2 as KeyType }
 
 // @public
 export enum KnownActionType {
-    // (undocumented)
     Internal = "Internal"
 }
 
 // @public
 export enum KnownCheckNameAvailabilityReason {
-    // (undocumented)
     AlreadyExists = "AlreadyExists",
-    // (undocumented)
     Invalid = "Invalid"
 }
 
 // @public
 export enum KnownCommunicationServicesProvisioningState {
-    // (undocumented)
     Canceled = "Canceled",
-    // (undocumented)
     Creating = "Creating",
-    // (undocumented)
     Deleting = "Deleting",
-    // (undocumented)
     Failed = "Failed",
-    // (undocumented)
     Moving = "Moving",
-    // (undocumented)
     Running = "Running",
-    // (undocumented)
     Succeeded = "Succeeded",
-    // (undocumented)
     Unknown = "Unknown",
-    // (undocumented)
     Updating = "Updating"
 }
 
 // @public
 export enum KnownCreatedByType {
-    // (undocumented)
     Application = "Application",
-    // (undocumented)
     Key = "Key",
-    // (undocumented)
     ManagedIdentity = "ManagedIdentity",
-    // (undocumented)
     User = "User"
 }
 
 // @public
 export enum KnownDomainManagement {
-    // (undocumented)
     AzureManaged = "AzureManaged",
-    // (undocumented)
     CustomerManaged = "CustomerManaged",
-    // (undocumented)
     CustomerManagedInExchangeOnline = "CustomerManagedInExchangeOnline"
 }
 
 // @public
 export enum KnownDomainsProvisioningState {
-    // (undocumented)
     Canceled = "Canceled",
-    // (undocumented)
     Creating = "Creating",
-    // (undocumented)
     Deleting = "Deleting",
-    // (undocumented)
     Failed = "Failed",
-    // (undocumented)
     Moving = "Moving",
-    // (undocumented)
     Running = "Running",
-    // (undocumented)
     Succeeded = "Succeeded",
-    // (undocumented)
     Unknown = "Unknown",
-    // (undocumented)
     Updating = "Updating"
 }
 
 // @public
 export enum KnownEmailServicesProvisioningState {
-    // (undocumented)
     Canceled = "Canceled",
-    // (undocumented)
     Creating = "Creating",
-    // (undocumented)
     Deleting = "Deleting",
-    // (undocumented)
     Failed = "Failed",
-    // (undocumented)
     Moving = "Moving",
-    // (undocumented)
     Running = "Running",
-    // (undocumented)
     Succeeded = "Succeeded",
-    // (undocumented)
     Unknown = "Unknown",
-    // (undocumented)
     Updating = "Updating"
 }
 
 // @public
 export enum KnownOrigin {
-    // (undocumented)
     System = "system",
-    // (undocumented)
     User = "user",
-    // (undocumented)
     UserSystem = "user,system"
 }
 
 // @public
+export enum KnownProvisioningState {
+    Canceled = "Canceled",
+    Creating = "Creating",
+    Deleting = "Deleting",
+    Failed = "Failed",
+    Moving = "Moving",
+    Running = "Running",
+    Succeeded = "Succeeded",
+    Unknown = "Unknown",
+    Updating = "Updating"
+}
+
+// @public
 export enum KnownUserEngagementTracking {
-    // (undocumented)
     Disabled = "Disabled",
-    // (undocumented)
     Enabled = "Enabled"
 }
 
 // @public
 export enum KnownVerificationStatus {
-    // (undocumented)
     CancellationRequested = "CancellationRequested",
-    // (undocumented)
     NotStarted = "NotStarted",
-    // (undocumented)
     VerificationFailed = "VerificationFailed",
-    // (undocumented)
     VerificationInProgress = "VerificationInProgress",
-    // (undocumented)
     VerificationRequested = "VerificationRequested",
-    // (undocumented)
     Verified = "Verified"
 }
 
 // @public
 export enum KnownVerificationType {
-    // (undocumented)
     Dkim = "DKIM",
-    // (undocumented)
     Dkim2 = "DKIM2",
-    // (undocumented)
     Dmarc = "DMARC",
-    // (undocumented)
     Domain = "Domain",
-    // (undocumented)
     SPF = "SPF"
 }
 
@@ -677,7 +624,8 @@ export interface LinkNotificationHubParameters {
 }
 
 // @public
-export type NameAvailabilityParameters = CheckNameAvailabilityRequest;
+export interface NameAvailabilityParameters extends CheckNameAvailabilityRequest {
+}
 
 // @public
 export interface Operation {
@@ -725,6 +673,13 @@ export type OperationsListResponse = OperationListResult;
 export type Origin = string;
 
 // @public
+export type ProvisioningState = string;
+
+// @public
+export interface ProxyResource extends Resource {
+}
+
+// @public
 export interface RegenerateKeyParameters {
     keyType?: KeyType_2;
 }
@@ -736,6 +691,60 @@ export interface Resource {
     readonly systemData?: SystemData;
     readonly type?: string;
 }
+
+// @public
+export interface SenderUsernameResource extends ProxyResource {
+    readonly dataLocation?: string;
+    displayName?: string;
+    readonly provisioningState?: ProvisioningState;
+    username?: string;
+}
+
+// @public
+export interface SenderUsernameResourceCollection {
+    nextLink?: string;
+    value?: SenderUsernameResource[];
+}
+
+// @public
+export interface SenderUsernames {
+    createOrUpdate(resourceGroupName: string, emailServiceName: string, domainName: string, senderUsername: string, parameters: SenderUsernameResource, options?: SenderUsernamesCreateOrUpdateOptionalParams): Promise<SenderUsernamesCreateOrUpdateResponse>;
+    delete(resourceGroupName: string, emailServiceName: string, domainName: string, senderUsername: string, options?: SenderUsernamesDeleteOptionalParams): Promise<void>;
+    get(resourceGroupName: string, emailServiceName: string, domainName: string, senderUsername: string, options?: SenderUsernamesGetOptionalParams): Promise<SenderUsernamesGetResponse>;
+    listByDomains(resourceGroupName: string, emailServiceName: string, domainName: string, options?: SenderUsernamesListByDomainsOptionalParams): PagedAsyncIterableIterator<SenderUsernameResource>;
+}
+
+// @public
+export interface SenderUsernamesCreateOrUpdateOptionalParams extends coreClient.OperationOptions {
+}
+
+// @public
+export type SenderUsernamesCreateOrUpdateResponse = SenderUsernameResource;
+
+// @public
+export interface SenderUsernamesDeleteOptionalParams extends coreClient.OperationOptions {
+}
+
+// @public
+export interface SenderUsernamesGetOptionalParams extends coreClient.OperationOptions {
+}
+
+// @public
+export type SenderUsernamesGetResponse = SenderUsernameResource;
+
+// @public
+export interface SenderUsernamesListByDomainsNextOptionalParams extends coreClient.OperationOptions {
+}
+
+// @public
+export type SenderUsernamesListByDomainsNextResponse = SenderUsernameResourceCollection;
+
+// @public
+export interface SenderUsernamesListByDomainsOptionalParams extends coreClient.OperationOptions {
+}
+
+// @public
+export type SenderUsernamesListByDomainsResponse = SenderUsernameResourceCollection;
 
 // @public
 export interface SystemData {
@@ -755,20 +764,17 @@ export interface TaggedResource {
 }
 
 // @public
-export type TrackedResource = Resource & {
+export interface TrackedResource extends Resource {
+    location: string;
     tags?: {
         [propertyName: string]: string;
     };
-    location: string;
-};
+}
 
 // @public
-export type UpdateDomainRequestParameters = TaggedResource & {
-    validSenderUsernames?: {
-        [propertyName: string]: string;
-    };
+export interface UpdateDomainRequestParameters extends TaggedResource {
     userEngagementTracking?: UserEngagementTracking;
-};
+}
 
 // @public
 export type UserEngagementTracking = string;

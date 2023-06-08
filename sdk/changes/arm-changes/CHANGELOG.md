@@ -1,4 +1,21 @@
 # Release History
+
+## 1.1.1 (Unreleased)
+
+### Features Added
+
+### Breaking Changes
+
+### Bugs Fixed
+
+### Other Changes
+
+## 1.1.0 (2022-11-17)
+    
+**Features**
+
+  - Added Interface ChangeResourceResult
+    
     
 ## 1.0.0 (2022-05-09)
 

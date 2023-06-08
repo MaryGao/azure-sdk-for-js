@@ -2,7 +2,11 @@
 // Licensed under the MIT license.
 
 import { OperationOptions } from "@azure/core-client";
-import { ShortCodesGetShortCodesOptionalParams } from ".";
+import {
+  ShortCodesGetShortCodesOptionalParams,
+  ShortCodesGetUSProgramBriefsOptionalParams,
+  ShortCodesGetCostsOptionalParams,
+} from ".";
 
 /**
  * Additional options for the delete US Program Brief request.
@@ -25,9 +29,14 @@ export interface SubmitUSProgramBriefOptions extends OperationOptions {}
 export interface ListShortCodesOptions extends ShortCodesGetShortCodesOptionalParams {}
 
 /**
+ * Additional options for the List Short Code Costs request.
+ */
+export interface ListShortCodeCostsOptions extends ShortCodesGetCostsOptionalParams {}
+
+/**
  * Additional options for the List US Program Brief request.
  */
-export interface ListUSProgramBriefsOptions extends OperationOptions {}
+export interface ListUSProgramBriefsOptions extends ShortCodesGetUSProgramBriefsOptionalParams {}
 
 export {
   ShortCode,
@@ -40,9 +49,10 @@ export {
   MessageDetails,
   TrafficDetails,
   ShortCodesGetShortCodesOptionalParams,
+  ShortCodesGetCostsOptionalParams,
   ShortCodesUpsertUSProgramBriefOptionalParams,
   BillingFrequency,
-  ProgramSignUpType,
+  CallToActionType,
   ContactInformation,
   CustomerCareInformation,
   Recurrence,
@@ -50,7 +60,7 @@ export {
   ReviewNote,
   MessageProtocol,
   MessageDirectionality,
-  MessageContentCategory,
+  MessageContentType,
   MessageExampleSequence,
   MessageExample,
   MessageDirection,
@@ -58,6 +68,7 @@ export {
   ShortCodesDeleteUSProgramBriefAttachmentOptionalParams,
   ShortCodesGetUSProgramBriefAttachmentsOptionalParams,
   ShortCodesGetUSProgramBriefAttachmentOptionalParams,
+  ShortCodesGetUSProgramBriefsOptionalParams,
   ProgramBriefAttachment,
   AttachmentType,
   FileType,

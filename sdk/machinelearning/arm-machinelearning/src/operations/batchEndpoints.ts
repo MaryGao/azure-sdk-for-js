@@ -6,7 +6,8 @@
  * Changes may cause incorrect behavior and will be lost if the code is regenerated.
  */
 
-import { PagedAsyncIterableIterator } from "@azure/core-paging";
+import { PagedAsyncIterableIterator, PageSettings } from "@azure/core-paging";
+import { setContinuationToken } from "../pagingHelper";
 import { BatchEndpoints } from "../operationsInterfaces";
 import * as coreClient from "@azure/core-client";
 import * as Mappers from "../models/mappers";
@@ -15,14 +16,14 @@ import { AzureMachineLearningWorkspaces } from "../azureMachineLearningWorkspace
 import { PollerLike, PollOperationState, LroEngine } from "@azure/core-lro";
 import { LroImpl } from "../lroImpl";
 import {
-  BatchEndpointData,
+  BatchEndpoint,
   BatchEndpointsListNextOptionalParams,
   BatchEndpointsListOptionalParams,
   BatchEndpointsListResponse,
   BatchEndpointsDeleteOptionalParams,
   BatchEndpointsGetOptionalParams,
   BatchEndpointsGetResponse,
-  PartialBatchEndpointPartialTrackedResource,
+  PartialMinimalTrackedResourceWithIdentity,
   BatchEndpointsUpdateOptionalParams,
   BatchEndpointsUpdateResponse,
   BatchEndpointsCreateOrUpdateOptionalParams,
@@ -55,7 +56,7 @@ export class BatchEndpointsImpl implements BatchEndpoints {
     resourceGroupName: string,
     workspaceName: string,
     options?: BatchEndpointsListOptionalParams
-  ): PagedAsyncIterableIterator<BatchEndpointData> {
+  ): PagedAsyncIterableIterator<BatchEndpoint> {
     const iter = this.listPagingAll(resourceGroupName, workspaceName, options);
     return {
       next() {
@@ -64,8 +65,16 @@ export class BatchEndpointsImpl implements BatchEndpoints {
       [Symbol.asyncIterator]() {
         return this;
       },
-      byPage: () => {
-        return this.listPagingPage(resourceGroupName, workspaceName, options);
+      byPage: (settings?: PageSettings) => {
+        if (settings?.maxPageSize) {
+          throw new Error("maxPageSize is not supported by this operation.");
+        }
+        return this.listPagingPage(
+          resourceGroupName,
+          workspaceName,
+          options,
+          settings
+        );
       }
     };
   }
@@ -73,11 +82,18 @@ export class BatchEndpointsImpl implements BatchEndpoints {
   private async *listPagingPage(
     resourceGroupName: string,
     workspaceName: string,
-    options?: BatchEndpointsListOptionalParams
-  ): AsyncIterableIterator<BatchEndpointData[]> {
-    let result = await this._list(resourceGroupName, workspaceName, options);
-    yield result.value || [];
-    let continuationToken = result.nextLink;
+    options?: BatchEndpointsListOptionalParams,
+    settings?: PageSettings
+  ): AsyncIterableIterator<BatchEndpoint[]> {
+    let result: BatchEndpointsListResponse;
+    let continuationToken = settings?.continuationToken;
+    if (!continuationToken) {
+      result = await this._list(resourceGroupName, workspaceName, options);
+      let page = result.value || [];
+      continuationToken = result.nextLink;
+      setContinuationToken(page, continuationToken);
+      yield page;
+    }
     while (continuationToken) {
       result = await this._listNext(
         resourceGroupName,
@@ -86,7 +102,9 @@ export class BatchEndpointsImpl implements BatchEndpoints {
         options
       );
       continuationToken = result.nextLink;
-      yield result.value || [];
+      let page = result.value || [];
+      setContinuationToken(page, continuationToken);
+      yield page;
     }
   }
 
@@ -94,7 +112,7 @@ export class BatchEndpointsImpl implements BatchEndpoints {
     resourceGroupName: string,
     workspaceName: string,
     options?: BatchEndpointsListOptionalParams
-  ): AsyncIterableIterator<BatchEndpointData> {
+  ): AsyncIterableIterator<BatchEndpoint> {
     for await (const page of this.listPagingPage(
       resourceGroupName,
       workspaceName,
@@ -239,7 +257,7 @@ export class BatchEndpointsImpl implements BatchEndpoints {
     resourceGroupName: string,
     workspaceName: string,
     endpointName: string,
-    body: PartialBatchEndpointPartialTrackedResource,
+    body: PartialMinimalTrackedResourceWithIdentity,
     options?: BatchEndpointsUpdateOptionalParams
   ): Promise<
     PollerLike<
@@ -311,7 +329,7 @@ export class BatchEndpointsImpl implements BatchEndpoints {
     resourceGroupName: string,
     workspaceName: string,
     endpointName: string,
-    body: PartialBatchEndpointPartialTrackedResource,
+    body: PartialMinimalTrackedResourceWithIdentity,
     options?: BatchEndpointsUpdateOptionalParams
   ): Promise<BatchEndpointsUpdateResponse> {
     const poller = await this.beginUpdate(
@@ -336,7 +354,7 @@ export class BatchEndpointsImpl implements BatchEndpoints {
     resourceGroupName: string,
     workspaceName: string,
     endpointName: string,
-    body: BatchEndpointData,
+    body: BatchEndpoint,
     options?: BatchEndpointsCreateOrUpdateOptionalParams
   ): Promise<
     PollerLike<
@@ -408,7 +426,7 @@ export class BatchEndpointsImpl implements BatchEndpoints {
     resourceGroupName: string,
     workspaceName: string,
     endpointName: string,
-    body: BatchEndpointData,
+    body: BatchEndpoint,
     options?: BatchEndpointsCreateOrUpdateOptionalParams
   ): Promise<BatchEndpointsCreateOrUpdateResponse> {
     const poller = await this.beginCreateOrUpdate(
@@ -514,7 +532,7 @@ const getOperationSpec: coreClient.OperationSpec = {
   httpMethod: "GET",
   responses: {
     200: {
-      bodyMapper: Mappers.BatchEndpointData
+      bodyMapper: Mappers.BatchEndpoint
     },
     default: {
       bodyMapper: Mappers.ErrorResponse
@@ -537,16 +555,16 @@ const updateOperationSpec: coreClient.OperationSpec = {
   httpMethod: "PATCH",
   responses: {
     200: {
-      bodyMapper: Mappers.BatchEndpointData
+      bodyMapper: Mappers.BatchEndpoint
     },
     201: {
-      bodyMapper: Mappers.BatchEndpointData
+      bodyMapper: Mappers.BatchEndpoint
     },
     202: {
-      bodyMapper: Mappers.BatchEndpointData
+      bodyMapper: Mappers.BatchEndpoint
     },
     204: {
-      bodyMapper: Mappers.BatchEndpointData
+      bodyMapper: Mappers.BatchEndpoint
     },
     default: {
       bodyMapper: Mappers.ErrorResponse
@@ -571,16 +589,16 @@ const createOrUpdateOperationSpec: coreClient.OperationSpec = {
   httpMethod: "PUT",
   responses: {
     200: {
-      bodyMapper: Mappers.BatchEndpointData
+      bodyMapper: Mappers.BatchEndpoint
     },
     201: {
-      bodyMapper: Mappers.BatchEndpointData
+      bodyMapper: Mappers.BatchEndpoint
     },
     202: {
-      bodyMapper: Mappers.BatchEndpointData
+      bodyMapper: Mappers.BatchEndpoint
     },
     204: {
-      bodyMapper: Mappers.BatchEndpointData
+      bodyMapper: Mappers.BatchEndpoint
     },
     default: {
       bodyMapper: Mappers.ErrorResponse

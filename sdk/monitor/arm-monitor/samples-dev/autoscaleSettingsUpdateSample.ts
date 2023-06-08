@@ -13,16 +13,22 @@ import {
   MonitorClient
 } from "@azure/arm-monitor";
 import { DefaultAzureCredential } from "@azure/identity";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 /**
  * This sample demonstrates how to Updates an existing AutoscaleSettingsResource. To update other fields use the CreateOrUpdate method.
  *
  * @summary Updates an existing AutoscaleSettingsResource. To update other fields use the CreateOrUpdate method.
- * x-ms-original-file: specification/monitor/resource-manager/Microsoft.Insights/stable/2015-04-01/examples/patchAutoscaleSetting.json
+ * x-ms-original-file: specification/monitor/resource-manager/Microsoft.Insights/stable/2022-10-01/examples/patchAutoscaleSetting.json
  */
 async function patchAnAutoscaleSetting() {
-  const subscriptionId = "b67f7fec-69fc-4974-9099-a26bd6ffeda3";
-  const resourceGroupName = "TestingMetricsScaleSet";
+  const subscriptionId =
+    process.env["MONITOR_SUBSCRIPTION_ID"] ||
+    "b67f7fec-69fc-4974-9099-a26bd6ffeda3";
+  const resourceGroupName =
+    process.env["MONITOR_RESOURCE_GROUP"] || "TestingMetricsScaleSet";
   const autoscaleSettingName = "MySetting";
   const autoscaleSettingResource: AutoscaleSettingResourcePatch = {
     enabled: true,
@@ -37,6 +43,7 @@ async function patchAnAutoscaleSetting() {
         webhooks: [{ properties: {}, serviceUri: "http://myservice.com" }]
       }
     ],
+    predictiveAutoscalePolicy: { scaleMode: "Enabled" },
     profiles: [
       {
         name: "adios",
@@ -140,10 +147,7 @@ async function patchAnAutoscaleSetting() {
         ]
       }
     ],
-    tags: {
-      $type:
-        "Microsoft.WindowsAzure.Management.Common.Storage.CasePreservedDictionary"
-    },
+    tags: { key1: "value1" },
     targetResourceUri:
       "/subscriptions/b67f7fec-69fc-4974-9099-a26bd6ffeda3/resourceGroups/TestingMetricsScaleSet/providers/Microsoft.Compute/virtualMachineScaleSets/testingsc"
   };
@@ -157,4 +161,8 @@ async function patchAnAutoscaleSetting() {
   console.log(result);
 }
 
-patchAnAutoscaleSetting().catch(console.error);
+async function main() {
+  patchAnAutoscaleSetting();
+}
+
+main().catch(console.error);

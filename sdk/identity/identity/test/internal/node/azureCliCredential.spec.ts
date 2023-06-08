@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import Sinon, { createSandbox } from "sinon";
+import { AzureCliCredential } from "../../../src/credentials/azureCliCredential";
+import { GetTokenOptions } from "@azure/core-auth";
 import { assert } from "chai";
 import child_process from "child_process";
-import Sinon, { createSandbox } from "sinon";
-import { GetTokenOptions } from "@azure/core-auth";
-import { AzureCliCredential } from "../../../src/credentials/azureCliCredential";
 
 describe("AzureCliCredential (internal)", function () {
   let sandbox: Sinon.SinonSandbox | undefined;
@@ -173,7 +173,7 @@ describe("AzureCliCredential (internal)", function () {
   // Reported by https://github.com/Azure/azure-sdk-for-js/issues/21151
   it("get access token when having an error about an unknown platform", async () => {
     stdout = "";
-    stderr = `ERROR: AADSTS50005: User tried to log in to a device from a platform (Unknown) that's currently not supported through Conditional Access policy. Supported device platforms are: iOS, Android, Mac, and Windows flavors.
+    stderr = `CredentialUnavailableError: ERROR: AADSTS50005: User tried to log in to a device from a platform (Unknown) that's currently not supported through Conditional Access policy. Supported device platforms are: iOS, Android, Mac, and Windows flavors.
 Trace ID: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
 Correlation ID: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
 Timestamp: 2022-02-22 10:11:12Z
@@ -189,7 +189,7 @@ az login --scope https://database.windows.net//.default`;
 
   it("get access token when having an error about a resource principal not found", async () => {
     stdout = "";
-    stderr = `ERROR: AADSTS500011: The resource principal named https://test.windows.net was not found in the tenant named Default Directory. This can happen if the application has not been installed by the administrator of the tenant or consented to by any user in the tenant. You might have sent your authentication request to the wrong tenant.
+    stderr = `CredentialUnavailableError: ERROR: AADSTS500011: The resource principal named https://test.windows.net was not found in the tenant named Default Directory. This can happen if the application has not been installed by the administrator of the tenant or consented to by any user in the tenant. You might have sent your authentication request to the wrong tenant.
 Trace ID: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
 Correlation ID: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
 Timestamp: 2022-04-20 22:10:51Z
@@ -219,6 +219,26 @@ az login --scope https://test.windows.net/.default`;
         shell: azOptions[0].shell,
       },
       { cwd: true, shell: true }
+    );
+  });
+
+  it("gets the timeout passed correctly", async function () {
+    stdout = '{"accessToken": "token","expiresOn": "01/01/1900 00:00:00 +00:00"}';
+    stderr = "";
+    const credential = new AzureCliCredential({ processTimeoutInMs: 50 });
+    const actualToken = await credential.getToken("https://service/.default");
+    assert.equal(actualToken!.token, "token");
+    assert.deepEqual(azArgs, [
+      ["account", "get-access-token", "--output", "json", "--resource", "https://service"],
+    ]);
+    // Used a working directory, and a shell
+    assert.deepEqual(
+      {
+        cwd: [process.env.SystemRoot, "/bin"].includes(azOptions[0].cwd),
+        shell: azOptions[0].shell,
+        timeout: 50,
+      },
+      { cwd: true, shell: true, timeout: 50 }
     );
   });
 });

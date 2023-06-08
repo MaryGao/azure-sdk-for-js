@@ -18,9 +18,10 @@ optional-response-headers: true
 v3: true
 disable-async-iterators: true
 add-credentials: false
+core-http-compat-mode: true
 use-extension:
-  "@autorest/typescript": "6.0.0-dev.20210218.1"
-package-version: 12.10.1
+  "@autorest/typescript": "6.0.2"
+package-version: 12.20.0
 ```
 
 ## Customizations for Track 2 Generator
@@ -294,16 +295,6 @@ directive:
     where: $.parameters.FileChangeTime
     transform: >
       delete $.format;
-```
-
-### Retain XStore swagger behavior - Revert file permissions content-type to "application/xml" from "application/json"(unified swagger)
-
-```yaml
-directive:
-  - from: swagger-document
-    where: $["x-ms-paths"]["/{shareName}?restype=share&comp=filepermission"]
-    transform: >
-      $.put.consumes = ["application/xml"];
 ```
 
 ### Rename optionalbody -> body
@@ -853,6 +844,15 @@ directive:
     where: $["parameters"]["AccessTierOptional"]["x-ms-enum"]
     transform: >
       $["modelAsString"] = false;
+```
+
+### Update service version from "2018-06-08" to "2021-10-04"
+
+```yaml
+directive:
+  - from: swagger-document
+    where: $.parameters.ApiVersionParameter
+    transform: $.enum = [ "2021-10-04" ];
 ```
 
 ![Impressions](https://azure-sdk-impressions.azurewebsites.net/api/impressions/azure-sdk-for-js%2Fsdk%2Fstorage%2Fstorage-file-share%2Fswagger%2FREADME.png)

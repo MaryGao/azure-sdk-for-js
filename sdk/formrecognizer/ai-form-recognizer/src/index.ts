@@ -16,7 +16,7 @@ export {
   AddressValue,
   CopyAuthorization,
   CurrencyValue,
-  DocTypeInfo,
+  DocumentTypeDetails,
   DocumentBuildMode,
   DocumentFieldSchema,
   DocumentFieldType,
@@ -24,19 +24,53 @@ export {
   DocumentSpan,
   DocumentLanguage,
   DocumentStyle,
+  FontStyle,
+  FontWeight,
   DocumentTableCellKind,
   LengthUnit,
-  ModelInfo,
-  ModelSummary,
-  OperationInfo,
+  DocumentModelDetails,
+  DocumentModelSummary,
+  OperationSummary,
   OperationKind,
   OperationStatus,
-  GetInfoResponse,
-  CustomDocumentModelsInfo,
+  ResourceDetails,
+  CustomDocumentModelsDetails,
   AnalyzeResultOperationStatus,
   SelectionMarkState,
   ParagraphRole,
+  OperationDetails,
+  ErrorModel,
+  InnerError,
+  OperationDetailsUnion,
+  DocumentModelBuildOperationDetails,
+  DocumentModelComposeOperationDetails,
+  DocumentModelCopyToOperationDetails,
+  DocumentClassifierBuildOperationDetails,
+  DocumentClassifierDetails,
+  ClassifierDocumentTypeDetails,
+  DocumentAnnotationKind,
+  DocumentBarcodeKind,
+  DocumentFormulaKind,
+  AzureBlobFileListSource,
+  AzureBlobContentSource,
+  QuotaDetails,
   DocumentPageKind,
+
+  // KnownXYZ enums
+  KnownDocumentBuildMode,
+  KnownDocumentFieldType,
+  KnownDocumentAnnotationKind,
+  KnownDocumentBarcodeKind,
+  KnownDocumentFormulaKind,
+  KnownDocumentPageKind,
+  KnownDocumentSignatureType,
+  KnownDocumentTableCellKind,
+  KnownFontStyle,
+  KnownFontWeight,
+  KnownLengthUnit,
+  KnownOperationKind,
+  KnownParagraphRole,
+  KnownSelectionMarkState,
 } from "./generated";
 export {
   AnalysisPoller,
@@ -45,10 +79,15 @@ export {
   DocumentAnalysisPollOperationState,
   AnalyzedDocument,
   FormRecognizerRequestBody,
-} from "./lro/analyze";
-export { TrainingPoller, TrainingPollOperationState } from "./lro/training";
+} from "./lro/analysis";
+export {
+  DocumentModelPoller,
+  DocumentClassifierPoller,
+  DocumentModelOperationState,
+  DocumentClassifierOperationState,
+  ModelAdministrationOperationStateCommon,
+} from "./lro/administration";
 export * from "./models";
 export * from "./options";
-export * from "./prebuilt";
-export { EnglishCapitalLetter, Acronymic } from "./util";
+export * from "./documentModel";
 export { Point2D } from "./transforms/polygon";

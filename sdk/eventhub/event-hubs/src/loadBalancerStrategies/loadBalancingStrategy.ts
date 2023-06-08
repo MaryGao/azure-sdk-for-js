@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { PartitionOwnership } from "../eventProcessor";
-import { logger } from "../log";
+import { logger } from "../logger";
 
 /**
  * Determines which partitions to claim as part of load balancing.
@@ -17,7 +17,7 @@ export interface LoadBalancingStrategy {
    * @param partitionIds - Partitions to assign owners to.
    * @returns Partition ids to claim.
    */
-  getPartitionsToCliam(
+  getPartitionsToClaim(
     ownerId: string,
     claimedPartitionOwnershipMap: Map<string, PartitionOwnership>,
     partitionIds: string[]

@@ -6,14 +6,15 @@
  * Changes may cause incorrect behavior and will be lost if the code is regenerated.
  */
 
-import { PagedAsyncIterableIterator } from "@azure/core-paging";
+import { PagedAsyncIterableIterator, PageSettings } from "@azure/core-paging";
+import { setContinuationToken } from "../pagingHelper";
 import { ModelVersions } from "../operationsInterfaces";
 import * as coreClient from "@azure/core-client";
 import * as Mappers from "../models/mappers";
 import * as Parameters from "../models/parameters";
 import { AzureMachineLearningWorkspaces } from "../azureMachineLearningWorkspaces";
 import {
-  ModelVersionData,
+  ModelVersion,
   ModelVersionsListNextOptionalParams,
   ModelVersionsListOptionalParams,
   ModelVersionsListResponse,
@@ -50,7 +51,7 @@ export class ModelVersionsImpl implements ModelVersions {
     workspaceName: string,
     name: string,
     options?: ModelVersionsListOptionalParams
-  ): PagedAsyncIterableIterator<ModelVersionData> {
+  ): PagedAsyncIterableIterator<ModelVersion> {
     const iter = this.listPagingAll(
       resourceGroupName,
       workspaceName,
@@ -64,12 +65,16 @@ export class ModelVersionsImpl implements ModelVersions {
       [Symbol.asyncIterator]() {
         return this;
       },
-      byPage: () => {
+      byPage: (settings?: PageSettings) => {
+        if (settings?.maxPageSize) {
+          throw new Error("maxPageSize is not supported by this operation.");
+        }
         return this.listPagingPage(
           resourceGroupName,
           workspaceName,
           name,
-          options
+          options,
+          settings
         );
       }
     };
@@ -79,16 +84,23 @@ export class ModelVersionsImpl implements ModelVersions {
     resourceGroupName: string,
     workspaceName: string,
     name: string,
-    options?: ModelVersionsListOptionalParams
-  ): AsyncIterableIterator<ModelVersionData[]> {
-    let result = await this._list(
-      resourceGroupName,
-      workspaceName,
-      name,
-      options
-    );
-    yield result.value || [];
-    let continuationToken = result.nextLink;
+    options?: ModelVersionsListOptionalParams,
+    settings?: PageSettings
+  ): AsyncIterableIterator<ModelVersion[]> {
+    let result: ModelVersionsListResponse;
+    let continuationToken = settings?.continuationToken;
+    if (!continuationToken) {
+      result = await this._list(
+        resourceGroupName,
+        workspaceName,
+        name,
+        options
+      );
+      let page = result.value || [];
+      continuationToken = result.nextLink;
+      setContinuationToken(page, continuationToken);
+      yield page;
+    }
     while (continuationToken) {
       result = await this._listNext(
         resourceGroupName,
@@ -98,7 +110,9 @@ export class ModelVersionsImpl implements ModelVersions {
         options
       );
       continuationToken = result.nextLink;
-      yield result.value || [];
+      let page = result.value || [];
+      setContinuationToken(page, continuationToken);
+      yield page;
     }
   }
 
@@ -107,7 +121,7 @@ export class ModelVersionsImpl implements ModelVersions {
     workspaceName: string,
     name: string,
     options?: ModelVersionsListOptionalParams
-  ): AsyncIterableIterator<ModelVersionData> {
+  ): AsyncIterableIterator<ModelVersion> {
     for await (const page of this.listPagingPage(
       resourceGroupName,
       workspaceName,
@@ -193,7 +207,7 @@ export class ModelVersionsImpl implements ModelVersions {
     workspaceName: string,
     name: string,
     version: string,
-    body: ModelVersionData,
+    body: ModelVersion,
     options?: ModelVersionsCreateOrUpdateOptionalParams
   ): Promise<ModelVersionsCreateOrUpdateResponse> {
     return this.client.sendOperationRequest(
@@ -290,7 +304,7 @@ const getOperationSpec: coreClient.OperationSpec = {
   httpMethod: "GET",
   responses: {
     200: {
-      bodyMapper: Mappers.ModelVersionData
+      bodyMapper: Mappers.ModelVersion
     },
     default: {
       bodyMapper: Mappers.ErrorResponse
@@ -314,10 +328,10 @@ const createOrUpdateOperationSpec: coreClient.OperationSpec = {
   httpMethod: "PUT",
   responses: {
     200: {
-      bodyMapper: Mappers.ModelVersionData
+      bodyMapper: Mappers.ModelVersion
     },
     201: {
-      bodyMapper: Mappers.ModelVersionData
+      bodyMapper: Mappers.ModelVersion
     },
     default: {
       bodyMapper: Mappers.ErrorResponse

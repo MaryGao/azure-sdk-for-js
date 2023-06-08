@@ -6,7 +6,8 @@
  * Changes may cause incorrect behavior and will be lost if the code is regenerated.
  */
 
-import { PagedAsyncIterableIterator } from "@azure/core-paging";
+import { PagedAsyncIterableIterator, PageSettings } from "@azure/core-paging";
+import { setContinuationToken } from "../pagingHelper";
 import { Jobs } from "../operationsInterfaces";
 import * as coreClient from "@azure/core-client";
 import * as Mappers from "../models/mappers";
@@ -15,7 +16,7 @@ import { AzureMachineLearningWorkspaces } from "../azureMachineLearningWorkspace
 import { PollerLike, PollOperationState, LroEngine } from "@azure/core-lro";
 import { LroImpl } from "../lroImpl";
 import {
-  JobBaseData,
+  JobBase,
   JobsListNextOptionalParams,
   JobsListOptionalParams,
   JobsListResponse,
@@ -51,7 +52,7 @@ export class JobsImpl implements Jobs {
     resourceGroupName: string,
     workspaceName: string,
     options?: JobsListOptionalParams
-  ): PagedAsyncIterableIterator<JobBaseData> {
+  ): PagedAsyncIterableIterator<JobBase> {
     const iter = this.listPagingAll(resourceGroupName, workspaceName, options);
     return {
       next() {
@@ -60,8 +61,16 @@ export class JobsImpl implements Jobs {
       [Symbol.asyncIterator]() {
         return this;
       },
-      byPage: () => {
-        return this.listPagingPage(resourceGroupName, workspaceName, options);
+      byPage: (settings?: PageSettings) => {
+        if (settings?.maxPageSize) {
+          throw new Error("maxPageSize is not supported by this operation.");
+        }
+        return this.listPagingPage(
+          resourceGroupName,
+          workspaceName,
+          options,
+          settings
+        );
       }
     };
   }
@@ -69,11 +78,18 @@ export class JobsImpl implements Jobs {
   private async *listPagingPage(
     resourceGroupName: string,
     workspaceName: string,
-    options?: JobsListOptionalParams
-  ): AsyncIterableIterator<JobBaseData[]> {
-    let result = await this._list(resourceGroupName, workspaceName, options);
-    yield result.value || [];
-    let continuationToken = result.nextLink;
+    options?: JobsListOptionalParams,
+    settings?: PageSettings
+  ): AsyncIterableIterator<JobBase[]> {
+    let result: JobsListResponse;
+    let continuationToken = settings?.continuationToken;
+    if (!continuationToken) {
+      result = await this._list(resourceGroupName, workspaceName, options);
+      let page = result.value || [];
+      continuationToken = result.nextLink;
+      setContinuationToken(page, continuationToken);
+      yield page;
+    }
     while (continuationToken) {
       result = await this._listNext(
         resourceGroupName,
@@ -82,7 +98,9 @@ export class JobsImpl implements Jobs {
         options
       );
       continuationToken = result.nextLink;
-      yield result.value || [];
+      let page = result.value || [];
+      setContinuationToken(page, continuationToken);
+      yield page;
     }
   }
 
@@ -90,7 +108,7 @@ export class JobsImpl implements Jobs {
     resourceGroupName: string,
     workspaceName: string,
     options?: JobsListOptionalParams
-  ): AsyncIterableIterator<JobBaseData> {
+  ): AsyncIterableIterator<JobBase> {
     for await (const page of this.listPagingPage(
       resourceGroupName,
       workspaceName,
@@ -235,7 +253,7 @@ export class JobsImpl implements Jobs {
     resourceGroupName: string,
     workspaceName: string,
     id: string,
-    body: JobBaseData,
+    body: JobBase,
     options?: JobsCreateOrUpdateOptionalParams
   ): Promise<JobsCreateOrUpdateResponse> {
     return this.client.sendOperationRequest(
@@ -245,22 +263,91 @@ export class JobsImpl implements Jobs {
   }
 
   /**
-   * Cancels a Job.
+   * Cancels a Job (asynchronous).
    * @param resourceGroupName The name of the resource group. The name is case insensitive.
    * @param workspaceName Name of Azure Machine Learning workspace.
    * @param id The name and identifier for the Job. This is case-sensitive.
    * @param options The options parameters.
    */
-  cancel(
+  async beginCancel(
+    resourceGroupName: string,
+    workspaceName: string,
+    id: string,
+    options?: JobsCancelOptionalParams
+  ): Promise<PollerLike<PollOperationState<void>, void>> {
+    const directSendOperation = async (
+      args: coreClient.OperationArguments,
+      spec: coreClient.OperationSpec
+    ): Promise<void> => {
+      return this.client.sendOperationRequest(args, spec);
+    };
+    const sendOperation = async (
+      args: coreClient.OperationArguments,
+      spec: coreClient.OperationSpec
+    ) => {
+      let currentRawResponse:
+        | coreClient.FullOperationResponse
+        | undefined = undefined;
+      const providedCallback = args.options?.onResponse;
+      const callback: coreClient.RawResponseCallback = (
+        rawResponse: coreClient.FullOperationResponse,
+        flatResponse: unknown
+      ) => {
+        currentRawResponse = rawResponse;
+        providedCallback?.(rawResponse, flatResponse);
+      };
+      const updatedArgs = {
+        ...args,
+        options: {
+          ...args.options,
+          onResponse: callback
+        }
+      };
+      const flatResponse = await directSendOperation(updatedArgs, spec);
+      return {
+        flatResponse,
+        rawResponse: {
+          statusCode: currentRawResponse!.status,
+          body: currentRawResponse!.parsedBody,
+          headers: currentRawResponse!.headers.toJSON()
+        }
+      };
+    };
+
+    const lro = new LroImpl(
+      sendOperation,
+      { resourceGroupName, workspaceName, id, options },
+      cancelOperationSpec
+    );
+    const poller = new LroEngine(lro, {
+      resumeFrom: options?.resumeFrom,
+      intervalInMs: options?.updateIntervalInMs,
+      lroResourceLocationConfig: "location"
+    });
+    await poller.poll();
+    return poller;
+  }
+
+  /**
+   * Cancels a Job (asynchronous).
+   * @param resourceGroupName The name of the resource group. The name is case insensitive.
+   * @param workspaceName Name of Azure Machine Learning workspace.
+   * @param id The name and identifier for the Job. This is case-sensitive.
+   * @param options The options parameters.
+   */
+  async beginCancelAndWait(
     resourceGroupName: string,
     workspaceName: string,
     id: string,
     options?: JobsCancelOptionalParams
   ): Promise<void> {
-    return this.client.sendOperationRequest(
-      { resourceGroupName, workspaceName, id, options },
-      cancelOperationSpec
+    const poller = await this.beginCancel(
+      resourceGroupName,
+      workspaceName,
+      id,
+      options
     );
+    return poller.pollUntilDone();
   }
 
   /**
@@ -302,9 +389,7 @@ const listOperationSpec: coreClient.OperationSpec = {
     Parameters.skip,
     Parameters.listViewType,
     Parameters.jobType,
-    Parameters.tag,
-    Parameters.scheduled,
-    Parameters.scheduleId
+    Parameters.tag
   ],
   urlParameters: [
     Parameters.$host,
@@ -345,7 +430,7 @@ const getOperationSpec: coreClient.OperationSpec = {
   httpMethod: "GET",
   responses: {
     200: {
-      bodyMapper: Mappers.JobBaseData
+      bodyMapper: Mappers.JobBase
     },
     default: {
       bodyMapper: Mappers.ErrorResponse
@@ -368,10 +453,10 @@ const createOrUpdateOperationSpec: coreClient.OperationSpec = {
   httpMethod: "PUT",
   responses: {
     200: {
-      bodyMapper: Mappers.JobBaseData
+      bodyMapper: Mappers.JobBase
     },
     201: {
-      bodyMapper: Mappers.JobBaseData
+      bodyMapper: Mappers.JobBase
     },
     default: {
       bodyMapper: Mappers.ErrorResponse
@@ -396,6 +481,9 @@ const cancelOperationSpec: coreClient.OperationSpec = {
   httpMethod: "POST",
   responses: {
     200: {},
+    201: {},
+    202: {},
+    204: {},
     default: {
       bodyMapper: Mappers.ErrorResponse
     }
@@ -427,9 +515,7 @@ const listNextOperationSpec: coreClient.OperationSpec = {
     Parameters.skip,
     Parameters.listViewType,
     Parameters.jobType,
-    Parameters.tag,
-    Parameters.scheduled,
-    Parameters.scheduleId
+    Parameters.tag
   ],
   urlParameters: [
     Parameters.$host,

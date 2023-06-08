@@ -9,7 +9,7 @@ import {
 } from "@azure/core-rest-pipeline";
 import { shaHMAC, shaHash } from "./cryptoUtils";
 import { KeyCredential } from "@azure/core-auth";
-import { isNode } from "./isNode";
+import { isNode } from "@azure/core-util";
 
 /**
  * CommunicationKeyCredentialPolicy provides a means of signing requests made through
@@ -36,7 +36,7 @@ export function createCommunicationAccessKeyCredentialPolicy(
       const signedHeaders = `${dateHeader};host;x-ms-content-sha256`;
 
       const url = new URL(request.url);
-      const query = url.searchParams;
+      const query = url.searchParams.toString();
       const urlPathAndQuery = query ? `${url.pathname}?${query}` : url.pathname;
       const port = url.port;
       const hostAndPort = port ? `${url.host}:${port}` : url.host;

@@ -59,6 +59,28 @@ export interface CommunicationError {
   readonly innerError?: CommunicationError;
 }
 
+/** A wrapper for a list of short code costs entities. */
+export interface ShortCodeCosts {
+  /** List of short code costs. */
+  shortCodeCosts?: ShortCodeCost[];
+  /** Represents the URL link to the next page of short code results. */
+  nextLink?: string;
+}
+
+/** The incurred cost for a single short code. */
+export interface ShortCodeCost {
+  /** The cost amount. */
+  amount: number;
+  /** The ISO 4217 currency code for the cost amount, e.g. USD. */
+  currencyCode: string;
+  /** The ISO 3166-2 code of the phone number's country, e.g. US. */
+  countryCode: string;
+  /** Indicate whether a shortcode is vanity. */
+  isVanityShortCode: boolean;
+  /** The frequency with which the cost gets billed. */
+  billingFrequency: BillingFrequency;
+}
+
 /**
  * Represents a US Program Brief for acquiring a short code in the United States.
  * A Program Brief provides vital information to the carriers about a messaging program or campaign that would be associated with a short code or alpha sender number.
@@ -98,16 +120,6 @@ export interface ReviewNote {
   date?: Date;
 }
 
-/** The incurred cost for a single short code. */
-export interface ShortCodeCost {
-  /** The cost amount. */
-  amount: number;
-  /** The ISO 4217 currency code for the cost amount, e.g. USD. */
-  currencyCode: string;
-  /** The frequency with which the cost gets billed. */
-  billingFrequency: BillingFrequency;
-}
-
 export interface ProgramDetails {
   /** Set to true if the request is for a vanity number. */
   isVanity?: boolean;
@@ -131,9 +143,11 @@ export interface ProgramDetails {
   /** URL for the program or company. */
   url?: string;
   /** Indicates how the consumer can sign up to the program e.g. 'website', 'pointOfSale' and/or 'sms'. */
-  signUpTypes?: ProgramSignUpType[];
+  callToActionTypes?: CallToActionType[];
   /** URL for "call to action" image for the program. */
-  signUpUrl?: string;
+  callToActionUrl?: string;
+  /** Call to action text. To be provided when InteractiveVoiceResponse is specified as call to action type */
+  callToAction?: string;
   /** URL for program terms of service. */
   termsOfServiceUrl?: string;
   /** URL for privacy policy. */
@@ -178,24 +192,24 @@ export interface CustomerCareInformation {
 }
 
 export interface MessageDetails {
-  /** Applicable message protocols used in the program e.g. SMS, MMS. */
-  supportedProtocols?: MessageProtocol[];
+  /** Applicable message protocol used in the program e.g. SMS or MMS. */
+  supportedProtocol?: MessageProtocol;
   /** Indicates the nature of the messaging associated with the program e.g. 'subscription', 'transaction'. */
   recurrence?: Recurrence;
   /**
    * Message text for mobile terminated message associated with HELP keyword
    * e.g 'This is the HELP message test.'.
    */
-  helpMessage?: string;
+  helpAnswerToUser?: string;
   /**
    * "Message text for mobile terminated message associated with STOP keyword
    * e.g. 'This is the STOP message test.'.
    */
-  optOutMessage?: string;
-  optInMessage?: string;
+  optOutAnswerToUser?: string;
+  optInMessageToUser?: string;
   /** Keyword used to confirm double Opt-In method e.g. 'JOIN'. */
-  optInReply?: string;
-  confirmationMessage?: string;
+  optInAnswerFromUser?: string;
+  optInConfirmationMessageToUser?: string;
   /** Describes directionality e.g. oneWay or twoWay */
   directionality?: MessageDirectionality;
   /** Provides message exchange examples from and to end user for each supported message content type. */
@@ -204,8 +218,10 @@ export interface MessageDetails {
 
 /** Describes a messaging use case for a given content type by providing example messages. */
 export interface UseCase {
-  /** Indicates the messaging content category used in the program e.g. 'ringTones', 'smsChat', 'video', 'loyaltyProgramPointsPrizes', 'gifting', 'inApplicationBilling', 'textToScreen'. */
-  contentCategory?: MessageContentCategory;
+  /** Indicates the messaging content type used in the program e.g. 'accountNotificationInformationalAlerts', 'chatConversationalMessaging', 'mmsVideo', 'socialMedia'. */
+  contentType?: MessageContentType;
+  /** Indicates the messaging content type used in the program whenever it is not any of the pre-defined content types */
+  customContentType?: string;
   /** Example messages to be sent to and from the end user for the indicated content type. */
   examples?: MessageExampleSequence[];
 }
@@ -252,10 +268,10 @@ export interface ProgramBriefAttachmentSummary {
    */
   type?: AttachmentType;
   /**
-   * A friendly name to refer to the attachment
+   * The name of the attached file
    * e.g. 'myFile01'
    */
-  friendlyName?: string;
+  fileName?: string;
 }
 
 /** A wrapper for a list of USProgramBrief entities. */
@@ -274,21 +290,21 @@ export interface ProgramBriefAttachment {
    * Attachment type describing the purpose of the attachment
    * e.g. 'callToAction', 'termsOfService'
    */
-  type?: AttachmentType;
+  type: AttachmentType;
   /**
-   * A friendly name to refer to the attachment
+   * The name of the file being attached
    * e.g. 'myFile01'
    */
-  fileName?: string;
+  fileName: string;
   /** File size in bytes. */
-  fileSize?: number;
+  fileSizeInBytes?: number;
   /**
    * The type of file being attached
    * e.g. 'pdf', 'jpg', 'png'
    */
-  fileType?: FileType;
+  fileType: FileType;
   /** File content as base 64 encoded string */
-  fileContent?: string;
+  fileContentBase64: string;
 }
 
 /** A wrapper for a list of ProgramBriefAttachment entities. */
@@ -301,6 +317,8 @@ export interface ProgramBriefAttachments {
 
 /** Defines values for NumberType. */
 export type NumberType = "shortCode" | "alphaId";
+/** Defines values for BillingFrequency. */
+export type BillingFrequency = "monthly" | "once";
 /** Defines values for ProgramBriefStatus. */
 export type ProgramBriefStatus =
   | "submitted"
@@ -309,10 +327,8 @@ export type ProgramBriefStatus =
   | "updateProgramBrief"
   | "draft"
   | "denied";
-/** Defines values for BillingFrequency. */
-export type BillingFrequency = "monthly" | "once";
-/** Defines values for ProgramSignUpType. */
-export type ProgramSignUpType =
+/** Defines values for CallToActionType. */
+export type CallToActionType =
   | "website"
   | "pointOfSale"
   | "sms"
@@ -323,48 +339,27 @@ export type MessageProtocol = "sms" | "mms";
 export type Recurrence = "subscription" | "transaction";
 /** Defines values for MessageDirectionality. */
 export type MessageDirectionality = "oneWay" | "twoWay";
-/** Defines values for MessageContentCategory. */
-export type MessageContentCategory =
-  | "ringTones"
-  | "smsChat"
-  | "video"
-  | "loyaltyProgramPointsPrizes"
-  | "gifting"
-  | "inApplicationBilling"
-  | "textToScreen"
-  | "games"
-  | "audioChat"
-  | "mmsPictures"
-  | "sweepstakesContestAuction"
-  | "financialBanking"
-  | "premiumWap"
-  | "queryService"
-  | "wallpaperScreensaver"
-  | "voting"
-  | "application"
-  | "mobileGivingDonations"
-  | "coupons"
-  | "loyaltyProgram"
-  | "noPointsPrizes"
-  | "informationalAlerts"
-  | "microBilling"
-  | "trivia"
-  | "entertainmentAlerts"
-  | "accountNotification"
+/** Defines values for MessageContentType. */
+export type MessageContentType =
+  | "accountNotificationInformationalAlerts"
   | "ageGatedContent"
-  | "conversationalMessaging"
+  | "chatConversationalMessaging"
   | "deliveryNotification"
+  | "donationsPledge"
   | "education"
-  | "emergencyAlerts"
   | "fraudAlerts"
   | "loanArrangement"
-  | "onBehalfOfCarrier"
+  | "loyaltyProgram"
+  | "marketingAndPromotion"
+  | "mmsPicture"
+  | "mmsVideo"
+  | "oneTimePasswordOrMultiFactorAuthentication"
   | "political"
-  | "promotionalMarketing"
   | "publicServiceAnnouncements"
   | "securityAlerts"
   | "socialMedia"
-  | "twoFactorAuthentication"
+  | "sweepstakesOrContest"
+  | "votingOrPolling"
   | "other";
 /** Defines values for MessageDirection. */
 export type MessageDirection = "toUser" | "fromUser";
@@ -388,6 +383,18 @@ export interface ShortCodesGetShortCodesOptionalParams
 
 /** Contains response data for the getShortCodes operation. */
 export type ShortCodesGetShortCodesResponse = ShortCodes;
+
+/** Optional parameters. */
+export interface ShortCodesGetCostsOptionalParams
+  extends coreClient.OperationOptions {
+  /** The number of items to skip in the result set (default: 0). */
+  skip?: number;
+  /** The maximum number of items to return in the result set (default: 100). */
+  top?: number;
+}
+
+/** Contains response data for the getCosts operation. */
+export type ShortCodesGetCostsResponse = ShortCodeCosts;
 
 /** Optional parameters. */
 export interface ShortCodesUpsertUSProgramBriefOptionalParams
@@ -432,25 +439,8 @@ export type ShortCodesGetUSProgramBriefsResponse = USProgramBriefs;
 /** Optional parameters. */
 export interface ShortCodesCreateOrReplaceUSProgramBriefAttachmentOptionalParams
   extends coreClient.OperationOptions {
-  /**
-   * Attachment type describing the purpose of the attachment
-   * e.g. 'callToAction', 'termsOfService'
-   */
-  type?: AttachmentType;
-  /**
-   * A friendly name to refer to the attachment
-   * e.g. 'myFile01'
-   */
-  fileName?: string;
   /** File size in bytes. */
-  fileSize?: number;
-  /**
-   * The type of file being attached
-   * e.g. 'pdf', 'jpg', 'png'
-   */
-  fileType?: FileType;
-  /** File content as base 64 encoded string */
-  fileContent?: string;
+  fileSizeInBytes?: number;
 }
 
 /** Contains response data for the createOrReplaceUSProgramBriefAttachment operation. */
@@ -490,6 +480,18 @@ export interface ShortCodesGetShortCodesNextOptionalParams
 
 /** Contains response data for the getShortCodesNext operation. */
 export type ShortCodesGetShortCodesNextResponse = ShortCodes;
+
+/** Optional parameters. */
+export interface ShortCodesGetCostsNextOptionalParams
+  extends coreClient.OperationOptions {
+  /** The number of items to skip in the result set (default: 0). */
+  skip?: number;
+  /** The maximum number of items to return in the result set (default: 100). */
+  top?: number;
+}
+
+/** Contains response data for the getCostsNext operation. */
+export type ShortCodesGetCostsNextResponse = ShortCodeCosts;
 
 /** Optional parameters. */
 export interface ShortCodesGetUSProgramBriefsNextOptionalParams

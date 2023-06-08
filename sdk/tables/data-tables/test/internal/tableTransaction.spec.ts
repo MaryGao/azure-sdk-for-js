@@ -11,9 +11,9 @@ import { TableTransaction, parseTransactionResponse } from "../../src/TableTrans
 import { TableClient } from "../../src/TableClient";
 import { assert } from "chai";
 
-describe("TableTransaction", () => {
-  describe("parseTransactionResponse", () => {
-    it("should handle error with no error info", () => {
+describe("TableTransaction", function () {
+  describe("parseTransactionResponse", function () {
+    it("should handle error with no error info", function () {
       const testResponse: PipelineResponse = {
         headers: createHttpHeaders(),
         request: createPipelineRequest({ url: "https://example.org" }),
@@ -28,7 +28,7 @@ describe("TableTransaction", () => {
       }
     });
 
-    it("should handle error with  odata error info", () => {
+    it("should handle error with  odata error info", function () {
       const testResponse: PipelineResponse = {
         headers: createHttpHeaders(),
         request: createPipelineRequest({ url: "https://example.org" }),
@@ -50,7 +50,7 @@ describe("TableTransaction", () => {
       }
     });
 
-    it("should honor the custom httpClient passed to the TableClient", async () => {
+    it("should honor the custom httpClient passed to the TableClient", async function () {
       let isProxy = false;
       const proxyHttpClient: HttpClient = {
         sendRequest: async (request) => {
@@ -67,6 +67,23 @@ describe("TableTransaction", () => {
 
       await client.submitTransaction(transaction.actions);
       assert.isTrue(isProxy);
+    });
+  });
+
+  describe("updateEntity", function () {
+    it("should have ergonomic overloads", function () {
+      const transaction = new TableTransaction();
+      const entity = { partitionKey: "1", rowKey: "1" };
+      transaction.updateEntity(entity);
+      transaction.updateEntity(entity, "Replace");
+      transaction.updateEntity(entity, { etag: "" });
+      transaction.updateEntity(entity, "Merge", { etag: "" });
+      assert.deepEqual(transaction.actions, [
+        ["update", { partitionKey: "1", rowKey: "1" }, "Merge", {}],
+        ["update", { partitionKey: "1", rowKey: "1" }, "Replace", {}],
+        ["update", { partitionKey: "1", rowKey: "1" }, "Merge", { etag: "" }],
+        ["update", { partitionKey: "1", rowKey: "1" }, "Merge", { etag: "" }],
+      ]);
     });
   });
 });

@@ -10,15 +10,20 @@
 // Licensed under the MIT License.
 import { EventGridManagementClient } from "@azure/arm-eventgrid";
 import { DefaultAzureCredential } from "@azure/identity";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 /**
  * This sample demonstrates how to Get information about a topic type.
  *
  * @summary Get information about a topic type.
- * x-ms-original-file: specification/eventgrid/resource-manager/Microsoft.EventGrid/preview/2021-10-15-preview/examples/TopicTypes_Get.json
+ * x-ms-original-file: specification/eventgrid/resource-manager/Microsoft.EventGrid/preview/2023-06-01-preview/examples/TopicTypes_Get.json
  */
 async function topicTypesGet() {
-  const subscriptionId = "00000000-0000-0000-0000-000000000000";
+  const subscriptionId =
+    process.env["EVENTGRID_SUBSCRIPTION_ID"] ||
+    "00000000-0000-0000-0000-000000000000";
   const topicTypeName = "Microsoft.Storage.StorageAccounts";
   const credential = new DefaultAzureCredential();
   const client = new EventGridManagementClient(credential, subscriptionId);
@@ -26,4 +31,8 @@ async function topicTypesGet() {
   console.log(result);
 }
 
-topicTypesGet().catch(console.error);
+async function main() {
+  topicTypesGet();
+}
+
+main().catch(console.error);

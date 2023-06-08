@@ -1,6 +1,5 @@
 # Release History
-
-## 2.2.6 (Unreleased)
+## 3.0.2 (Unreleased)
 
 ### Features Added
 
@@ -10,7 +9,37 @@
 
 ### Other Changes
 
+- remove the validation that credential scopes must be a valid URL [Issue #25881](https://github.com/Azure/azure-sdk-for-js/issues/25881)
+
+## 3.0.1 (2023-04-11)
+
+### Other Changes
+
+- Upgrade dependency `xml2js` version to `^0.5.0`.
+
+## 3.0.0 (2023-02-03)
+
+### Features Added
+
+- Add support for `x-ms-text` [PR# 23631](https://github.com/Azure/azure-sdk-for-js/pull/23631)
+
+### Other Changes
+
+- Update `engines` to `"node": ">=14.0.0"`
+- Remove cookie support [Issue #24654](https://github.com/Azure/azure-sdk-for-js/issues/24654)
+
+## 2.2.7 (2022-09-01)
+
+### Bugs Fixed
+
+- Addressed an issue where when header casing is preserved via a custom `HttpClient`, we would not deserialize headers correctly. [PR #22888](https://github.com/Azure/azure-sdk-for-js/pull/22888)
+
+## 2.2.6 (2022-08-04)
+
+### Other Changes
+
 - Removed the constraints check during serialization. Please refer [#21839](https://github.com/Azure/azure-sdk-for-js/issues/21839) for further details.
+- Address Trusted Types compliance issue.
 
 ## 2.2.5 (2022-05-05)
 

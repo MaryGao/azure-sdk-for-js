@@ -61,14 +61,17 @@ export interface ErrorResponseBody {
 }
 
 // @public
-export type GrantDetails = Resource & {
-    readonly offerCap?: Amount;
-    readonly effectiveDate?: Date;
-    readonly offerType?: GrantType;
-    readonly expirationDate?: Date;
-    readonly status?: GrantStatus;
+export function getContinuationToken(page: unknown): string | undefined;
+
+// @public
+export interface GrantDetails extends Resource {
     readonly allocatedBudget?: Amount;
-};
+    readonly effectiveDate?: Date;
+    readonly expirationDate?: Date;
+    readonly offerCap?: Amount;
+    readonly offerType?: GrantType;
+    readonly status?: GrantStatus;
+}
 
 // @public
 export interface GrantListResponse {
@@ -93,7 +96,6 @@ export type GrantsGetResponse = GrantDetails;
 
 // @public
 export interface GrantsListAllNextOptionalParams extends coreClient.OperationOptions {
-    includeAllocatedBudget?: boolean;
 }
 
 // @public
@@ -109,7 +111,6 @@ export type GrantsListAllResponse = GrantListResponse;
 
 // @public
 export interface GrantsListNextOptionalParams extends coreClient.OperationOptions {
-    includeAllocatedBudget?: boolean;
 }
 
 // @public
@@ -135,12 +136,12 @@ export interface InviteCodeGenerateRequest {
 }
 
 // @public
-export type JoinRequestDetails = Resource & {
+export interface JoinRequestDetails extends Resource {
+    email?: string;
     firstName?: string;
     lastName?: string;
-    email?: string;
     status?: JoinRequestStatus;
-};
+}
 
 // @public
 export interface JoinRequestList {
@@ -173,7 +174,6 @@ export type JoinRequestsGetResponse = JoinRequestDetails;
 
 // @public
 export interface JoinRequestsListNextOptionalParams extends coreClient.OperationOptions {
-    includeDenied?: boolean;
 }
 
 // @public
@@ -192,101 +192,79 @@ export type JoinRequestStatus = string;
 
 // @public
 export enum KnownActionType {
-    // (undocumented)
     Internal = "Internal"
 }
 
 // @public
 export enum KnownCreatedByType {
-    // (undocumented)
     Application = "Application",
-    // (undocumented)
     Key = "Key",
-    // (undocumented)
     ManagedIdentity = "ManagedIdentity",
-    // (undocumented)
     User = "User"
 }
 
 // @public
 export enum KnownGrantStatus {
-    // (undocumented)
     Active = "Active",
-    // (undocumented)
     Inactive = "Inactive"
 }
 
 // @public
 export enum KnownGrantType {
-    // (undocumented)
     Academic = "Academic",
-    // (undocumented)
     Student = "Student"
 }
 
 // @public
 export enum KnownJoinRequestStatus {
-    // (undocumented)
     Denied = "Denied",
-    // (undocumented)
     Pending = "Pending"
 }
 
 // @public
 export enum KnownLabStatus {
-    // (undocumented)
     Active = "Active",
-    // (undocumented)
-    Deleted = "Deleted"
+    Deleted = "Deleted",
+    Pending = "Pending"
 }
 
 // @public
 export enum KnownOrigin {
-    // (undocumented)
     System = "system",
-    // (undocumented)
     User = "user",
-    // (undocumented)
     UserSystem = "user,system"
 }
 
 // @public
 export enum KnownStudentLabStatus {
-    // (undocumented)
     Active = "Active",
-    // (undocumented)
     Deleted = "Deleted",
-    // (undocumented)
     Disabled = "Disabled",
-    // (undocumented)
     Expired = "Expired",
-    // (undocumented)
     Pending = "Pending"
 }
 
 // @public
 export enum KnownStudentRole {
-    // (undocumented)
     Admin = "Admin",
-    // (undocumented)
     Student = "Student"
 }
 
 // @public
-export type LabDetails = Resource & {
-    displayName?: string;
+export interface LabDetails extends Resource {
     budgetPerStudent?: Amount;
-    description?: string;
-    expirationDate?: Date;
-    readonly effectiveDate?: Date;
-    readonly status?: LabStatus;
-    readonly maxStudentCount?: number;
-    readonly invitationCode?: string;
     currencyPropertiesTotalAllocatedBudgetCurrency?: string;
-    valuePropertiesTotalAllocatedBudgetValue?: number;
     currencyPropertiesTotalBudgetCurrency?: string;
+    description?: string;
+    displayName?: string;
+    readonly effectiveDate?: Date;
+    expirationDate?: Date;
+    readonly invitationCode?: string;
+    readonly maxStudentCount?: number;
+    readonly status?: LabStatus;
+    valuePropertiesTotalAllocatedBudgetValue?: number;
     valuePropertiesTotalBudgetValue?: number;
-};
+}
 
 // @public
 export interface LabListResult {
@@ -333,8 +311,6 @@ export type LabsGetResponse = LabDetails;
 
 // @public
 export interface LabsListAllNextOptionalParams extends coreClient.OperationOptions {
-    includeBudget?: boolean;
-    includeDeleted?: boolean;
 }
 
 // @public
@@ -351,7 +327,6 @@ export type LabsListAllResponse = LabListResult;
 
 // @public
 export interface LabsListNextOptionalParams extends coreClient.OperationOptions {
-    includeBudget?: boolean;
 }
 
 // @public
@@ -426,32 +401,32 @@ export interface Resource {
 }
 
 // @public
-export type StudentDetails = Resource & {
+export interface StudentDetails extends Resource {
+    budget?: Amount;
+    readonly effectiveDate?: Date;
+    email?: string;
+    expirationDate?: Date;
     firstName?: string;
     lastName?: string;
-    email?: string;
     role?: StudentRole;
-    budget?: Amount;
-    readonly subscriptionId?: string;
-    expirationDate?: Date;
     readonly status?: StudentLabStatus;
-    readonly effectiveDate?: Date;
     subscriptionAlias?: string;
+    readonly subscriptionId?: string;
     subscriptionInviteLastSentDate?: Date;
-};
+}
 
 // @public
-export type StudentLabDetails = Resource & {
-    readonly displayName?: string;
-    readonly description?: string;
-    readonly expirationDate?: Date;
-    readonly role?: StudentRole;
+export interface StudentLabDetails extends Resource {
     readonly budget?: Amount;
-    readonly subscriptionId?: string;
-    readonly status?: StudentLabStatus;
+    readonly description?: string;
+    readonly displayName?: string;
     readonly effectiveDate?: Date;
+    readonly expirationDate?: Date;
     readonly labScope?: string;
-};
+    readonly role?: StudentRole;
+    readonly status?: StudentLabStatus;
+    readonly subscriptionId?: string;
+}
 
 // @public
 export interface StudentLabListResult {
@@ -526,7 +501,6 @@ export type StudentsGetResponse = StudentDetails;
 
 // @public
 export interface StudentsListNextOptionalParams extends coreClient.OperationOptions {
-    includeDeleted?: boolean;
 }
 
 // @public

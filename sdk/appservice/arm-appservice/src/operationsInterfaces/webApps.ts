@@ -7,7 +7,7 @@
  */
 
 import { PagedAsyncIterableIterator } from "@azure/core-paging";
-import { PollerLike, PollOperationState } from "@azure/core-lro";
+import { SimplePollerLike, OperationState } from "@azure/core-lro";
 import {
   Site,
   WebAppsListOptionalParams,
@@ -25,6 +25,8 @@ import {
   WebAppsListConfigurationSnapshotInfoOptionalParams,
   ContinuousWebJob,
   WebAppsListContinuousWebJobsOptionalParams,
+  CsmDeploymentStatus,
+  WebAppsListProductionSiteDeploymentStatusesOptionalParams,
   Deployment,
   WebAppsListDeploymentsOptionalParams,
   Identifier,
@@ -61,6 +63,7 @@ import {
   WebAppsGetSiteConnectionStringKeyVaultReferencesSlotOptionalParams,
   WebAppsListConfigurationSnapshotInfoSlotOptionalParams,
   WebAppsListContinuousWebJobsSlotOptionalParams,
+  WebAppsListSlotSiteDeploymentStatusesSlotOptionalParams,
   WebAppsListDeploymentsSlotOptionalParams,
   WebAppsListDomainOwnershipIdentifiersSlotOptionalParams,
   WebAppsListInstanceFunctionsSlotOptionalParams,
@@ -98,6 +101,9 @@ import {
   WebAppsListTriggeredWebJobHistoryOptionalParams,
   WebAppsListUsagesOptionalParams,
   WebAppsListWebJobsOptionalParams,
+  WorkflowEnvelope,
+  WebAppsListInstanceWorkflowsSlotOptionalParams,
+  WebAppsListWorkflowsOptionalParams,
   WebAppsGetOptionalParams,
   WebAppsGetResponse,
   WebAppsCreateOrUpdateOptionalParams,
@@ -202,6 +208,8 @@ import {
   WebAppsDeleteContinuousWebJobOptionalParams,
   WebAppsStartContinuousWebJobOptionalParams,
   WebAppsStopContinuousWebJobOptionalParams,
+  WebAppsGetProductionSiteDeploymentStatusOptionalParams,
+  WebAppsGetProductionSiteDeploymentStatusResponse,
   WebAppsGetDeploymentOptionalParams,
   WebAppsGetDeploymentResponse,
   WebAppsCreateDeploymentOptionalParams,
@@ -225,6 +233,10 @@ import {
   WebAppsCreateMSDeployOperationResponse,
   WebAppsGetMSDeployLogOptionalParams,
   WebAppsGetMSDeployLogResponse,
+  WebAppsGetOneDeployStatusOptionalParams,
+  WebAppsGetOneDeployStatusResponse,
+  WebAppsCreateOneDeployOperationOptionalParams,
+  WebAppsCreateOneDeployOperationResponse,
   WebAppsGetFunctionsAdminTokenOptionalParams,
   WebAppsGetFunctionsAdminTokenResponse,
   WebAppsGetFunctionOptionalParams,
@@ -411,6 +423,8 @@ import {
   WebAppsUpdateAuthSettingsSlotResponse,
   WebAppsGetAuthSettingsSlotOptionalParams,
   WebAppsGetAuthSettingsSlotResponse,
+  WebAppsGetAuthSettingsV2WithoutSecretsSlotOptionalParams,
+  WebAppsGetAuthSettingsV2WithoutSecretsSlotResponse,
   WebAppsUpdateAuthSettingsV2SlotOptionalParams,
   WebAppsUpdateAuthSettingsV2SlotResponse,
   WebAppsGetAuthSettingsV2SlotOptionalParams,
@@ -464,6 +478,8 @@ import {
   WebAppsDeleteContinuousWebJobSlotOptionalParams,
   WebAppsStartContinuousWebJobSlotOptionalParams,
   WebAppsStopContinuousWebJobSlotOptionalParams,
+  WebAppsGetSlotSiteDeploymentStatusSlotOptionalParams,
+  WebAppsGetSlotSiteDeploymentStatusSlotResponse,
   WebAppsGetDeploymentSlotOptionalParams,
   WebAppsGetDeploymentSlotResponse,
   WebAppsCreateDeploymentSlotOptionalParams,
@@ -699,7 +715,17 @@ import {
   WebAppsUpdateVnetConnectionGatewayOptionalParams,
   WebAppsUpdateVnetConnectionGatewayResponse,
   WebAppsGetWebJobOptionalParams,
-  WebAppsGetWebJobResponse
+  WebAppsGetWebJobResponse,
+  WebAppsDeployWorkflowArtifactsOptionalParams,
+  WebAppsDeployWorkflowArtifactsSlotOptionalParams,
+  WebAppsGetInstanceWorkflowSlotOptionalParams,
+  WebAppsGetInstanceWorkflowSlotResponse,
+  WebAppsListWorkflowsConnectionsSlotOptionalParams,
+  WebAppsListWorkflowsConnectionsSlotResponse,
+  WebAppsGetWorkflowOptionalParams,
+  WebAppsGetWorkflowResponse,
+  WebAppsListWorkflowsConnectionsOptionalParams,
+  WebAppsListWorkflowsConnectionsResponse
 } from "../models";
 
 /// <reference lib="esnext.asynciterable" />
@@ -798,6 +824,17 @@ export interface WebApps {
     name: string,
     options?: WebAppsListContinuousWebJobsOptionalParams
   ): PagedAsyncIterableIterator<ContinuousWebJob>;
+  /**
+   * List deployment statuses for an app (or deployment slot, if specified).
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Name of the app.
+   * @param options The options parameters.
+   */
+  listProductionSiteDeploymentStatuses(
+    resourceGroupName: string,
+    name: string,
+    options?: WebAppsListProductionSiteDeploymentStatusesOptionalParams
+  ): PagedAsyncIterableIterator<CsmDeploymentStatus>;
   /**
    * Description for List deployments for an app, or a deployment slot.
    * @param resourceGroupName Name of the resource group to which the resource belongs.
@@ -1105,6 +1142,20 @@ export interface WebApps {
     slot: string,
     options?: WebAppsListContinuousWebJobsSlotOptionalParams
   ): PagedAsyncIterableIterator<ContinuousWebJob>;
+  /**
+   * List deployment statuses for an app (or deployment slot, if specified).
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Name of the app.
+   * @param slot Name of the deployment slot. If a slot is not specified, the API will get the deployment
+   *             status for the production slot.
+   * @param options The options parameters.
+   */
+  listSlotSiteDeploymentStatusesSlot(
+    resourceGroupName: string,
+    name: string,
+    slot: string,
+    options?: WebAppsListSlotSiteDeploymentStatusesSlotOptionalParams
+  ): PagedAsyncIterableIterator<CsmDeploymentStatus>;
   /**
    * Description for List deployments for an app, or a deployment slot.
    * @param resourceGroupName Name of the resource group to which the resource belongs.
@@ -1531,6 +1582,30 @@ export interface WebApps {
     options?: WebAppsListWebJobsOptionalParams
   ): PagedAsyncIterableIterator<WebJob>;
   /**
+   * List the workflows for a web site, or a deployment slot.
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Site name.
+   * @param slot Name of the deployment slot.
+   * @param options The options parameters.
+   */
+  listInstanceWorkflowsSlot(
+    resourceGroupName: string,
+    name: string,
+    slot: string,
+    options?: WebAppsListInstanceWorkflowsSlotOptionalParams
+  ): PagedAsyncIterableIterator<WorkflowEnvelope>;
+  /**
+   * List the workflows for a web site, or a deployment slot.
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Site name.
+   * @param options The options parameters.
+   */
+  listWorkflows(
+    resourceGroupName: string,
+    name: string,
+    options?: WebAppsListWorkflowsOptionalParams
+  ): PagedAsyncIterableIterator<WorkflowEnvelope>;
+  /**
    * Description for Gets the details of a web, mobile, or API app.
    * @param resourceGroupName Name of the resource group to which the resource belongs.
    * @param name Name of the app.
@@ -1556,8 +1631,8 @@ export interface WebApps {
     siteEnvelope: Site,
     options?: WebAppsCreateOrUpdateOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsCreateOrUpdateResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsCreateOrUpdateResponse>,
       WebAppsCreateOrUpdateResponse
     >
   >;
@@ -1697,7 +1772,7 @@ export interface WebApps {
     backupId: string,
     request: RestoreRequest,
     options?: WebAppsRestoreOptionalParams
-  ): Promise<PollerLike<PollOperationState<void>, void>>;
+  ): Promise<SimplePollerLike<OperationState<void>, void>>;
   /**
    * Description for Restores a specific backup to another app (or deployment slot, if specified).
    * @param resourceGroupName Name of the resource group to which the resource belongs.
@@ -2013,8 +2088,8 @@ export interface WebApps {
     name: string,
     options?: WebAppsListPublishingCredentialsOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsListPublishingCredentialsResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsListPublishingCredentialsResponse>,
       WebAppsListPublishingCredentialsResponse
     >
   >;
@@ -2218,6 +2293,37 @@ export interface WebApps {
     options?: WebAppsStopContinuousWebJobOptionalParams
   ): Promise<void>;
   /**
+   * Gets the deployment status for an app (or deployment slot, if specified).
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Name of the app.
+   * @param deploymentStatusId GUID of the deployment operation.
+   * @param options The options parameters.
+   */
+  beginGetProductionSiteDeploymentStatus(
+    resourceGroupName: string,
+    name: string,
+    deploymentStatusId: string,
+    options?: WebAppsGetProductionSiteDeploymentStatusOptionalParams
+  ): Promise<
+    SimplePollerLike<
+      OperationState<WebAppsGetProductionSiteDeploymentStatusResponse>,
+      WebAppsGetProductionSiteDeploymentStatusResponse
+    >
+  >;
+  /**
+   * Gets the deployment status for an app (or deployment slot, if specified).
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Name of the app.
+   * @param deploymentStatusId GUID of the deployment operation.
+   * @param options The options parameters.
+   */
+  beginGetProductionSiteDeploymentStatusAndWait(
+    resourceGroupName: string,
+    name: string,
+    deploymentStatusId: string,
+    options?: WebAppsGetProductionSiteDeploymentStatusOptionalParams
+  ): Promise<WebAppsGetProductionSiteDeploymentStatusResponse>;
+  /**
    * Description for Get a deployment by its ID for an app, or a deployment slot.
    * @param resourceGroupName Name of the resource group to which the resource belongs.
    * @param name Name of the app.
@@ -2369,8 +2475,8 @@ export interface WebApps {
     mSDeploy: MSDeploy,
     options?: WebAppsCreateMSDeployOperationOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsCreateMSDeployOperationResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsCreateMSDeployOperationResponse>,
       WebAppsCreateMSDeployOperationResponse
     >
   >;
@@ -2398,6 +2504,29 @@ export interface WebApps {
     name: string,
     options?: WebAppsGetMSDeployLogOptionalParams
   ): Promise<WebAppsGetMSDeployLogResponse>;
+  /**
+   * Description for Invoke onedeploy status API /api/deployments and gets the deployment status for the
+   * site
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Name of web app.
+   * @param options The options parameters.
+   */
+  getOneDeployStatus(
+    resourceGroupName: string,
+    name: string,
+    options?: WebAppsGetOneDeployStatusOptionalParams
+  ): Promise<WebAppsGetOneDeployStatusResponse>;
+  /**
+   * Description for Invoke the OneDeploy publish web app extension.
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Name of web app.
+   * @param options The options parameters.
+   */
+  createOneDeployOperation(
+    resourceGroupName: string,
+    name: string,
+    options?: WebAppsCreateOneDeployOperationOptionalParams
+  ): Promise<WebAppsCreateOneDeployOperationResponse>;
   /**
    * Description for Fetch a short lived token that can be exchanged for a master key.
    * @param resourceGroupName Name of the resource group to which the resource belongs.
@@ -2437,8 +2566,8 @@ export interface WebApps {
     functionEnvelope: FunctionEnvelope,
     options?: WebAppsCreateFunctionOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsCreateFunctionResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsCreateFunctionResponse>,
       WebAppsCreateFunctionResponse
     >
   >;
@@ -2819,8 +2948,8 @@ export interface WebApps {
     mSDeploy: MSDeploy,
     options?: WebAppsCreateInstanceMSDeployOperationOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsCreateInstanceMSDeployOperationResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsCreateInstanceMSDeployOperationResponse>,
       WebAppsCreateInstanceMSDeployOperationResponse
     >
   >;
@@ -2957,8 +3086,8 @@ export interface WebApps {
     migrationOptions: StorageMigrationOptions,
     options?: WebAppsMigrateStorageOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsMigrateStorageResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsMigrateStorageResponse>,
       WebAppsMigrateStorageResponse
     >
   >;
@@ -2990,8 +3119,8 @@ export interface WebApps {
     migrationRequestEnvelope: MigrateMySqlRequest,
     options?: WebAppsMigrateMySqlOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsMigrateMySqlResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsMigrateMySqlResponse>,
       WebAppsMigrateMySqlResponse
     >
   >;
@@ -3125,8 +3254,8 @@ export interface WebApps {
     name: string,
     options?: WebAppsStartWebSiteNetworkTraceOperationOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsStartWebSiteNetworkTraceOperationResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsStartWebSiteNetworkTraceOperationResponse>,
       WebAppsStartWebSiteNetworkTraceOperationResponse
     >
   >;
@@ -3337,10 +3466,8 @@ export interface WebApps {
     privateEndpointWrapper: PrivateLinkConnectionApprovalRequestResource,
     options?: WebAppsApproveOrRejectPrivateEndpointConnectionOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<
-        WebAppsApproveOrRejectPrivateEndpointConnectionResponse
-      >,
+    SimplePollerLike<
+      OperationState<WebAppsApproveOrRejectPrivateEndpointConnectionResponse>,
       WebAppsApproveOrRejectPrivateEndpointConnectionResponse
     >
   >;
@@ -3372,8 +3499,8 @@ export interface WebApps {
     privateEndpointConnectionName: string,
     options?: WebAppsDeletePrivateEndpointConnectionOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsDeletePrivateEndpointConnectionResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsDeletePrivateEndpointConnectionResponse>,
       WebAppsDeletePrivateEndpointConnectionResponse
     >
   >;
@@ -3548,7 +3675,7 @@ export interface WebApps {
     name: string,
     request: RestoreRequest,
     options?: WebAppsRestoreFromBackupBlobOptionalParams
-  ): Promise<PollerLike<PollOperationState<void>, void>>;
+  ): Promise<SimplePollerLike<OperationState<void>, void>>;
   /**
    * Description for Restores an app from a backup blob in Azure Storage.
    * @param resourceGroupName Name of the resource group to which the resource belongs.
@@ -3574,7 +3701,7 @@ export interface WebApps {
     name: string,
     restoreRequest: DeletedAppRestoreRequest,
     options?: WebAppsRestoreFromDeletedAppOptionalParams
-  ): Promise<PollerLike<PollOperationState<void>, void>>;
+  ): Promise<SimplePollerLike<OperationState<void>, void>>;
   /**
    * Description for Restores a deleted web app to this web app.
    * @param resourceGroupName Name of the resource group to which the resource belongs.
@@ -3601,7 +3728,7 @@ export interface WebApps {
     name: string,
     restoreRequest: SnapshotRestoreRequest,
     options?: WebAppsRestoreSnapshotOptionalParams
-  ): Promise<PollerLike<PollOperationState<void>, void>>;
+  ): Promise<SimplePollerLike<OperationState<void>, void>>;
   /**
    * Description for Restores a web app from a snapshot.
    * @param resourceGroupName Name of the resource group to which the resource belongs.
@@ -3642,8 +3769,8 @@ export interface WebApps {
     siteExtensionId: string,
     options?: WebAppsInstallSiteExtensionOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsInstallSiteExtensionResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsInstallSiteExtensionResponse>,
       WebAppsInstallSiteExtensionResponse
     >
   >;
@@ -3704,8 +3831,8 @@ export interface WebApps {
     siteEnvelope: Site,
     options?: WebAppsCreateOrUpdateSlotOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsCreateOrUpdateSlotResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsCreateOrUpdateSlotResponse>,
       WebAppsCreateOrUpdateSlotResponse
     >
   >;
@@ -3872,7 +3999,7 @@ export interface WebApps {
     slot: string,
     request: RestoreRequest,
     options?: WebAppsRestoreSlotOptionalParams
-  ): Promise<PollerLike<PollOperationState<void>, void>>;
+  ): Promise<SimplePollerLike<OperationState<void>, void>>;
   /**
    * Description for Restores a specific backup to another app (or deployment slot, if specified).
    * @param resourceGroupName Name of the resource group to which the resource belongs.
@@ -4006,6 +4133,20 @@ export interface WebApps {
     slot: string,
     options?: WebAppsGetAuthSettingsSlotOptionalParams
   ): Promise<WebAppsGetAuthSettingsSlotResponse>;
+  /**
+   * Gets site's Authentication / Authorization settings for apps via the V2 format
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Name of the app.
+   * @param slot Name of the deployment slot. If a slot is not specified, the API will get the settings
+   *             for the production slot.
+   * @param options The options parameters.
+   */
+  getAuthSettingsV2WithoutSecretsSlot(
+    resourceGroupName: string,
+    name: string,
+    slot: string,
+    options?: WebAppsGetAuthSettingsV2WithoutSecretsSlotOptionalParams
+  ): Promise<WebAppsGetAuthSettingsV2WithoutSecretsSlotResponse>;
   /**
    * Description for Updates site's Authentication / Authorization settings for apps via the V2 format
    * @param resourceGroupName Name of the resource group to which the resource belongs.
@@ -4244,8 +4385,8 @@ export interface WebApps {
     slot: string,
     options?: WebAppsListPublishingCredentialsSlotOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsListPublishingCredentialsSlotResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsListPublishingCredentialsSlotResponse>,
       WebAppsListPublishingCredentialsSlotResponse
     >
   >;
@@ -4461,6 +4602,43 @@ export interface WebApps {
     options?: WebAppsStopContinuousWebJobSlotOptionalParams
   ): Promise<void>;
   /**
+   * Gets the deployment status for an app (or deployment slot, if specified).
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Name of the app.
+   * @param slot Name of the deployment slot. If a slot is not specified, the API will get the deployment
+   *             status for the production slot.
+   * @param deploymentStatusId GUID of the deployment operation.
+   * @param options The options parameters.
+   */
+  beginGetSlotSiteDeploymentStatusSlot(
+    resourceGroupName: string,
+    name: string,
+    slot: string,
+    deploymentStatusId: string,
+    options?: WebAppsGetSlotSiteDeploymentStatusSlotOptionalParams
+  ): Promise<
+    SimplePollerLike<
+      OperationState<WebAppsGetSlotSiteDeploymentStatusSlotResponse>,
+      WebAppsGetSlotSiteDeploymentStatusSlotResponse
+    >
+  >;
+  /**
+   * Gets the deployment status for an app (or deployment slot, if specified).
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Name of the app.
+   * @param slot Name of the deployment slot. If a slot is not specified, the API will get the deployment
+   *             status for the production slot.
+   * @param deploymentStatusId GUID of the deployment operation.
+   * @param options The options parameters.
+   */
+  beginGetSlotSiteDeploymentStatusSlotAndWait(
+    resourceGroupName: string,
+    name: string,
+    slot: string,
+    deploymentStatusId: string,
+    options?: WebAppsGetSlotSiteDeploymentStatusSlotOptionalParams
+  ): Promise<WebAppsGetSlotSiteDeploymentStatusSlotResponse>;
+  /**
    * Description for Get a deployment by its ID for an app, or a deployment slot.
    * @param resourceGroupName Name of the resource group to which the resource belongs.
    * @param name Name of the app.
@@ -4643,8 +4821,8 @@ export interface WebApps {
     mSDeploy: MSDeploy,
     options?: WebAppsCreateMSDeployOperationSlotOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsCreateMSDeployOperationSlotResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsCreateMSDeployOperationSlotResponse>,
       WebAppsCreateMSDeployOperationSlotResponse
     >
   >;
@@ -4721,8 +4899,8 @@ export interface WebApps {
     functionEnvelope: FunctionEnvelope,
     options?: WebAppsCreateInstanceFunctionSlotOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsCreateInstanceFunctionSlotResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsCreateInstanceFunctionSlotResponse>,
       WebAppsCreateInstanceFunctionSlotResponse
     >
   >;
@@ -5166,8 +5344,8 @@ export interface WebApps {
     mSDeploy: MSDeploy,
     options?: WebAppsCreateInstanceMSDeployOperationSlotOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsCreateInstanceMSDeployOperationSlotResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsCreateInstanceMSDeployOperationSlotResponse>,
       WebAppsCreateInstanceMSDeployOperationSlotResponse
     >
   >;
@@ -5451,8 +5629,8 @@ export interface WebApps {
     slot: string,
     options?: WebAppsStartWebSiteNetworkTraceOperationSlotOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsStartWebSiteNetworkTraceOperationSlotResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsStartWebSiteNetworkTraceOperationSlotResponse>,
       WebAppsStartWebSiteNetworkTraceOperationSlotResponse
     >
   >;
@@ -5704,8 +5882,8 @@ export interface WebApps {
     privateEndpointWrapper: PrivateLinkConnectionApprovalRequestResource,
     options?: WebAppsApproveOrRejectPrivateEndpointConnectionSlotOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<
+    SimplePollerLike<
+      OperationState<
         WebAppsApproveOrRejectPrivateEndpointConnectionSlotResponse
       >,
       WebAppsApproveOrRejectPrivateEndpointConnectionSlotResponse
@@ -5743,8 +5921,8 @@ export interface WebApps {
     slot: string,
     options?: WebAppsDeletePrivateEndpointConnectionSlotOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsDeletePrivateEndpointConnectionSlotResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsDeletePrivateEndpointConnectionSlotResponse>,
       WebAppsDeletePrivateEndpointConnectionSlotResponse
     >
   >;
@@ -5956,7 +6134,7 @@ export interface WebApps {
     slot: string,
     request: RestoreRequest,
     options?: WebAppsRestoreFromBackupBlobSlotOptionalParams
-  ): Promise<PollerLike<PollOperationState<void>, void>>;
+  ): Promise<SimplePollerLike<OperationState<void>, void>>;
   /**
    * Description for Restores an app from a backup blob in Azure Storage.
    * @param resourceGroupName Name of the resource group to which the resource belongs.
@@ -5987,7 +6165,7 @@ export interface WebApps {
     slot: string,
     restoreRequest: DeletedAppRestoreRequest,
     options?: WebAppsRestoreFromDeletedAppSlotOptionalParams
-  ): Promise<PollerLike<PollOperationState<void>, void>>;
+  ): Promise<SimplePollerLike<OperationState<void>, void>>;
   /**
    * Description for Restores a deleted web app to this web app.
    * @param resourceGroupName Name of the resource group to which the resource belongs.
@@ -6018,7 +6196,7 @@ export interface WebApps {
     slot: string,
     restoreRequest: SnapshotRestoreRequest,
     options?: WebAppsRestoreSnapshotSlotOptionalParams
-  ): Promise<PollerLike<PollOperationState<void>, void>>;
+  ): Promise<SimplePollerLike<OperationState<void>, void>>;
   /**
    * Description for Restores a web app from a snapshot.
    * @param resourceGroupName Name of the resource group to which the resource belongs.
@@ -6067,8 +6245,8 @@ export interface WebApps {
     slot: string,
     options?: WebAppsInstallSiteExtensionSlotOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsInstallSiteExtensionSlotResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsInstallSiteExtensionSlotResponse>,
       WebAppsInstallSiteExtensionSlotResponse
     >
   >;
@@ -6119,7 +6297,7 @@ export interface WebApps {
     slot: string,
     slotSwapEntity: CsmSlotEntity,
     options?: WebAppsSwapSlotOptionalParams
-  ): Promise<PollerLike<PollOperationState<void>, void>>;
+  ): Promise<SimplePollerLike<OperationState<void>, void>>;
   /**
    * Description for Swaps two deployment slots of an app.
    * @param resourceGroupName Name of the resource group to which the resource belongs.
@@ -6166,8 +6344,8 @@ export interface WebApps {
     siteSourceControl: SiteSourceControl,
     options?: WebAppsCreateOrUpdateSourceControlSlotOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsCreateOrUpdateSourceControlSlotResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsCreateOrUpdateSourceControlSlotResponse>,
       WebAppsCreateOrUpdateSourceControlSlotResponse
     >
   >;
@@ -6244,8 +6422,8 @@ export interface WebApps {
     slot: string,
     options?: WebAppsStartNetworkTraceSlotOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsStartNetworkTraceSlotResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsStartNetworkTraceSlotResponse>,
       WebAppsStartNetworkTraceSlotResponse
     >
   >;
@@ -6551,7 +6729,7 @@ export interface WebApps {
     name: string,
     slotSwapEntity: CsmSlotEntity,
     options?: WebAppsSwapSlotWithProductionOptionalParams
-  ): Promise<PollerLike<PollOperationState<void>, void>>;
+  ): Promise<SimplePollerLike<OperationState<void>, void>>;
   /**
    * Description for Swaps two deployment slots of an app.
    * @param resourceGroupName Name of the resource group to which the resource belongs.
@@ -6589,8 +6767,8 @@ export interface WebApps {
     siteSourceControl: SiteSourceControl,
     options?: WebAppsCreateOrUpdateSourceControlOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsCreateOrUpdateSourceControlResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsCreateOrUpdateSourceControlResponse>,
       WebAppsCreateOrUpdateSourceControlResponse
     >
   >;
@@ -6653,8 +6831,8 @@ export interface WebApps {
     name: string,
     options?: WebAppsStartNetworkTraceOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<WebAppsStartNetworkTraceResponse>,
+    SimplePollerLike<
+      OperationState<WebAppsStartNetworkTraceResponse>,
       WebAppsStartNetworkTraceResponse
     >
   >;
@@ -6898,4 +7076,80 @@ export interface WebApps {
     webJobName: string,
     options?: WebAppsGetWebJobOptionalParams
   ): Promise<WebAppsGetWebJobResponse>;
+  /**
+   * Description for Creates the artifacts for web site, or a deployment slot.
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Site name.
+   * @param options The options parameters.
+   */
+  deployWorkflowArtifacts(
+    resourceGroupName: string,
+    name: string,
+    options?: WebAppsDeployWorkflowArtifactsOptionalParams
+  ): Promise<void>;
+  /**
+   * Description for Creates the artifacts for web site, or a deployment slot.
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Site name.
+   * @param slot Name of the deployment slot.
+   * @param options The options parameters.
+   */
+  deployWorkflowArtifactsSlot(
+    resourceGroupName: string,
+    name: string,
+    slot: string,
+    options?: WebAppsDeployWorkflowArtifactsSlotOptionalParams
+  ): Promise<void>;
+  /**
+   * Get workflow information by its ID for web site, or a deployment slot.
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Site name.
+   * @param slot Name of the deployment slot.
+   * @param workflowName Workflow name.
+   * @param options The options parameters.
+   */
+  getInstanceWorkflowSlot(
+    resourceGroupName: string,
+    name: string,
+    slot: string,
+    workflowName: string,
+    options?: WebAppsGetInstanceWorkflowSlotOptionalParams
+  ): Promise<WebAppsGetInstanceWorkflowSlotResponse>;
+  /**
+   * Lists logic app's connections for web site, or a deployment slot.
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Site name.
+   * @param slot Name of the deployment slot.
+   * @param options The options parameters.
+   */
+  listWorkflowsConnectionsSlot(
+    resourceGroupName: string,
+    name: string,
+    slot: string,
+    options?: WebAppsListWorkflowsConnectionsSlotOptionalParams
+  ): Promise<WebAppsListWorkflowsConnectionsSlotResponse>;
+  /**
+   * Get workflow information by its ID for web site, or a deployment slot.
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Site name.
+   * @param workflowName Workflow name.
+   * @param options The options parameters.
+   */
+  getWorkflow(
+    resourceGroupName: string,
+    name: string,
+    workflowName: string,
+    options?: WebAppsGetWorkflowOptionalParams
+  ): Promise<WebAppsGetWorkflowResponse>;
+  /**
+   * Lists logic app's connections for web site, or a deployment slot.
+   * @param resourceGroupName Name of the resource group to which the resource belongs.
+   * @param name Site name.
+   * @param options The options parameters.
+   */
+  listWorkflowsConnections(
+    resourceGroupName: string,
+    name: string,
+    options?: WebAppsListWorkflowsConnectionsOptionalParams
+  ): Promise<WebAppsListWorkflowsConnectionsResponse>;
 }

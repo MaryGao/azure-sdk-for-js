@@ -10,16 +10,22 @@
 // Licensed under the MIT License.
 import { EventGridManagementClient } from "@azure/arm-eventgrid";
 import { DefaultAzureCredential } from "@azure/identity";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 /**
  * This sample demonstrates how to List the two keys used to publish to a topic.
  *
  * @summary List the two keys used to publish to a topic.
- * x-ms-original-file: specification/eventgrid/resource-manager/Microsoft.EventGrid/preview/2021-10-15-preview/examples/Topics_ListSharedAccessKeys.json
+ * x-ms-original-file: specification/eventgrid/resource-manager/Microsoft.EventGrid/preview/2023-06-01-preview/examples/Topics_ListSharedAccessKeys.json
  */
 async function topicsListSharedAccessKeys() {
-  const subscriptionId = "5b4b650e-28b9-4790-b3ab-ddbd88d727c4";
-  const resourceGroupName = "examplerg";
+  const subscriptionId =
+    process.env["EVENTGRID_SUBSCRIPTION_ID"] ||
+    "8f6b6269-84f2-4d09-9e31-1127efcd1e40";
+  const resourceGroupName =
+    process.env["EVENTGRID_RESOURCE_GROUP"] || "examplerg";
   const topicName = "exampletopic2";
   const credential = new DefaultAzureCredential();
   const client = new EventGridManagementClient(credential, subscriptionId);
@@ -30,4 +36,8 @@ async function topicsListSharedAccessKeys() {
   console.log(result);
 }
 
-topicsListSharedAccessKeys().catch(console.error);
+async function main() {
+  topicsListSharedAccessKeys();
+}
+
+main().catch(console.error);

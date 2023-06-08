@@ -8,31 +8,26 @@
 
 import {
   env,
-  record,
-  RecorderEnvironmentSetup,
   Recorder,
+  RecorderStartOptions,
   delay,
-  isPlaybackMode
+  isPlaybackMode,
 } from "@azure-tools/test-recorder";
-import * as assert from "assert";
-import { ClientSecretCredential } from "@azure/identity";
+import { createTestCredential } from "@azure-tools/test-credential";
+import { assert } from "chai";
+import { Context } from "mocha";
 import { PolicyClient } from "../src/policyClient";
+import { ManagementGroupsAPI } from "@azure/arm-managementgroups";
 
-const recorderEnvSetup: RecorderEnvironmentSetup = {
-  replaceableVariables: {
-    AZURE_CLIENT_ID: "azure_client_id",
-    AZURE_CLIENT_SECRET: "azure_client_secret",
-    AZURE_TENANT_ID: "88888888-8888-8888-8888-888888888888",
-    SUBSCRIPTION_ID: "azure_subscription_id"
-  },
-  customizationsOnRecordings: [
-    (recording: any): any =>
-      recording.replace(
-        /"access_token":"[^"]*"/g,
-        `"access_token":"access_token"`
-      )
-  ],
-  queryParametersToSkip: []
+const replaceableVariables: Record<string, string> = {
+  AZURE_CLIENT_ID: "azure_client_id",
+  AZURE_CLIENT_SECRET: "azure_client_secret",
+  AZURE_TENANT_ID: "88888888-8888-8888-8888-888888888888",
+  SUBSCRIPTION_ID: "azure_subscription_id"
+};
+
+const recorderOptions: RecorderStartOptions = {
+  envSetupForPlayback: replaceableVariables
 };
 
 export const testPollingOptions = {
@@ -43,29 +38,30 @@ describe("Policy test", () => {
   let recorder: Recorder;
   let subscriptionId: string;
   let client: PolicyClient;
+  let client1: PolicyClient;
   let location: string;
   let resourceGroup: string;
   let groupId: string;
   let policyName: string;
   let scope: string;
   let policyAssignmentName: string;
+  let managementclient: ManagementGroupsAPI;
 
-  beforeEach(async function () {
-    recorder = record(this, recorderEnvSetup);
-    subscriptionId = env.SUBSCRIPTION_ID;
+  beforeEach(async function (this: Context) {
+    recorder = new Recorder(this.currentTest);
+    await recorder.start(recorderOptions);
+    subscriptionId = env.SUBSCRIPTION_ID || '';
     // This is an example of how the environment variables are used
-    const credential = new ClientSecretCredential(
-      env.AZURE_TENANT_ID,
-      env.AZURE_CLIENT_ID,
-      env.AZURE_CLIENT_SECRET
-    );
-    client = new PolicyClient(credential, subscriptionId);
+    const credential = createTestCredential();
+    client = new PolicyClient(credential, subscriptionId, recorder.configureClientOptions({}));
+    managementclient = new ManagementGroupsAPI(credential, recorder.configureClientOptions({}))
     location = "eastus";
     resourceGroup = "myjstest";
     groupId = "20000000-0001-0000-0000-000000000123";
     policyName = "jspolicy";
-    scope = "/providers/Microsoft.Management/managementgroups/20000000-0001-0000-0000-000000000123/";
+    scope = "providers/Microsoft.Management/managementgroups/20000000-0001-0000-0000-000000000123/";
     policyAssignmentName = "passigment";
+    client1 = new PolicyClient(credential, recorder.configureClientOptions({}));
   });
 
   afterEach(async function () {
@@ -73,6 +69,11 @@ describe("Policy test", () => {
   });
 
   it("policyDefinitions create test", async function () {
+    const result = await managementclient.managementGroups.beginCreateOrUpdateAndWait(
+      groupId,
+      { name: groupId }
+    )
+
     const res = await client.policyDefinitions.createOrUpdateAtManagementGroup(policyName, groupId, {
       policyType: "Custom",
       description: "Don't create a VM anywhere",
@@ -111,8 +112,8 @@ describe("Policy test", () => {
   });
 
   it("policyAssignments create test", async function () {
-    const definition = await client.policyDefinitions.getAtManagementGroup(policyName, groupId);
-    const res = await client.policyAssignments.create(scope, policyAssignmentName, {
+    const definition = await client1.policyDefinitions.getAtManagementGroup(policyName, groupId);
+    const res = await client1.policyAssignments.create(scope, policyAssignmentName, {
       policyDefinitionId: definition.id
     })
     assert.equal(res.name, policyAssignmentName);
@@ -126,6 +127,17 @@ describe("Policy test", () => {
   it("policyAssignments list test", async function () {
     const resArray = new Array();
     for await (let item of client.policyAssignments.list()) {
+      resArray.push(item);
+    }
+    assert.notEqual(resArray.length, 0);
+  });
+
+  it("policyAssignments list by managementgroup test", async function () {
+    const filter = "atScope()";
+    const resArray = new Array();
+    for await (let item of client1.policyAssignments.listForManagementGroup(groupId, {
+      filter
+    })) {
       resArray.push(item);
     }
     assert.notEqual(resArray.length, 0);

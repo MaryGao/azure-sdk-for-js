@@ -7,7 +7,7 @@
  */
 
 import { PagedAsyncIterableIterator } from "@azure/core-paging";
-import { PollerLike, PollOperationState } from "@azure/core-lro";
+import { SimplePollerLike, OperationState } from "@azure/core-lro";
 import {
   ServiceResource,
   ServicesListBySubscriptionOptionalParams,
@@ -27,6 +27,8 @@ import {
   ServicesDisableTestEndpointOptionalParams,
   ServicesEnableTestEndpointOptionalParams,
   ServicesEnableTestEndpointResponse,
+  ServicesStopOptionalParams,
+  ServicesStartOptionalParams,
   NameAvailabilityParameters,
   ServicesCheckNameAvailabilityOptionalParams,
   ServicesCheckNameAvailabilityResponse
@@ -78,8 +80,8 @@ export interface Services {
     resource: ServiceResource,
     options?: ServicesCreateOrUpdateOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<ServicesCreateOrUpdateResponse>,
+    SimplePollerLike<
+      OperationState<ServicesCreateOrUpdateResponse>,
       ServicesCreateOrUpdateResponse
     >
   >;
@@ -108,7 +110,7 @@ export interface Services {
     resourceGroupName: string,
     serviceName: string,
     options?: ServicesDeleteOptionalParams
-  ): Promise<PollerLike<PollOperationState<void>, void>>;
+  ): Promise<SimplePollerLike<OperationState<void>, void>>;
   /**
    * Operation to delete a Service.
    * @param resourceGroupName The name of the resource group that contains the resource. You can obtain
@@ -135,8 +137,8 @@ export interface Services {
     resource: ServiceResource,
     options?: ServicesUpdateOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<ServicesUpdateResponse>,
+    SimplePollerLike<
+      OperationState<ServicesUpdateResponse>,
       ServicesUpdateResponse
     >
   >;
@@ -204,6 +206,54 @@ export interface Services {
     serviceName: string,
     options?: ServicesEnableTestEndpointOptionalParams
   ): Promise<ServicesEnableTestEndpointResponse>;
+  /**
+   * Stop a Service.
+   * @param resourceGroupName The name of the resource group that contains the resource. You can obtain
+   *                          this value from the Azure Resource Manager API or the portal.
+   * @param serviceName The name of the Service resource.
+   * @param options The options parameters.
+   */
+  beginStop(
+    resourceGroupName: string,
+    serviceName: string,
+    options?: ServicesStopOptionalParams
+  ): Promise<SimplePollerLike<OperationState<void>, void>>;
+  /**
+   * Stop a Service.
+   * @param resourceGroupName The name of the resource group that contains the resource. You can obtain
+   *                          this value from the Azure Resource Manager API or the portal.
+   * @param serviceName The name of the Service resource.
+   * @param options The options parameters.
+   */
+  beginStopAndWait(
+    resourceGroupName: string,
+    serviceName: string,
+    options?: ServicesStopOptionalParams
+  ): Promise<void>;
+  /**
+   * Start a Service.
+   * @param resourceGroupName The name of the resource group that contains the resource. You can obtain
+   *                          this value from the Azure Resource Manager API or the portal.
+   * @param serviceName The name of the Service resource.
+   * @param options The options parameters.
+   */
+  beginStart(
+    resourceGroupName: string,
+    serviceName: string,
+    options?: ServicesStartOptionalParams
+  ): Promise<SimplePollerLike<OperationState<void>, void>>;
+  /**
+   * Start a Service.
+   * @param resourceGroupName The name of the resource group that contains the resource. You can obtain
+   *                          this value from the Azure Resource Manager API or the portal.
+   * @param serviceName The name of the Service resource.
+   * @param options The options parameters.
+   */
+  beginStartAndWait(
+    resourceGroupName: string,
+    serviceName: string,
+    options?: ServicesStartOptionalParams
+  ): Promise<void>;
   /**
    * Checks that the resource name is valid and is not already in use.
    * @param location the region

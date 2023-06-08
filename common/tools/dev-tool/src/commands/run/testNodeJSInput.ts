@@ -2,6 +2,7 @@
 // Licensed under the MIT license
 
 import { leafCommand, makeCommandInfo } from "../../framework/command";
+import { isModuleProject } from "../../util/resolveProject";
 import { runTestsWithProxyTool } from "../../util/testUtils";
 
 export const commandInfo = makeCommandInfo(
@@ -10,10 +11,14 @@ export const commandInfo = makeCommandInfo(
 );
 
 export default leafCommand(commandInfo, async (options) => {
-  const defaultMochaArgs =
-    "-r esm --require source-map-support/register --reporter ../../../common/tools/mocha-multi-reporter.js --full-trace";
-  const mochaArgs = options["--"]?.length
-    ? options["--"]?.join(" ")
+  const defaultMochaArgs = `${
+    (await isModuleProject()) ? "" : "-r esm "
+  } --require source-map-support/register --reporter ../../../common/tools/mocha-multi-reporter.js --full-trace`;
+  const updatedArgs = options["--"]?.map((opt) =>
+    opt.includes("**") && !opt.startsWith("'") && !opt.startsWith('"') ? `"${opt}"` : opt
+  );
+  const mochaArgs = updatedArgs?.length
+    ? updatedArgs?.join(" ")
     : '--timeout 5000000 "dist-esm/test/{,!(browser)/**/}/*.spec.js"';
   return runTestsWithProxyTool({
     command: `nyc mocha ${defaultMochaArgs} ${mochaArgs}`,

@@ -3,8 +3,6 @@
 
 import {
   Document as GeneratedDocument,
-  DocumentCaption as GeneratedDocumentCaption,
-  DocumentFootnote as GeneratedDocumentFootnote,
   DocumentKeyValueElement as GeneratedDocumentKeyValueElement,
   DocumentLine as GeneratedDocumentLine,
   DocumentPage as GeneratedDocumentPage,
@@ -13,11 +11,13 @@ import {
   DocumentTable as GeneratedDocumentTable,
   DocumentTableCell as GeneratedDocumentTableCell,
   DocumentWord as GeneratedDocumentWord,
+  DocumentImage as GeneratedDocumentImage,
+  DocumentAnnotation as GeneratedDocumentAnnotation,
+  DocumentBarcode as GeneratedDocumentBarcode,
+  DocumentFormula as GeneratedDocumentFormula,
 } from "../../src/generated";
 import {
   Document,
-  DocumentCaption,
-  DocumentFootnote,
   DocumentKeyValueElement,
   DocumentLine,
   DocumentPage,
@@ -26,6 +26,10 @@ import {
   DocumentTable,
   DocumentTableCell,
   DocumentWord,
+  DocumentImage,
+  DocumentAnnotation,
+  DocumentBarcode,
+  DocumentFormula,
 } from "../../src/models/documentElements";
 
 // To avoid going out-of-sync with the generated types, we test the re-constructed interfaces are following the shapes in the generated interfaces in this test file.
@@ -40,27 +44,34 @@ declare const documentLine: DocumentLine;
 declare const documentParagraph: DocumentParagraph;
 declare const documentTable: DocumentTable;
 declare const documentTableCell: DocumentTableCell;
-declare const documentCaption: DocumentCaption;
-declare const documentFootnote: DocumentFootnote;
 declare const documentKeyValueElement: DocumentKeyValueElement;
 declare const document: Document;
 declare const documentPage: DocumentPage;
+declare const documentImage: DocumentImage;
+declare const documentAnnotation: DocumentAnnotation;
+declare const documentBarcode: DocumentBarcode;
+declare const documentFormula: DocumentFormula;
 
 checkAssign<Omit<GeneratedDocumentWord, "polygon">>(word);
 checkAssign<Omit<GeneratedDocumentSelectionMark, "polygon">>(selectionMark);
 checkAssign<Omit<GeneratedDocumentLine, "polygon">>(documentLine);
+checkAssign<Omit<GeneratedDocumentImage, "polygon">>(documentImage);
+checkAssign<Omit<GeneratedDocumentAnnotation, "polygon">>(documentAnnotation);
+checkAssign<Omit<GeneratedDocumentBarcode, "polygon">>(documentBarcode);
+checkAssign<Omit<GeneratedDocumentFormula, "polygon">>(documentFormula);
 checkAssign<Omit<GeneratedDocumentParagraph, "boundingRegions">>(documentParagraph);
 checkAssign<Omit<GeneratedDocumentTableCell, "boundingRegions">>(documentTableCell);
-checkAssign<Omit<GeneratedDocumentCaption, "boundingRegions">>(documentCaption);
-checkAssign<Omit<GeneratedDocumentFootnote, "boundingRegions">>(documentFootnote);
 checkAssign<Omit<GeneratedDocumentTable, "boundingRegions" | "cells" | "caption" | "footnotes">>(
   documentTable
 );
 checkAssign<Omit<GeneratedDocumentKeyValueElement, "boundingRegions">>(documentKeyValueElement);
 checkAssign<Omit<GeneratedDocument, "boundingRegions">>(document);
-checkAssign<Omit<GeneratedDocumentPage, "images" | "words" | "selectionMarks" | "lines">>(
-  documentPage
-);
+checkAssign<
+  Omit<
+    GeneratedDocumentPage,
+    "images" | "words" | "selectionMarks" | "lines" | "annotations" | "barcodes" | "formulas"
+  >
+>(documentPage);
 
 // The following completes the test for mutual assignability, makes sure there are no mismatches w.r.t the {required/optional}-ity for the properties in Generated vs Publicly Exposed.
 
@@ -70,24 +81,38 @@ declare const generatedDocumentLine: GeneratedDocumentLine;
 declare const generatedDocumentParagraph: GeneratedDocumentParagraph;
 declare const generatedDocumentTable: GeneratedDocumentTable;
 declare const generatedDocumentTableCell: GeneratedDocumentTableCell;
-declare const generatedDocumentCaption: GeneratedDocumentCaption;
-declare const generatedDocumentFootnote: GeneratedDocumentFootnote;
 declare const generatedDocumentKeyValueElement: GeneratedDocumentKeyValueElement;
 declare const generatedDocument: GeneratedDocument;
 declare const generatedDocumentPage: GeneratedDocumentPage;
+declare const generatedDocumentImage: GeneratedDocumentImage;
+declare const generatedDocumentAnnotation: GeneratedDocumentAnnotation;
+declare const generatedDocumentBarcode: GeneratedDocumentBarcode;
+declare const generatedDocumentFormula: GeneratedDocumentFormula;
 
 checkAssign<Omit<DocumentWord, "polygon">>(generatedWord);
 checkAssign<Omit<DocumentSelectionMark, "polygon">>(generatedSelectionMark);
 checkAssign<Omit<DocumentLine, "polygon" | "words">>(generatedDocumentLine);
+checkAssign<Omit<DocumentImage, "polygon">>(generatedDocumentImage);
+checkAssign<Omit<DocumentAnnotation, "polygon">>(generatedDocumentAnnotation);
+checkAssign<Omit<DocumentBarcode, "polygon">>(generatedDocumentBarcode);
+checkAssign<Omit<DocumentFormula, "polygon">>(generatedDocumentFormula);
 checkAssign<Omit<DocumentParagraph, "boundingRegions">>(generatedDocumentParagraph);
 checkAssign<Omit<DocumentTableCell, "boundingRegions">>(generatedDocumentTableCell);
-checkAssign<Omit<DocumentCaption, "boundingRegions">>(generatedDocumentCaption);
-checkAssign<Omit<DocumentFootnote, "boundingRegions">>(generatedDocumentFootnote);
 checkAssign<Omit<DocumentTable, "boundingRegions" | "cells" | "caption" | "footnotes">>(
   generatedDocumentTable
 );
 checkAssign<Omit<DocumentKeyValueElement, "boundingRegions">>(generatedDocumentKeyValueElement);
 checkAssign<Omit<Document, "boundingRegions">>(generatedDocument);
-checkAssign<Omit<DocumentPage, "images" | "words" | "selectionMarks" | "lines">>(
-  generatedDocumentPage
-);
+checkAssign<
+  Omit<
+    DocumentPage,
+    | "images"
+    | "words"
+    | "selectionMarks"
+    | "lines"
+    | "annotations"
+    | "barcodes"
+    | "formulas"
+    | "kind"
+  >
+>(generatedDocumentPage);

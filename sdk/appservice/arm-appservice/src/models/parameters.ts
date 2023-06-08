@@ -28,6 +28,7 @@ import {
   AppServiceEnvironmentResource as AppServiceEnvironmentResourceMapper,
   AppServiceEnvironmentPatchResource as AppServiceEnvironmentPatchResourceMapper,
   VirtualNetworkProfile as VirtualNetworkProfileMapper,
+  CustomDnsSuffixConfiguration as CustomDnsSuffixConfigurationMapper,
   AseV3NetworkingConfiguration as AseV3NetworkingConfigurationMapper,
   WorkerPoolResource as WorkerPoolResourceMapper,
   PrivateLinkConnectionApprovalRequestResource as PrivateLinkConnectionApprovalRequestResourceMapper,
@@ -51,11 +52,15 @@ import {
   StaticSitePatchResource as StaticSitePatchResourceMapper,
   StaticSiteUserARMResource as StaticSiteUserARMResourceMapper,
   StringDictionary as StringDictionaryMapper,
+  DatabaseConnection as DatabaseConnectionMapper,
+  DatabaseConnectionPatchRequest as DatabaseConnectionPatchRequestMapper,
   StaticSiteUserProvidedFunctionAppARMResource as StaticSiteUserProvidedFunctionAppARMResourceMapper,
   StaticSiteZipDeploymentARMResource as StaticSiteZipDeploymentARMResourceMapper,
+  StaticSiteBasicAuthPropertiesARMResource as StaticSiteBasicAuthPropertiesARMResourceMapper,
   StaticSiteUserInvitationRequestResource as StaticSiteUserInvitationRequestResourceMapper,
   StaticSiteCustomDomainRequestPropertiesARMResource as StaticSiteCustomDomainRequestPropertiesARMResourceMapper,
   StaticSiteResetPropertiesARMResource as StaticSiteResetPropertiesARMResourceMapper,
+  StaticSiteLinkedBackendARMResource as StaticSiteLinkedBackendARMResourceMapper,
   Site as SiteMapper,
   SitePatchResource as SitePatchResourceMapper,
   CsmSlotEntity as CsmSlotEntityMapper,
@@ -89,7 +94,10 @@ import {
   DeletedAppRestoreRequest as DeletedAppRestoreRequestMapper,
   SnapshotRestoreRequest as SnapshotRestoreRequestMapper,
   SiteSourceControl as SiteSourceControlMapper,
-  VnetInfoResource as VnetInfoResourceMapper
+  VnetInfoResource as VnetInfoResourceMapper,
+  WorkflowArtifacts as WorkflowArtifactsMapper,
+  RegenerateActionParameter as RegenerateActionParameterMapper,
+  Workflow as WorkflowMapper
 } from "../models/mappers";
 
 export const accept: OperationParameter = {
@@ -132,7 +140,7 @@ export const subscriptionId: OperationURLParameter = {
 export const apiVersion: OperationQueryParameter = {
   parameterPath: "apiVersion",
   mapper: {
-    defaultValue: "2021-03-01",
+    defaultValue: "2022-09-01",
     isConstant: true,
     serializedName: "api-version",
     type: {
@@ -392,6 +400,11 @@ export const hostingEnvironmentEnvelope1: OperationParameter = {
 export const vnetInfo: OperationParameter = {
   parameterPath: "vnetInfo",
   mapper: VirtualNetworkProfileMapper
+};
+
+export const customDnsSuffixConfiguration: OperationParameter = {
+  parameterPath: "customDnsSuffixConfiguration",
+  mapper: CustomDnsSuffixConfigurationMapper
 };
 
 export const aseNetworkingConfiguration: OperationParameter = {
@@ -764,50 +777,6 @@ export const stackOsType: OperationQueryParameter = {
   }
 };
 
-export const stackOsType1: OperationQueryParameter = {
-  parameterPath: ["options", "stackOsType"],
-  mapper: {
-    serializedName: "stackOsType",
-    xmlName: "stackOsType",
-    type: {
-      name: "String"
-    }
-  }
-};
-
-export const stackOsType2: OperationQueryParameter = {
-  parameterPath: ["options", "stackOsType"],
-  mapper: {
-    serializedName: "stackOsType",
-    xmlName: "stackOsType",
-    type: {
-      name: "String"
-    }
-  }
-};
-
-export const stackOsType3: OperationQueryParameter = {
-  parameterPath: ["options", "stackOsType"],
-  mapper: {
-    serializedName: "stackOsType",
-    xmlName: "stackOsType",
-    type: {
-      name: "String"
-    }
-  }
-};
-
-export const osTypeSelected1: OperationQueryParameter = {
-  parameterPath: ["options", "osTypeSelected"],
-  mapper: {
-    serializedName: "osTypeSelected",
-    xmlName: "osTypeSelected",
-    type: {
-      name: "String"
-    }
-  }
-};
-
 export const featured: OperationQueryParameter = {
   parameterPath: ["options", "featured"],
   mapper: {
@@ -935,6 +904,17 @@ export const isFqdn: OperationParameter = {
   mapper: ResourceNameAvailabilityRequestMapper
 };
 
+export const hostname: OperationQueryParameter = {
+  parameterPath: ["options", "hostname"],
+  mapper: {
+    serializedName: "hostname",
+    xmlName: "hostname",
+    type: {
+      name: "String"
+    }
+  }
+};
+
 export const sku: OperationQueryParameter = {
   parameterPath: ["options", "sku"],
   mapper: {
@@ -1055,6 +1035,46 @@ export const appSettings: OperationParameter = {
   mapper: StringDictionaryMapper
 };
 
+export const environmentName2: OperationURLParameter = {
+  parameterPath: "environmentName",
+  mapper: {
+    constraints: {
+      Pattern: new RegExp("^[a-zA-Z0-9]+$")
+    },
+    serializedName: "environmentName",
+    required: true,
+    xmlName: "environmentName",
+    type: {
+      name: "String"
+    }
+  }
+};
+
+export const databaseConnectionName: OperationURLParameter = {
+  parameterPath: "databaseConnectionName",
+  mapper: {
+    constraints: {
+      Pattern: new RegExp("^[a-zA-Z0-9]+$")
+    },
+    serializedName: "databaseConnectionName",
+    required: true,
+    xmlName: "databaseConnectionName",
+    type: {
+      name: "String"
+    }
+  }
+};
+
+export const databaseConnectionRequestEnvelope: OperationParameter = {
+  parameterPath: "databaseConnectionRequestEnvelope",
+  mapper: DatabaseConnectionMapper
+};
+
+export const databaseConnectionRequestEnvelope1: OperationParameter = {
+  parameterPath: "databaseConnectionRequestEnvelope",
+  mapper: DatabaseConnectionPatchRequestMapper
+};
+
 export const functionAppName: OperationURLParameter = {
   parameterPath: "functionAppName",
   mapper: {
@@ -1088,6 +1108,23 @@ export const staticSiteZipDeploymentEnvelope: OperationParameter = {
   mapper: StaticSiteZipDeploymentARMResourceMapper
 };
 
+export const basicAuthName: OperationURLParameter = {
+  parameterPath: "basicAuthName",
+  mapper: {
+    serializedName: "basicAuthName",
+    required: true,
+    xmlName: "basicAuthName",
+    type: {
+      name: "String"
+    }
+  }
+};
+
+export const basicAuthEnvelope: OperationParameter = {
+  parameterPath: "basicAuthEnvelope",
+  mapper: StaticSiteBasicAuthPropertiesARMResourceMapper
+};
+
 export const staticSiteUserRolesInvitationEnvelope: OperationParameter = {
   parameterPath: "staticSiteUserRolesInvitationEnvelope",
   mapper: StaticSiteUserInvitationRequestResourceMapper
@@ -1101,6 +1138,34 @@ export const staticSiteCustomDomainRequestPropertiesEnvelope: OperationParameter
 export const resetPropertiesEnvelope: OperationParameter = {
   parameterPath: "resetPropertiesEnvelope",
   mapper: StaticSiteResetPropertiesARMResourceMapper
+};
+
+export const staticSiteLinkedBackendEnvelope: OperationParameter = {
+  parameterPath: "staticSiteLinkedBackendEnvelope",
+  mapper: StaticSiteLinkedBackendARMResourceMapper
+};
+
+export const linkedBackendName: OperationURLParameter = {
+  parameterPath: "linkedBackendName",
+  mapper: {
+    serializedName: "linkedBackendName",
+    required: true,
+    xmlName: "linkedBackendName",
+    type: {
+      name: "String"
+    }
+  }
+};
+
+export const isCleaningAuthConfig: OperationQueryParameter = {
+  parameterPath: ["options", "isCleaningAuthConfig"],
+  mapper: {
+    serializedName: "isCleaningAuthConfig",
+    xmlName: "isCleaningAuthConfig",
+    type: {
+      name: "Boolean"
+    }
+  }
 };
 
 export const includeSlots: OperationQueryParameter = {
@@ -1300,6 +1365,18 @@ export const webJobName: OperationURLParameter = {
     serializedName: "webJobName",
     required: true,
     xmlName: "webJobName",
+    type: {
+      name: "String"
+    }
+  }
+};
+
+export const deploymentStatusId: OperationURLParameter = {
+  parameterPath: "deploymentStatusId",
+  mapper: {
+    serializedName: "deploymentStatusId",
+    required: true,
+    xmlName: "deploymentStatusId",
     type: {
       name: "String"
     }
@@ -1651,4 +1728,154 @@ export const additionalFlags: OperationQueryParameter = {
 export const connectionEnvelope4: OperationParameter = {
   parameterPath: "connectionEnvelope",
   mapper: VnetInfoResourceMapper
+};
+
+export const workflowArtifacts: OperationParameter = {
+  parameterPath: ["options", "workflowArtifacts"],
+  mapper: WorkflowArtifactsMapper
+};
+
+export const workflowName: OperationURLParameter = {
+  parameterPath: "workflowName",
+  mapper: {
+    constraints: {
+      Pattern: new RegExp("^[a-z][a-z0-9]*$"),
+      MaxLength: 63,
+      MinLength: 3
+    },
+    serializedName: "workflowName",
+    required: true,
+    xmlName: "workflowName",
+    type: {
+      name: "String"
+    }
+  }
+};
+
+export const keyType1: OperationParameter = {
+  parameterPath: "keyType",
+  mapper: RegenerateActionParameterMapper
+};
+
+export const workflowName1: OperationURLParameter = {
+  parameterPath: "workflowName",
+  mapper: {
+    serializedName: "workflowName",
+    required: true,
+    xmlName: "workflowName",
+    type: {
+      name: "String"
+    }
+  }
+};
+
+export const validate: OperationParameter = {
+  parameterPath: "validate",
+  mapper: WorkflowMapper
+};
+
+export const top1: OperationQueryParameter = {
+  parameterPath: ["options", "top"],
+  mapper: {
+    serializedName: "$top",
+    xmlName: "$top",
+    type: {
+      name: "Number"
+    }
+  }
+};
+
+export const filter1: OperationQueryParameter = {
+  parameterPath: ["options", "filter"],
+  mapper: {
+    serializedName: "$filter",
+    xmlName: "$filter",
+    type: {
+      name: "String"
+    }
+  }
+};
+
+export const runName: OperationURLParameter = {
+  parameterPath: "runName",
+  mapper: {
+    serializedName: "runName",
+    required: true,
+    xmlName: "runName",
+    type: {
+      name: "String"
+    }
+  }
+};
+
+export const actionName: OperationURLParameter = {
+  parameterPath: "actionName",
+  mapper: {
+    serializedName: "actionName",
+    required: true,
+    xmlName: "actionName",
+    type: {
+      name: "String"
+    }
+  }
+};
+
+export const repetitionName: OperationURLParameter = {
+  parameterPath: "repetitionName",
+  mapper: {
+    serializedName: "repetitionName",
+    required: true,
+    xmlName: "repetitionName",
+    type: {
+      name: "String"
+    }
+  }
+};
+
+export const requestHistoryName: OperationURLParameter = {
+  parameterPath: "requestHistoryName",
+  mapper: {
+    serializedName: "requestHistoryName",
+    required: true,
+    xmlName: "requestHistoryName",
+    type: {
+      name: "String"
+    }
+  }
+};
+
+export const triggerName: OperationURLParameter = {
+  parameterPath: "triggerName",
+  mapper: {
+    serializedName: "triggerName",
+    required: true,
+    xmlName: "triggerName",
+    type: {
+      name: "String"
+    }
+  }
+};
+
+export const historyName: OperationURLParameter = {
+  parameterPath: "historyName",
+  mapper: {
+    serializedName: "historyName",
+    required: true,
+    xmlName: "historyName",
+    type: {
+      name: "String"
+    }
+  }
+};
+
+export const versionId: OperationURLParameter = {
+  parameterPath: "versionId",
+  mapper: {
+    serializedName: "versionId",
+    required: true,
+    xmlName: "versionId",
+    type: {
+      name: "String"
+    }
+  }
 };

@@ -10,6 +10,9 @@
 // Licensed under the MIT License.
 import { PolicySetDefinition, PolicyClient } from "@azure/arm-policy";
 import { DefaultAzureCredential } from "@azure/identity";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 /**
  * This sample demonstrates how to This operation creates or updates a policy set definition in the given subscription with the given name.
@@ -18,19 +21,25 @@ import { DefaultAzureCredential } from "@azure/identity";
  * x-ms-original-file: specification/resources/resource-manager/Microsoft.Authorization/stable/2021-06-01/examples/createOrUpdatePolicySetDefinition.json
  */
 async function createOrUpdateAPolicySetDefinition() {
-  const subscriptionId = "ae640e6b-ba3e-4256-9d62-2993eecfa6f2";
+  const subscriptionId =
+    process.env["POLICY_SUBSCRIPTION_ID"] ||
+    "ae640e6b-ba3e-4256-9d62-2993eecfa6f2";
   const policySetDefinitionName = "CostManagement";
   const parameters: PolicySetDefinition = {
     description: "Policies to enforce low cost storage SKUs",
     displayName: "Cost Management",
     metadata: { category: "Cost Management" },
     parameters: {
-      namePrefix: {}
+      namePrefix: {
+        type: "String",
+        defaultValue: "myPrefix",
+        metadata: { displayName: "Prefix to enforce on resource names" }
+      }
     },
     policyDefinitions: [
       {
         parameters: {
-          listOfAllowedSKUs: {}
+          listOfAllowedSKUs: { value: ["Standard_GRS", "Standard_LRS"] }
         },
         policyDefinitionId:
           "/subscriptions/ae640e6b-ba3e-4256-9d62-2993eecfa6f2/providers/Microsoft.Authorization/policyDefinitions/7433c107-6db4-4ad1-b57a-a76dce0154a1",
@@ -38,8 +47,8 @@ async function createOrUpdateAPolicySetDefinition() {
       },
       {
         parameters: {
-          prefix: {},
-          suffix: {}
+          prefix: { value: "[parameters('namePrefix')]" },
+          suffix: { value: "-LC" }
         },
         policyDefinitionId:
           "/subscriptions/ae640e6b-ba3e-4256-9d62-2993eecfa6f2/providers/Microsoft.Authorization/policyDefinitions/ResourceNaming",
@@ -56,8 +65,6 @@ async function createOrUpdateAPolicySetDefinition() {
   console.log(result);
 }
 
-createOrUpdateAPolicySetDefinition().catch(console.error);
-
 /**
  * This sample demonstrates how to This operation creates or updates a policy set definition in the given subscription with the given name.
  *
@@ -65,7 +72,9 @@ createOrUpdateAPolicySetDefinition().catch(console.error);
  * x-ms-original-file: specification/resources/resource-manager/Microsoft.Authorization/stable/2021-06-01/examples/createOrUpdatePolicySetDefinitionWithGroups.json
  */
 async function createOrUpdateAPolicySetDefinitionWithGroups() {
-  const subscriptionId = "ae640e6b-ba3e-4256-9d62-2993eecfa6f2";
+  const subscriptionId =
+    process.env["POLICY_SUBSCRIPTION_ID"] ||
+    "ae640e6b-ba3e-4256-9d62-2993eecfa6f2";
   const policySetDefinitionName = "CostManagement";
   const parameters: PolicySetDefinition = {
     description: "Policies to enforce low cost storage SKUs",
@@ -89,7 +98,7 @@ async function createOrUpdateAPolicySetDefinitionWithGroups() {
       {
         groupNames: ["CostSaving"],
         parameters: {
-          listOfAllowedSKUs: {}
+          listOfAllowedSKUs: { value: ["Standard_GRS", "Standard_LRS"] }
         },
         policyDefinitionId:
           "/subscriptions/ae640e6b-ba3e-4256-9d62-2993eecfa6f2/providers/Microsoft.Authorization/policyDefinitions/7433c107-6db4-4ad1-b57a-a76dce0154a1",
@@ -97,7 +106,7 @@ async function createOrUpdateAPolicySetDefinitionWithGroups() {
       },
       {
         groupNames: ["Organizational"],
-        parameters: { prefix: {}, suffix: {} },
+        parameters: { prefix: { value: "DeptA" }, suffix: { value: "-LC" } },
         policyDefinitionId:
           "/subscriptions/ae640e6b-ba3e-4256-9d62-2993eecfa6f2/providers/Microsoft.Authorization/policyDefinitions/ResourceNaming",
         policyDefinitionReferenceId: "Resource_Naming"
@@ -113,4 +122,9 @@ async function createOrUpdateAPolicySetDefinitionWithGroups() {
   console.log(result);
 }
 
-createOrUpdateAPolicySetDefinitionWithGroups().catch(console.error);
+async function main() {
+  createOrUpdateAPolicySetDefinition();
+  createOrUpdateAPolicySetDefinitionWithGroups();
+}
+
+main().catch(console.error);

@@ -6,21 +6,26 @@
  * Changes may cause incorrect behavior and will be lost if the code is regenerated.
  */
 
-import { PagedAsyncIterableIterator } from "@azure/core-paging";
+import { PagedAsyncIterableIterator, PageSettings } from "@azure/core-paging";
+import { setContinuationToken } from "../pagingHelper";
 import { ContainerApps } from "../operationsInterfaces";
 import * as coreClient from "@azure/core-client";
 import * as Mappers from "../models/mappers";
 import * as Parameters from "../models/parameters";
 import { ContainerAppsAPIClient } from "../containerAppsAPIClient";
-import { PollerLike, PollOperationState, LroEngine } from "@azure/core-lro";
-import { LroImpl } from "../lroImpl";
+import {
+  SimplePollerLike,
+  OperationState,
+  createHttpPoller
+} from "@azure/core-lro";
+import { createLroSpec } from "../lroImpl";
 import {
   ContainerApp,
   ContainerAppsListBySubscriptionNextOptionalParams,
   ContainerAppsListBySubscriptionOptionalParams,
+  ContainerAppsListBySubscriptionResponse,
   ContainerAppsListByResourceGroupNextOptionalParams,
   ContainerAppsListByResourceGroupOptionalParams,
-  ContainerAppsListBySubscriptionResponse,
   ContainerAppsListByResourceGroupResponse,
   ContainerAppsGetOptionalParams,
   ContainerAppsGetResponse,
@@ -28,10 +33,13 @@ import {
   ContainerAppsCreateOrUpdateResponse,
   ContainerAppsDeleteOptionalParams,
   ContainerAppsUpdateOptionalParams,
+  ContainerAppsUpdateResponse,
   ContainerAppsListCustomHostNameAnalysisOptionalParams,
   ContainerAppsListCustomHostNameAnalysisResponse,
   ContainerAppsListSecretsOptionalParams,
   ContainerAppsListSecretsResponse,
+  ContainerAppsGetAuthTokenOptionalParams,
+  ContainerAppsGetAuthTokenResponse,
   ContainerAppsListBySubscriptionNextResponse,
   ContainerAppsListByResourceGroupNextResponse
 } from "../models";
@@ -64,22 +72,34 @@ export class ContainerAppsImpl implements ContainerApps {
       [Symbol.asyncIterator]() {
         return this;
       },
-      byPage: () => {
-        return this.listBySubscriptionPagingPage(options);
+      byPage: (settings?: PageSettings) => {
+        if (settings?.maxPageSize) {
+          throw new Error("maxPageSize is not supported by this operation.");
+        }
+        return this.listBySubscriptionPagingPage(options, settings);
       }
     };
   }
 
   private async *listBySubscriptionPagingPage(
-    options?: ContainerAppsListBySubscriptionOptionalParams
+    options?: ContainerAppsListBySubscriptionOptionalParams,
+    settings?: PageSettings
   ): AsyncIterableIterator<ContainerApp[]> {
-    let result = await this._listBySubscription(options);
-    yield result.value || [];
-    let continuationToken = result.nextLink;
+    let result: ContainerAppsListBySubscriptionResponse;
+    let continuationToken = settings?.continuationToken;
+    if (!continuationToken) {
+      result = await this._listBySubscription(options);
+      let page = result.value || [];
+      continuationToken = result.nextLink;
+      setContinuationToken(page, continuationToken);
+      yield page;
+    }
     while (continuationToken) {
       result = await this._listBySubscriptionNext(continuationToken, options);
       continuationToken = result.nextLink;
-      yield result.value || [];
+      let page = result.value || [];
+      setContinuationToken(page, continuationToken);
+      yield page;
     }
   }
 
@@ -108,19 +128,33 @@ export class ContainerAppsImpl implements ContainerApps {
       [Symbol.asyncIterator]() {
         return this;
       },
-      byPage: () => {
-        return this.listByResourceGroupPagingPage(resourceGroupName, options);
+      byPage: (settings?: PageSettings) => {
+        if (settings?.maxPageSize) {
+          throw new Error("maxPageSize is not supported by this operation.");
+        }
+        return this.listByResourceGroupPagingPage(
+          resourceGroupName,
+          options,
+          settings
+        );
       }
     };
   }
 
   private async *listByResourceGroupPagingPage(
     resourceGroupName: string,
-    options?: ContainerAppsListByResourceGroupOptionalParams
+    options?: ContainerAppsListByResourceGroupOptionalParams,
+    settings?: PageSettings
   ): AsyncIterableIterator<ContainerApp[]> {
-    let result = await this._listByResourceGroup(resourceGroupName, options);
-    yield result.value || [];
-    let continuationToken = result.nextLink;
+    let result: ContainerAppsListByResourceGroupResponse;
+    let continuationToken = settings?.continuationToken;
+    if (!continuationToken) {
+      result = await this._listByResourceGroup(resourceGroupName, options);
+      let page = result.value || [];
+      continuationToken = result.nextLink;
+      setContinuationToken(page, continuationToken);
+      yield page;
+    }
     while (continuationToken) {
       result = await this._listByResourceGroupNext(
         resourceGroupName,
@@ -128,7 +162,9 @@ export class ContainerAppsImpl implements ContainerApps {
         options
       );
       continuationToken = result.nextLink;
-      yield result.value || [];
+      let page = result.value || [];
+      setContinuationToken(page, continuationToken);
+      yield page;
     }
   }
 
@@ -202,8 +238,8 @@ export class ContainerAppsImpl implements ContainerApps {
     containerAppEnvelope: ContainerApp,
     options?: ContainerAppsCreateOrUpdateOptionalParams
   ): Promise<
-    PollerLike<
-      PollOperationState<ContainerAppsCreateOrUpdateResponse>,
+    SimplePollerLike<
+      OperationState<ContainerAppsCreateOrUpdateResponse>,
       ContainerAppsCreateOrUpdateResponse
     >
   > {
@@ -213,7 +249,7 @@ export class ContainerAppsImpl implements ContainerApps {
     ): Promise<ContainerAppsCreateOrUpdateResponse> => {
       return this.client.sendOperationRequest(args, spec);
     };
-    const sendOperation = async (
+    const sendOperationFn = async (
       args: coreClient.OperationArguments,
       spec: coreClient.OperationSpec
     ) => {
@@ -246,14 +282,23 @@ export class ContainerAppsImpl implements ContainerApps {
       };
     };
 
-    const lro = new LroImpl(
-      sendOperation,
-      { resourceGroupName, containerAppName, containerAppEnvelope, options },
-      createOrUpdateOperationSpec
-    );
-    const poller = new LroEngine(lro, {
-      resumeFrom: options?.resumeFrom,
-      intervalInMs: options?.updateIntervalInMs
+    const lro = createLroSpec({
+      sendOperationFn,
+      args: {
+        resourceGroupName,
+        containerAppName,
+        containerAppEnvelope,
+        options
+      },
+      spec: createOrUpdateOperationSpec
+    });
+    const poller = await createHttpPoller<
+      ContainerAppsCreateOrUpdateResponse,
+      OperationState<ContainerAppsCreateOrUpdateResponse>
+    >(lro, {
+      restoreFrom: options?.resumeFrom,
+      intervalInMs: options?.updateIntervalInMs,
+      resourceLocationConfig: "azure-async-operation"
     });
     await poller.poll();
     return poller;
@@ -291,14 +336,14 @@ export class ContainerAppsImpl implements ContainerApps {
     resourceGroupName: string,
     containerAppName: string,
     options?: ContainerAppsDeleteOptionalParams
-  ): Promise<PollerLike<PollOperationState<void>, void>> {
+  ): Promise<SimplePollerLike<OperationState<void>, void>> {
     const directSendOperation = async (
       args: coreClient.OperationArguments,
       spec: coreClient.OperationSpec
     ): Promise<void> => {
       return this.client.sendOperationRequest(args, spec);
     };
-    const sendOperation = async (
+    const sendOperationFn = async (
       args: coreClient.OperationArguments,
       spec: coreClient.OperationSpec
     ) => {
@@ -331,14 +376,15 @@ export class ContainerAppsImpl implements ContainerApps {
       };
     };
 
-    const lro = new LroImpl(
-      sendOperation,
-      { resourceGroupName, containerAppName, options },
-      deleteOperationSpec
-    );
-    const poller = new LroEngine(lro, {
-      resumeFrom: options?.resumeFrom,
-      intervalInMs: options?.updateIntervalInMs
+    const lro = createLroSpec({
+      sendOperationFn,
+      args: { resourceGroupName, containerAppName, options },
+      spec: deleteOperationSpec
+    });
+    const poller = await createHttpPoller<void, OperationState<void>>(lro, {
+      restoreFrom: options?.resumeFrom,
+      intervalInMs: options?.updateIntervalInMs,
+      resourceLocationConfig: "location"
     });
     await poller.poll();
     return poller;
@@ -375,14 +421,19 @@ export class ContainerAppsImpl implements ContainerApps {
     containerAppName: string,
     containerAppEnvelope: ContainerApp,
     options?: ContainerAppsUpdateOptionalParams
-  ): Promise<PollerLike<PollOperationState<void>, void>> {
+  ): Promise<
+    SimplePollerLike<
+      OperationState<ContainerAppsUpdateResponse>,
+      ContainerAppsUpdateResponse
+    >
+  > {
     const directSendOperation = async (
       args: coreClient.OperationArguments,
       spec: coreClient.OperationSpec
-    ): Promise<void> => {
+    ): Promise<ContainerAppsUpdateResponse> => {
       return this.client.sendOperationRequest(args, spec);
     };
-    const sendOperation = async (
+    const sendOperationFn = async (
       args: coreClient.OperationArguments,
       spec: coreClient.OperationSpec
     ) => {
@@ -415,13 +466,21 @@ export class ContainerAppsImpl implements ContainerApps {
       };
     };
 
-    const lro = new LroImpl(
-      sendOperation,
-      { resourceGroupName, containerAppName, containerAppEnvelope, options },
-      updateOperationSpec
-    );
-    const poller = new LroEngine(lro, {
-      resumeFrom: options?.resumeFrom,
+    const lro = createLroSpec({
+      sendOperationFn,
+      args: {
+        resourceGroupName,
+        containerAppName,
+        containerAppEnvelope,
+        options
+      },
+      spec: updateOperationSpec
+    });
+    const poller = await createHttpPoller<
+      ContainerAppsUpdateResponse,
+      OperationState<ContainerAppsUpdateResponse>
+    >(lro, {
+      restoreFrom: options?.resumeFrom,
       intervalInMs: options?.updateIntervalInMs
     });
     await poller.poll();
@@ -440,7 +499,7 @@ export class ContainerAppsImpl implements ContainerApps {
     containerAppName: string,
     containerAppEnvelope: ContainerApp,
     options?: ContainerAppsUpdateOptionalParams
-  ): Promise<void> {
+  ): Promise<ContainerAppsUpdateResponse> {
     const poller = await this.beginUpdate(
       resourceGroupName,
       containerAppName,
@@ -481,6 +540,23 @@ export class ContainerAppsImpl implements ContainerApps {
     return this.client.sendOperationRequest(
       { resourceGroupName, containerAppName, options },
       listSecretsOperationSpec
+    );
+  }
+
+  /**
+   * Get auth token for a container app
+   * @param resourceGroupName The name of the resource group. The name is case insensitive.
+   * @param containerAppName Name of the Container App.
+   * @param options The options parameters.
+   */
+  getAuthToken(
+    resourceGroupName: string,
+    containerAppName: string,
+    options?: ContainerAppsGetAuthTokenOptionalParams
+  ): Promise<ContainerAppsGetAuthTokenResponse> {
+    return this.client.sendOperationRequest(
+      { resourceGroupName, containerAppName, options },
+      getAuthTokenOperationSpec
     );
   }
 
@@ -642,10 +718,18 @@ const updateOperationSpec: coreClient.OperationSpec = {
     "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.App/containerApps/{containerAppName}",
   httpMethod: "PATCH",
   responses: {
-    200: {},
-    201: {},
-    202: {},
-    204: {},
+    200: {
+      bodyMapper: Mappers.ContainerApp
+    },
+    201: {
+      bodyMapper: Mappers.ContainerApp
+    },
+    202: {
+      bodyMapper: Mappers.ContainerApp
+    },
+    204: {
+      bodyMapper: Mappers.ContainerApp
+    },
     default: {
       bodyMapper: Mappers.DefaultErrorResponse
     }
@@ -706,6 +790,31 @@ const listSecretsOperationSpec: coreClient.OperationSpec = {
   headerParameters: [Parameters.accept],
   serializer
 };
+const getAuthTokenOperationSpec: coreClient.OperationSpec = {
+  path:
+    "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.App/containerApps/{containerAppName}/getAuthtoken",
+  httpMethod: "POST",
+  responses: {
+    200: {
+      bodyMapper: Mappers.ContainerAppAuthToken
+    },
+    404: {
+      isError: true
+    },
+    default: {
+      bodyMapper: Mappers.DefaultErrorResponse
+    }
+  },
+  queryParameters: [Parameters.apiVersion],
+  urlParameters: [
+    Parameters.$host,
+    Parameters.subscriptionId,
+    Parameters.resourceGroupName,
+    Parameters.containerAppName
+  ],
+  headerParameters: [Parameters.accept],
+  serializer
+};
 const listBySubscriptionNextOperationSpec: coreClient.OperationSpec = {
   path: "{nextLink}",
   httpMethod: "GET",
@@ -717,7 +826,6 @@ const listBySubscriptionNextOperationSpec: coreClient.OperationSpec = {
       bodyMapper: Mappers.DefaultErrorResponse
     }
   },
-  queryParameters: [Parameters.apiVersion],
   urlParameters: [
     Parameters.$host,
     Parameters.subscriptionId,
@@ -737,7 +845,6 @@ const listByResourceGroupNextOperationSpec: coreClient.OperationSpec = {
       bodyMapper: Mappers.DefaultErrorResponse
     }
   },
-  queryParameters: [Parameters.apiVersion],
   urlParameters: [
     Parameters.$host,
     Parameters.subscriptionId,

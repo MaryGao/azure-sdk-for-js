@@ -6,7 +6,7 @@ import { CosmosClientOptions } from "../CosmosClientOptions";
 import { PartitionKey } from "../documents";
 import { CosmosHeaders } from "../queryExecutionContext";
 import { FeedOptions, RequestOptions } from "./index";
-
+import { defaultLogger } from "../common/logger";
 // ----------------------------------------------------------------------------
 // Utility methods
 //
@@ -128,8 +128,15 @@ export async function getHeaders({
   }
 
   if (options.maxIntegratedCacheStalenessInMs && resourceType === ResourceType.item) {
-    headers[Constants.HttpHeaders.DedicatedGatewayPerRequestCacheStaleness] =
-      options.maxIntegratedCacheStalenessInMs;
+    if (typeof options.maxIntegratedCacheStalenessInMs === "number") {
+      headers[Constants.HttpHeaders.DedicatedGatewayPerRequestCacheStaleness] =
+        options.maxIntegratedCacheStalenessInMs.toString();
+    } else {
+      defaultLogger.error(
+        `RangeError: maxIntegratedCacheStalenessInMs "${options.maxIntegratedCacheStalenessInMs}" is not a valid parameter.`
+      );
+      headers[Constants.HttpHeaders.DedicatedGatewayPerRequestCacheStaleness] = "null";
+    }
   }
 
   if (options.resourceTokenExpirySeconds) {
@@ -191,6 +198,10 @@ export async function getHeaders({
 
   if (options.disableRUPerMinuteUsage) {
     headers[Constants.HttpHeaders.DisableRUPerMinuteUsage] = true;
+  }
+
+  if (options.populateIndexMetrics) {
+    headers[Constants.HttpHeaders.PopulateIndexMetrics] = options.populateIndexMetrics;
   }
 
   if (

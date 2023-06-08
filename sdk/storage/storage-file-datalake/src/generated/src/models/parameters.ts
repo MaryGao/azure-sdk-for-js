@@ -9,9 +9,8 @@
 import {
   OperationParameter,
   OperationURLParameter,
-  OperationQueryParameter,
-  QueryCollectionFormat
-} from "@azure/core-http";
+  OperationQueryParameter
+} from "@azure/core-client";
 
 export const accept: OperationParameter = {
   parameterPath: "accept",
@@ -114,7 +113,7 @@ export const timeout: OperationQueryParameter = {
 export const version: OperationParameter = {
   parameterPath: "version",
   mapper: {
-    defaultValue: "2021-08-06",
+    defaultValue: "2021-12-02",
     isConstant: true,
     serializedName: "x-ms-version",
     type: {
@@ -284,7 +283,7 @@ export const include: OperationQueryParameter = {
       }
     }
   },
-  collectionFormat: QueryCollectionFormat.Csv
+  collectionFormat: "CSV"
 };
 
 export const showonly: OperationQueryParameter = {
@@ -894,6 +893,18 @@ export const action4: OperationQueryParameter = {
   }
 };
 
+export const leaseAction: OperationParameter = {
+  parameterPath: ["options", "leaseAction"],
+  mapper: {
+    serializedName: "x-ms-lease-action",
+    xmlName: "x-ms-lease-action",
+    type: {
+      name: "Enum",
+      allowedValues: ["acquire", "auto-renew", "release", "acquire-release"]
+    }
+  }
+};
+
 export const contentType2: OperationParameter = {
   parameterPath: ["options", "contentType"],
   mapper: {
@@ -936,6 +947,17 @@ export const transactionalContentCrc64: OperationParameter = {
     xmlName: "x-ms-content-crc64",
     type: {
       name: "ByteArray"
+    }
+  }
+};
+
+export const flush: OperationQueryParameter = {
+  parameterPath: ["options", "flush"],
+  mapper: {
+    serializedName: "flush",
+    xmlName: "flush",
+    type: {
+      name: "Boolean"
     }
   }
 };

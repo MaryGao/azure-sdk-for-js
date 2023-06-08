@@ -16,7 +16,9 @@ import {
   BuildDocumentModelRequest as BuildDocumentModelRequestMapper,
   ComposeDocumentModelRequest as ComposeDocumentModelRequestMapper,
   AuthorizeCopyRequest as AuthorizeCopyRequestMapper,
-  CopyAuthorization as CopyAuthorizationMapper
+  CopyAuthorization as CopyAuthorizationMapper,
+  BuildDocumentClassifierRequest as BuildDocumentClassifierRequestMapper,
+  ClassifyDocumentRequest as ClassifyDocumentRequestMapper
 } from "../models/mappers";
 
 export const contentType: OperationParameter = {
@@ -143,7 +145,8 @@ export const modelId: OperationURLParameter = {
   parameterPath: "modelId",
   mapper: {
     constraints: {
-      Pattern: new RegExp("[a-zA-Z0-9][a-zA-Z0-9._~-]{1,63}")
+      Pattern: new RegExp("^[a-zA-Z0-9][a-zA-Z0-9._~-]{1,63}$"),
+      MaxLength: 64
     },
     serializedName: "modelId",
     required: true,
@@ -189,7 +192,7 @@ export const stringIndexType: OperationQueryParameter = {
 export const apiVersion: OperationQueryParameter = {
   parameterPath: "apiVersion",
   mapper: {
-    defaultValue: "2022-06-30-preview",
+    defaultValue: "2023-02-28-preview",
     isConstant: true,
     serializedName: "api-version",
     type: {
@@ -198,13 +201,48 @@ export const apiVersion: OperationQueryParameter = {
   }
 };
 
+export const features: OperationQueryParameter = {
+  parameterPath: ["options", "features"],
+  mapper: {
+    serializedName: "features",
+    type: {
+      name: "Sequence",
+      element: {
+        type: {
+          name: "String"
+        }
+      }
+    }
+  },
+  collectionFormat: "CSV"
+};
+
+export const queryFields: OperationQueryParameter = {
+  parameterPath: ["options", "queryFields"],
+  mapper: {
+    serializedName: "queryFields",
+    type: {
+      name: "Sequence",
+      element: {
+        constraints: {
+          Pattern: new RegExp("^[\\p{L}\\p{M}\\p{N}_]{1,64}$")
+        },
+        type: {
+          name: "String"
+        }
+      }
+    }
+  },
+  collectionFormat: "CSV"
+};
+
 export const resultId: OperationURLParameter = {
   parameterPath: "resultId",
   mapper: {
     serializedName: "resultId",
     required: true,
     type: {
-      name: "String"
+      name: "Uuid"
     }
   }
 };
@@ -241,17 +279,6 @@ export const copyToRequest: OperationParameter = {
   mapper: CopyAuthorizationMapper
 };
 
-export const operationId: OperationURLParameter = {
-  parameterPath: "operationId",
-  mapper: {
-    serializedName: "operationId",
-    required: true,
-    type: {
-      name: "String"
-    }
-  }
-};
-
 export const nextLink: OperationURLParameter = {
   parameterPath: "nextLink",
   mapper: {
@@ -262,4 +289,66 @@ export const nextLink: OperationURLParameter = {
     }
   },
   skipEncoding: true
+};
+
+export const operationId: OperationURLParameter = {
+  parameterPath: "operationId",
+  mapper: {
+    constraints: {
+      Pattern: new RegExp(
+        "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+      ),
+      MaxLength: 36
+    },
+    serializedName: "operationId",
+    required: true,
+    type: {
+      name: "String"
+    }
+  }
+};
+
+export const buildRequest1: OperationParameter = {
+  parameterPath: "buildRequest",
+  mapper: BuildDocumentClassifierRequestMapper
+};
+
+export const classifierId: OperationURLParameter = {
+  parameterPath: "classifierId",
+  mapper: {
+    constraints: {
+      Pattern: new RegExp("^[a-zA-Z0-9][a-zA-Z0-9._~-]{1,63}$"),
+      MaxLength: 64
+    },
+    serializedName: "classifierId",
+    required: true,
+    type: {
+      name: "String"
+    }
+  }
+};
+
+export const classifyRequest: OperationParameter = {
+  parameterPath: ["options", "classifyRequest"],
+  mapper: {
+    serializedName: "classifyRequest",
+    type: {
+      name: "Stream"
+    }
+  }
+};
+
+export const classifyRequest1: OperationParameter = {
+  parameterPath: ["options", "classifyRequest"],
+  mapper: {
+    serializedName: "classifyRequest",
+    type: {
+      name: "String"
+    }
+  }
+};
+
+export const classifyRequest2: OperationParameter = {
+  parameterPath: ["options", "classifyRequest"],
+  mapper: ClassifyDocumentRequestMapper
 };

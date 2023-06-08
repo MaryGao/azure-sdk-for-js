@@ -56,10 +56,17 @@ export async function processSources(
         },
       },
       exports: {
-        predicate: ({ modifiers }) =>
-          (modifiers?.some(({ kind }) => kind === ts.SyntaxKind.ExportKeyword) &&
-            !modifiers.some(({ kind }) => kind === ts.SyntaxKind.DefaultKeyword)) ??
-          false,
+        predicate: (node) => {
+          if (!ts.canHaveModifiers(node)) {
+            return false;
+          }
+          const modifiers = ts.getModifiers(node);
+          return (
+            (modifiers?.some(({ kind }) => kind === ts.SyntaxKind.ExportKeyword) &&
+              !modifiers.some(({ kind }) => kind === ts.SyntaxKind.DefaultKeyword)) ??
+            false
+          );
+        },
         select: (node: ts.FunctionDeclaration | ts.ClassDeclaration | ts.VariableStatement) => {
           if (ts.isVariableStatement(node)) {
             return node.declarationList.declarations
@@ -97,7 +104,11 @@ export async function processSources(
           return ts.visitEachChild(node, visitor, context);
         };
 
-        return addCommonJsExports(context, ts.visitNode(sourceFile, visitor), accumulator.exports);
+        return addCommonJsExports(
+          context,
+          ts.visitNode(sourceFile, visitor) as ts.SourceFile,
+          accumulator.exports
+        );
       };
 
     // Where the work happens. This runs the conversion step from the ts-to-js command with the visitor we've defined
@@ -259,10 +270,14 @@ function extractAzSdkTags(
  */
 function addCommonJsExports(
   context: ts.TransformationContext,
-  sourceFile: ts.SourceFile,
+  sourceFile: ts.SourceFile | undefined,
   exports: string[]
 ): ts.SourceFile {
   log.debug("Adding exports:", exports);
+
+  if (!sourceFile) {
+    throw new Error("invalid sourceFile");
+  }
 
   const factory = context.factory;
 
@@ -312,6 +327,9 @@ function processExportDefault(
   exportEntries: ts.ObjectLiteralElementLike[]
 ): ts.Statement[] {
   return sourceFile.statements.map((statement) => {
+    if (!ts.canHaveModifiers(statement)) {
+      return statement;
+    }
     const isDefault =
       statement.modifiers?.some(({ kind }) => kind === ts.SyntaxKind.DefaultKeyword) &&
       statement.modifiers.some(({ kind }) => kind === ts.SyntaxKind.ExportKeyword);
@@ -330,7 +348,6 @@ function processExportDefault(
       // If there is no name, the declaration is anonymous, and we will bind it as an expression in module.exports
       const initializer = ts.isClassDeclaration(decl)
         ? factory.createClassExpression(
-            decl.decorators,
             updatedModifiers,
             undefined,
             decl.typeParameters,
@@ -340,7 +357,7 @@ function processExportDefault(
         : decl.body === undefined // This is a strange case that I assume has to do with overload declarations.
         ? undefined
         : factory.createFunctionExpression(
-            updatedModifiers,
+            updatedModifiers as readonly ts.Modifier[], // it's not legal to decorate function expressions so these should all be modifiers.
             decl.asteriskToken,
             undefined,
             decl.typeParameters,
@@ -361,7 +378,6 @@ function processExportDefault(
     return ts.isClassDeclaration(decl)
       ? factory.updateClassDeclaration(
           decl,
-          decl.decorators,
           updatedModifiers,
           decl.name,
           decl.typeParameters,
@@ -370,7 +386,6 @@ function processExportDefault(
         )
       : factory.updateFunctionDeclaration(
           decl,
-          decl.decorators,
           updatedModifiers,
           decl.asteriskToken,
           decl.name,

@@ -283,6 +283,8 @@ export interface AesCbcEncryptParameters {
   /**
    * The initialization vector used for encryption. If omitted we will attempt to generate an IV using crypto's `randomBytes` functionality.
    * An error will be thrown if creating an IV fails, and you may recover by passing in your own cryptographically secure IV.
+   *
+   * When passing your own IV, make sure you use a cryptographically random, non-repeating IV.
    */
   iv?: Uint8Array;
 }
@@ -347,7 +349,8 @@ export interface AesCbcDecryptParameters {
    * The initialization vector used during encryption.
    */
   /**
-   * The ciphertext to decrypt.
+   * The ciphertext to decrypt. Microsoft recommends you not use CBC without first ensuring the integrity of the ciphertext using an HMAC, for example.
+   * See https://docs.microsoft.com/dotnet/standard/security/vulnerabilities-cbc-mode for more information.
    */
   ciphertext: Uint8Array;
   /**
@@ -369,11 +372,16 @@ export type DecryptParameters =
  * The key may be an identifier (URL) to a KeyVault key, the actual KeyVault key,
  * or a local-only JsonWebKey.
  *
- * If an identifier is used, it will be exchanged for a {@link KeyVaultKey} during the first operation call.
+ * If an identifier is used, an attempt will be made to exchange it for a {@link KeyVaultKey} during the first operation call. If this attempt fails, the identifier
+ * will become a remote-only identifier and the {@link CryptographyClient} will only be able to perform remote operations.
  */
 export type CryptographyClientKey =
   | {
       kind: "identifier";
+      value: string;
+    }
+  | {
+      kind: "remoteOnlyIdentifier";
       value: string;
     }
   | {

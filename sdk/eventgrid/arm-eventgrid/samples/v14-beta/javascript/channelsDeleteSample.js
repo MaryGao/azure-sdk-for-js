@@ -10,16 +10,18 @@
 // Licensed under the MIT License.
 const { EventGridManagementClient } = require("@azure/arm-eventgrid");
 const { DefaultAzureCredential } = require("@azure/identity");
+require("dotenv").config();
 
 /**
  * This sample demonstrates how to Delete an existing channel.
  *
  * @summary Delete an existing channel.
- * x-ms-original-file: specification/eventgrid/resource-manager/Microsoft.EventGrid/preview/2021-10-15-preview/examples/Channels_Delete.json
+ * x-ms-original-file: specification/eventgrid/resource-manager/Microsoft.EventGrid/preview/2023-06-01-preview/examples/Channels_Delete.json
  */
 async function channelsDelete() {
-  const subscriptionId = "5b4b650e-28b9-4790-b3ab-ddbd88d727c4";
-  const resourceGroupName = "examplerg";
+  const subscriptionId =
+    process.env["EVENTGRID_SUBSCRIPTION_ID"] || "8f6b6269-84f2-4d09-9e31-1127efcd1e40";
+  const resourceGroupName = process.env["EVENTGRID_RESOURCE_GROUP"] || "examplerg";
   const partnerNamespaceName = "examplePartnerNamespaceName1";
   const channelName = "exampleEventChannelName1";
   const credential = new DefaultAzureCredential();
@@ -32,4 +34,8 @@ async function channelsDelete() {
   console.log(result);
 }
 
-channelsDelete().catch(console.error);
+async function main() {
+  channelsDelete();
+}
+
+main().catch(console.error);

@@ -13,14 +13,15 @@ require("dotenv").config();
 const connectionString = process.env["COMMUNICATION_CONNECTION_STRING"] || "";
 const senderAddress = process.env["SENDER_ADDRESS"] || "";
 const recipientAddress = process.env["RECIPIENT_ADDRESS"] || "";
+const secondRecipientAddress = process.env["SECOND_RECIPIENT_ADDRESS"] || "";
 
 const sendEmailMultipleRecipients = async () => {
   // Create the Email Client
   const emailClient = new EmailClient(connectionString);
 
   // Create the Email Message to be sent
-  const emailMessage = {
-    sender: senderAddress,
+  const message = {
+    senderAddress: senderAddress,
     content: {
       subject: "This is the subject",
       plainText: "This is the body",
@@ -28,35 +29,21 @@ const sendEmailMultipleRecipients = async () => {
     },
     recipients: {
       to: [
-        {
-          email: recipientAddress,
-          displayName: "Customer Name",
-        },
-        {
-          email: recipientAddress,
-          displayName: "Customer Name",
-        },
+        { address: recipientAddress, displayName: "Customer Name" },
+        { address: secondRecipientAddress, displayName: "Customer Name 2" },
       ],
-      cC: [
-        {
-          email: recipientAddress,
-          displayName: "Customer Name",
-        },
-      ],
-      bCC: [
-        {
-          email: recipientAddress,
-          displayName: "Customer Name",
-        },
-      ],
+      cc: [{ address: recipientAddress, displayName: "Customer Name" }],
+      bcc: [{ address: secondRecipientAddress, displayName: "Customer Name 2" }],
     },
   };
 
   try {
     // Send the email message
-    const response = await emailClient.send(emailMessage);
+    const poller = await emailClient.beginSend(message);
+    const response = await poller.pollUntilDone();
 
-    console.log("Message ID: " + response.messageId);
+    // Get the OperationId so that it can be used for tracking the message for troubleshooting
+    console.log("Operation ID: " + response.id);
   } catch (error) {
     console.log(error);
   }

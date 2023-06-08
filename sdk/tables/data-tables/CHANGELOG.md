@@ -1,14 +1,27 @@
 # Release History
 
-## 13.1.3 (Unreleased)
-
-### Features Added
-
-### Breaking Changes
+## 13.2.2 (2023-04-10)
 
 ### Bugs Fixed
 
-### Other Changes
+- Fix issue [#25252](https://github.com/Azure/azure-sdk-for-js/issues/25252) where SAS was signed using srk, spk, erk and epk but the query parameters were not included in the result causing all requests with scoped partition and row keys to fail with `AuthorizationFailure`. [25293](https://github.com/Azure/azure-sdk-for-js/pull/25293)
+
+## 13.2.1 (2023-01-12)
+
+### Bugs Fixed
+
+- Fix issue [#22341](https://github.com/Azure/azure-sdk-for-js/issues/22341) when multiple transactions are submitted concurrently. [#24190](https://github.com/Azure/azure-sdk-for-js/pull/24190)
+
+## 13.2.0 (2022-09-07)
+
+### Features Added
+
+- Add option to `transaction.updateEntity()` [#22562](https://github.com/Azure/azure-sdk-for-js/pull/22562). (A community contribution, courtesy of _[tmcgannon](https://github.com/tmcgannon))_
+  - Add overloads to `TableTransaction.updateEntity` so `undefined` doesn't need to be passed explicitly for an optional argument. [#23132](https://github.com/Azure/azure-sdk-for-js/pull/23132)
+
+### Bugs Fixed
+
+- Fix encoding for Date objects when filtering on a DateTime field [#23058](https://github.com/Azure/azure-sdk-for-js/pull/23058)
 
 ## 13.1.2 (2022-06-07)
 

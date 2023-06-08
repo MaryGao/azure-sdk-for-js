@@ -494,6 +494,310 @@ export interface DefaultErrorResponseErrorDetailsItem {
   readonly target?: string;
 }
 
+/** Collection of available workload profiles in the location. */
+export interface AvailableWorkloadProfilesCollection {
+  /** Collection of workload profiles. */
+  value: AvailableWorkloadProfile[];
+  /**
+   * Link to next page of resources.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly nextLink?: string;
+}
+
+/** Revision resource specific properties */
+export interface AvailableWorkloadProfileProperties {
+  /** Used to categorize workload profiles. */
+  category?: string;
+  /** indicates whether the profile is default for the location. */
+  applicability?: Applicability;
+  /** Number of cores in CPU. */
+  cores?: number;
+  /** Memory in GiB. */
+  memoryGiB?: number;
+  /** The everyday name of the workload profile. */
+  displayName?: string;
+}
+
+/** Common error response for all Azure Resource Manager APIs to return error details for failed operations. (This also follows the OData error response format.). */
+export interface ErrorResponse {
+  /** The error object. */
+  error?: ErrorDetail;
+}
+
+/** The error detail. */
+export interface ErrorDetail {
+  /**
+   * The error code.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly code?: string;
+  /**
+   * The error message.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly message?: string;
+  /**
+   * The error target.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly target?: string;
+  /**
+   * The error details.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly details?: ErrorDetail[];
+  /**
+   * The error additional info.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly additionalInfo?: ErrorAdditionalInfo[];
+}
+
+/** The resource management error additional info. */
+export interface ErrorAdditionalInfo {
+  /**
+   * The additional info type.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly type?: string;
+  /**
+   * The additional info.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly info?: Record<string, unknown>;
+}
+
+/** Collection of billing meters. */
+export interface BillingMeterCollection {
+  /** Collection of billing meters. */
+  value: BillingMeter[];
+}
+
+/** Revision resource specific properties */
+export interface BillingMeterProperties {
+  /** Used to categorize billing meters. */
+  category?: string;
+  /** Billing meter type. */
+  meterType?: string;
+  /** The everyday name of the billing meter. */
+  displayName?: string;
+}
+
+/** Collection of connectedEnvironments */
+export interface ConnectedEnvironmentCollection {
+  /** Collection of resources. */
+  value?: ConnectedEnvironment[];
+  /**
+   * Link to next page of resources.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly nextLink?: string;
+}
+
+/** The complex type of the extended location. */
+export interface ExtendedLocation {
+  /** The name of the extended location. */
+  name?: string;
+  /** The type of the extended location. */
+  type?: ExtendedLocationTypes;
+}
+
+/** Configuration properties for apps environment custom domain */
+export interface CustomDomainConfiguration {
+  /**
+   * Id used to verify domain name ownership
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly customDomainVerificationId?: string;
+  /** Dns suffix for the environment domain */
+  dnsSuffix?: string;
+  /** PFX or PEM blob */
+  certificateValue?: Uint8Array;
+  /** Certificate password */
+  certificatePassword?: string;
+  /**
+   * Certificate expiration date.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly expirationDate?: Date;
+  /**
+   * Certificate thumbprint.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly thumbprint?: string;
+  /**
+   * Subject name of the certificate.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly subjectName?: string;
+}
+
+/** The check availability request body. */
+export interface CheckNameAvailabilityRequest {
+  /** The name of the resource for which availability needs to be checked. */
+  name?: string;
+  /** The resource type. */
+  type?: string;
+}
+
+/** The check availability result. */
+export interface CheckNameAvailabilityResponse {
+  /** Indicates if the resource name is available. */
+  nameAvailable?: boolean;
+  /** The reason why the given name is not available. */
+  reason?: CheckNameAvailabilityReason;
+  /** Detailed reason why the given name is available. */
+  message?: string;
+}
+
+/** Collection of Certificates. */
+export interface CertificateCollection {
+  /** Collection of resources. */
+  value: Certificate[];
+  /**
+   * Link to next page of resources.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly nextLink?: string;
+}
+
+/** Certificate resource specific properties */
+export interface CertificateProperties {
+  /**
+   * Provisioning state of the certificate.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly provisioningState?: CertificateProvisioningState;
+  /** Certificate password. */
+  password?: string;
+  /**
+   * Subject name of the certificate.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly subjectName?: string;
+  /**
+   * Subject alternative names the certificate applies to.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly subjectAlternativeNames?: string[];
+  /** PFX or PEM blob */
+  value?: Uint8Array;
+  /**
+   * Certificate issuer.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly issuer?: string;
+  /**
+   * Certificate issue Date.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly issueDate?: Date;
+  /**
+   * Certificate expiration date.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly expirationDate?: Date;
+  /**
+   * Certificate thumbprint.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly thumbprint?: string;
+  /**
+   * Is the certificate valid?.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly valid?: boolean;
+  /**
+   * Public key hash.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly publicKeyHash?: string;
+}
+
+/** A certificate to update */
+export interface CertificatePatch {
+  /** Application-specific metadata in the form of key-value pairs. */
+  tags?: { [propertyName: string]: string };
+}
+
+/** Dapr Components ARM resource. */
+export interface DaprComponentsCollection {
+  /** Collection of resources. */
+  value: DaprComponent[];
+  /**
+   * Link to next page of resources.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly nextLink?: string;
+}
+
+/** Secret definition. */
+export interface Secret {
+  /** Secret Name. */
+  name?: string;
+  /** Secret Value. */
+  value?: string;
+  /** Resource ID of a managed identity to authenticate with Azure Key Vault, or System to use a system-assigned identity. */
+  identity?: string;
+  /** Azure Key Vault URL pointing to the secret referenced by the container app. */
+  keyVaultUrl?: string;
+}
+
+/** Dapr component metadata. */
+export interface DaprMetadata {
+  /** Metadata property name. */
+  name?: string;
+  /** Metadata property value. */
+  value?: string;
+  /** Name of the Dapr Component secret from which to pull the metadata property value. */
+  secretRef?: string;
+}
+
+/** Dapr component Secrets Collection for ListSecrets Action. */
+export interface DaprSecretsCollection {
+  /** Collection of secrets used by a Dapr component */
+  value: DaprSecret[];
+}
+
+/** Dapr component Secret for ListSecrets Action */
+export interface DaprSecret {
+  /**
+   * Secret Name.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly name?: string;
+  /**
+   * Secret Value.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly value?: string;
+}
+
+/** Collection of Storage for Environments */
+export interface ConnectedEnvironmentStoragesCollection {
+  /** Collection of storage resources. */
+  value: ConnectedEnvironmentStorage[];
+}
+
+/** Storage properties */
+export interface ConnectedEnvironmentStorageProperties {
+  /** Azure file properties */
+  azureFile?: AzureFileProperties;
+}
+
+/** Azure File Properties. */
+export interface AzureFileProperties {
+  /** Storage account name for azure file. */
+  accountName?: string;
+  /** Storage account key for azure file. */
+  accountKey?: string;
+  /** Access mode for storage */
+  accessMode?: AccessMode;
+  /** Azure file share name. */
+  shareName?: string;
+}
+
 /** Container App collection ARM resource. */
 export interface ContainerAppCollection {
   /** Collection of resources. */
@@ -552,14 +856,8 @@ export interface Configuration {
   registries?: RegistryCredentials[];
   /** Dapr configuration for the Container App. */
   dapr?: Dapr;
-}
-
-/** Secret definition. */
-export interface Secret {
-  /** Secret Name. */
-  name?: string;
-  /** Secret Value. */
-  value?: string;
+  /** Optional. Max inactive revisions a Container App can have. */
+  maxInactiveRevisions?: number;
 }
 
 /** Container App Ingress configuration. */
@@ -573,6 +871,8 @@ export interface Ingress {
   external?: boolean;
   /** Target Port in containers for traffic from ingress */
   targetPort?: number;
+  /** Exposed Port in containers for TCP traffic from ingress */
+  exposedPort?: number;
   /** Ingress transport protocol */
   transport?: IngressTransportMethod;
   /** Traffic weights for app's revisions */
@@ -581,6 +881,14 @@ export interface Ingress {
   customDomains?: CustomDomain[];
   /** Bool indicating if HTTP connections to is allowed. If set to false HTTP connections are automatically redirected to HTTPS connections */
   allowInsecure?: boolean;
+  /** Rules to restrict incoming IP address. */
+  ipSecurityRestrictions?: IpSecurityRestrictionRule[];
+  /** Sticky Sessions for Single Revision Mode */
+  stickySessions?: IngressStickySessions;
+  /** Client certificate mode for mTLS authentication. Ignore indicates server drops client certificate on forwarding. Accept indicates server forwards client certificate but does not require a client certificate. Require indicates server requires a client certificate. */
+  clientCertificateMode?: IngressClientCertificateMode;
+  /** CORS policy for container app */
+  corsPolicy?: CorsPolicy;
 }
 
 /** Traffic weight assigned to a revision */
@@ -602,7 +910,41 @@ export interface CustomDomain {
   /** Custom Domain binding type. */
   bindingType?: BindingType;
   /** Resource Id of the Certificate to be bound to this hostname. Must exist in the Managed Environment. */
-  certificateId: string;
+  certificateId?: string;
+}
+
+/** Rule to restrict incoming IP address. */
+export interface IpSecurityRestrictionRule {
+  /** Name for the IP restriction rule. */
+  name: string;
+  /** Describe the IP restriction rule that is being sent to the container-app. This is an optional field. */
+  description?: string;
+  /** CIDR notation to match incoming IP address */
+  ipAddressRange: string;
+  /** Allow or Deny rules to determine for incoming IP. Note: Rules can only consist of ALL Allow or ALL Deny */
+  action: Action;
+}
+
+/** Sticky Sessions for Single Revision Mode */
+export interface IngressStickySessions {
+  /** Sticky Session Affinity */
+  affinity?: Affinity;
+}
+
+/** Cross-Origin-Resource-Sharing policy */
+export interface CorsPolicy {
+  /** Specifies the content for the access-control-allow-origins header */
+  allowedOrigins: string[];
+  /** Specifies the content for the access-control-allow-methods header */
+  allowedMethods?: string[];
+  /** Specifies the content for the access-control-allow-headers header */
+  allowedHeaders?: string[];
+  /** Specifies the content for the access-control-expose-headers header */
+  exposeHeaders?: string[];
+  /** Specifies the content for the access-control-max-age header */
+  maxAge?: number;
+  /** Specifies whether the resource allows credentials */
+  allowCredentials?: boolean;
 }
 
 /** Container App Private Registry */
@@ -627,6 +969,14 @@ export interface Dapr {
   appProtocol?: AppProtocol;
   /** Tells Dapr which port your application is listening on */
   appPort?: number;
+  /** Dapr max size of http header read buffer in KB to handle when sending multi-KB headers. Default is 65KB. */
+  httpReadBufferSize?: number;
+  /** Increasing max size of request body http and grpc servers parameter in MB to handle uploading of big files. Default is 4 MB. */
+  httpMaxRequestSize?: number;
+  /** Sets the log level for the Dapr sidecar. Allowed values are debug, info, warn, error. Default is info. */
+  logLevel?: LogLevel;
+  /** Enables API logging for the Dapr sidecar */
+  enableApiLogging?: boolean;
 }
 
 /**
@@ -637,6 +987,8 @@ export interface Dapr {
 export interface Template {
   /** User friendly suffix that is appended to the revision name */
   revisionSuffix?: string;
+  /** List of specialized containers that run before app containers. */
+  initContainers?: InitContainer[];
   /** List of container definitions for the Container App. */
   containers?: Container[];
   /** Scaling properties for the Container App. */
@@ -645,8 +997,8 @@ export interface Template {
   volumes?: Volume[];
 }
 
-/** Container App container definition. */
-export interface Container {
+/** Container App base container definition. */
+export interface BaseContainer {
   /** Container image tag. */
   image?: string;
   /** Custom container name. */
@@ -659,8 +1011,6 @@ export interface Container {
   env?: EnvironmentVar[];
   /** Container resource requirements. */
   resources?: ContainerResources;
-  /** List of probes for the container. */
-  probes?: ContainerAppProbe[];
   /** Container volume mounts. */
   volumeMounts?: VolumeMount[];
 }
@@ -686,6 +1036,14 @@ export interface ContainerResources {
    * NOTE: This property will not be serialized. It can only be populated by the server.
    */
   readonly ephemeralStorage?: string;
+}
+
+/** Volume mount for the Container App. */
+export interface VolumeMount {
+  /** This must match the Name of a Volume. */
+  volumeName?: string;
+  /** Path within the container at which the volume should be mounted.Must not contain ':'. */
+  mountPath?: string;
 }
 
 /** Probe describes a health check to be performed against a container to determine whether it is alive or ready to receive traffic. */
@@ -740,14 +1098,6 @@ export interface ContainerAppProbeTcpSocket {
   port: number;
 }
 
-/** Volume mount for the Container App. */
-export interface VolumeMount {
-  /** This must match the Name of a Volume. */
-  volumeName?: string;
-  /** Path within the container at which the volume should be mounted.Must not contain ':'. */
-  mountPath?: string;
-}
-
 /** Container App scaling configurations. */
 export interface Scale {
   /** Optional. Minimum number of container replicas. */
@@ -768,6 +1118,8 @@ export interface ScaleRule {
   custom?: CustomScaleRule;
   /** HTTP requests based scaling. */
   http?: HttpScaleRule;
+  /** Tcp requests based scaling. */
+  tcp?: TcpScaleRule;
 }
 
 /** Container App container Azure Queue based scaling rule. */
@@ -801,11 +1153,19 @@ export interface CustomScaleRule {
   auth?: ScaleRuleAuth[];
 }
 
-/** Container App container Custom scaling rule. */
+/** Container App container Http scaling rule. */
 export interface HttpScaleRule {
   /** Metadata properties to describe http scale rule. */
   metadata?: { [propertyName: string]: string };
   /** Authentication secrets for the custom scale rule. */
+  auth?: ScaleRuleAuth[];
+}
+
+/** Container App container Tcp scaling rule. */
+export interface TcpScaleRule {
+  /** Metadata properties to describe tcp scale rule. */
+  metadata?: { [propertyName: string]: string };
+  /** Authentication secrets for the tcp scale rule. */
   auth?: ScaleRuleAuth[];
 }
 
@@ -815,8 +1175,107 @@ export interface Volume {
   name?: string;
   /** Storage type for the volume. If not provided, use EmptyDir. */
   storageType?: StorageType;
-  /** Name of storage resource. No need to provide for EmptyDir. */
+  /** Name of storage resource. No need to provide for EmptyDir and Secret. */
   storageName?: string;
+  /** List of secrets to be added in volume. If no secrets are provided, all secrets in collection will be added to volume. */
+  secrets?: SecretVolumeItem[];
+}
+
+/** Secret to be added to volume. */
+export interface SecretVolumeItem {
+  /** Name of the Container App secret from which to pull the secret value. */
+  secretRef?: string;
+  /** Path to project secret to. If no path is provided, path defaults to name of secret listed in secretRef. */
+  path?: string;
+}
+
+/** Custom domain analysis. */
+export interface CustomHostnameAnalysisResult {
+  /**
+   * Host name that was analyzed
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly hostName?: string;
+  /**
+   * <code>true</code> if hostname is already verified; otherwise, <code>false</code>.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly isHostnameAlreadyVerified?: boolean;
+  /**
+   * DNS verification test result.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly customDomainVerificationTest?: DnsVerificationTestResult;
+  /**
+   * Raw failure information if DNS verification fails.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly customDomainVerificationFailureInfo?: CustomHostnameAnalysisResultCustomDomainVerificationFailureInfo;
+  /**
+   * <code>true</code> if there is a conflict on the Container App's managed environment; otherwise, <code>false</code>.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly hasConflictOnManagedEnvironment?: boolean;
+  /**
+   * <code>true</code> if there is a conflict on the Container App's managed environment level custom domain; otherwise, <code>false</code>.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly conflictWithEnvironmentCustomDomain?: boolean;
+  /**
+   * Name of the conflicting Container App on the Managed Environment if it's within the same subscription.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly conflictingContainerAppResourceId?: string;
+  /** CName records visible for this hostname. */
+  cNameRecords?: string[];
+  /** TXT records visible for this hostname. */
+  txtRecords?: string[];
+  /** A records visible for this hostname. */
+  aRecords?: string[];
+  /** Alternate CName records visible for this hostname. */
+  alternateCNameRecords?: string[];
+  /** Alternate TXT records visible for this hostname. */
+  alternateTxtRecords?: string[];
+}
+
+/** Raw failure information if DNS verification fails. */
+export interface CustomHostnameAnalysisResultCustomDomainVerificationFailureInfo {
+  /**
+   * Standardized string to programmatically identify the error.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly code?: string;
+  /**
+   * Detailed error description and debugging information.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly message?: string;
+  /**
+   * Detailed error description and debugging information.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly target?: string;
+  /** Details or the error */
+  details?: CustomHostnameAnalysisResultCustomDomainVerificationFailureInfoDetailsItem[];
+}
+
+/** Detailed errors. */
+export interface CustomHostnameAnalysisResultCustomDomainVerificationFailureInfoDetailsItem {
+  /**
+   * Standardized string to programmatically identify the error.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly code?: string;
+  /**
+   * Detailed error description and debugging information.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly message?: string;
+  /**
+   * Detailed error description and debugging information.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly target?: string;
 }
 
 /** Container App Secrets Collection ARM resource. */
@@ -837,6 +1296,171 @@ export interface ContainerAppSecret {
    * NOTE: This property will not be serialized. It can only be populated by the server.
    */
   readonly value?: string;
+  /**
+   * Resource ID of a managed identity to authenticate with Azure Key Vault, or System to use a system-assigned identity.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly identity?: string;
+  /**
+   * Azure Key Vault URL pointing to the secret referenced by the container app.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly keyVaultUrl?: string;
+}
+
+/** Container Apps Jobs collection ARM resource. */
+export interface JobsCollection {
+  /** Collection of resources. */
+  value: Job[];
+  /**
+   * Link to next page of resources.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly nextLink?: string;
+}
+
+/** Non versioned Container Apps Job configuration properties */
+export interface JobConfiguration {
+  /** Collection of secrets used by a Container Apps Job */
+  secrets?: Secret[];
+  /** Trigger type of the job */
+  triggerType: TriggerType;
+  /** Maximum number of seconds a replica is allowed to run. */
+  replicaTimeout: number;
+  /** Maximum number of retries before failing the job. */
+  replicaRetryLimit?: number;
+  /** Manual trigger configuration for a single execution job. Properties replicaCompletionCount and parallelism would be set to 1 by default */
+  manualTriggerConfig?: JobConfigurationManualTriggerConfig;
+  /** Cron formatted repeating trigger schedule ("* * * * *") for cronjobs. Properties completions and parallelism would be set to 1 by default */
+  scheduleTriggerConfig?: JobConfigurationScheduleTriggerConfig;
+  /** Collection of private container registry credentials used by a Container apps job */
+  registries?: RegistryCredentials[];
+}
+
+/** Manual trigger configuration for a single execution job. Properties replicaCompletionCount and parallelism would be set to 1 by default */
+export interface JobConfigurationManualTriggerConfig {
+  /** Minimum number of successful replica completions before overall job completion. */
+  replicaCompletionCount?: number;
+  /** Number of parallel replicas of a job that can run at a given time. */
+  parallelism?: number;
+}
+
+/** Cron formatted repeating trigger schedule ("* * * * *") for cronjobs. Properties completions and parallelism would be set to 1 by default */
+export interface JobConfigurationScheduleTriggerConfig {
+  /** Minimum number of successful replica completions before overall job completion. */
+  replicaCompletionCount?: number;
+  /** Cron formatted repeating schedule ("* * * * *") of a Cron Job. */
+  cronExpression: string;
+  /** Number of parallel replicas of a job that can run at a given time. */
+  parallelism?: number;
+}
+
+/** Container Apps Job versioned application definition. Defines the desired state of an immutable revision. Any changes to this section Will result in a new revision being created */
+export interface JobTemplate {
+  /** List of specialized containers that run before app containers. */
+  initContainers?: InitContainer[];
+  /** List of container definitions for the Container App. */
+  containers?: Container[];
+  /** List of volume definitions for the Container App. */
+  volumes?: Volume[];
+}
+
+/** Container Apps Job resource specific properties. */
+export interface JobPatchProperties {
+  /** Managed identities needed by a container app job to interact with other Azure services to not maintain any secrets or credentials in code. */
+  identity?: ManagedServiceIdentity;
+  /** Resource tags. */
+  tags?: { [propertyName: string]: string };
+  properties?: JobPatchPropertiesProperties;
+}
+
+export interface JobPatchPropertiesProperties {
+  /** Resource ID of environment. */
+  environmentId?: string;
+  /** Container Apps Job configuration properties. */
+  configuration?: JobConfiguration;
+  /** Container Apps job definition. */
+  template?: JobTemplate;
+  /** Outbound IP Addresses of a container apps job. */
+  outboundIpAddresses?: string[];
+  /** The endpoint of the eventstream of the container apps job. */
+  eventStreamEndpoint?: string;
+}
+
+/** Job's execution template, containing container configuration for a job's execution */
+export interface JobExecutionTemplate {
+  /** List of container definitions for the Container Apps Job. */
+  containers?: JobExecutionContainer[];
+  /** List of specialized containers that run before job containers. */
+  initContainers?: JobExecutionContainer[];
+}
+
+/** Container Apps Jobs execution container definition. */
+export interface JobExecutionContainer {
+  /** Container image tag. */
+  image?: string;
+  /** Custom container name. */
+  name?: string;
+  /** Container start command. */
+  command?: string[];
+  /** Container start command arguments. */
+  args?: string[];
+  /** Container environment variables. */
+  env?: EnvironmentVar[];
+  /** Container resource requirements. */
+  resources?: ContainerResources;
+}
+
+/** Container App's Job execution name. */
+export interface JobExecutionBase {
+  /** Job execution name. */
+  name?: string;
+  /** Job execution Id. */
+  id?: string;
+}
+
+/** Container App executions names list. */
+export interface JobExecutionNamesCollection {
+  /** Collection of resources. */
+  value: JobExecutionBase[];
+}
+
+/** Container App executions collection ARM resource. */
+export interface ContainerAppJobExecutions {
+  /** Collection of resources. */
+  value: JobExecution[];
+  /**
+   * Link to next page of resources.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly nextLink?: string;
+}
+
+/** Container Apps Jobs execution. */
+export interface JobExecution {
+  /** Job execution Name. */
+  name?: string;
+  /** Job execution Id. */
+  id?: string;
+  /** Job Type. */
+  type?: string;
+  /**
+   * Current running State of the job
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly status?: JobExecutionRunningState;
+  /** Job execution start time. */
+  startTime?: Date;
+  /** Job execution start time. */
+  endTime?: Date;
+  /** Job's execution container. */
+  template?: JobExecutionTemplate;
+}
+
+/** Container Apps Job Secrets Collection ARM resource. */
+export interface JobSecretsCollection {
+  /** Collection of resources. */
+  value: Secret[];
 }
 
 /** Container App Revisions collection ARM resource. */
@@ -862,6 +1486,16 @@ export interface ReplicaContainer {
   started?: boolean;
   /** The container restart count */
   restartCount?: number;
+  /**
+   * Log Stream endpoint
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly logStreamEndpoint?: string;
+  /**
+   * Container exec endpoint
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly execEndpoint?: string;
 }
 
 /** Container App Revision Replicas collection ARM resource. */
@@ -870,10 +1504,10 @@ export interface ReplicaCollection {
   value: Replica[];
 }
 
-/** Dapr Components ARM resource. */
-export interface DaprComponentsCollection {
-  /** Collection of resources. */
-  value: DaprComponent[];
+/** Diagnostics data collection for a resource. */
+export interface DiagnosticsCollection {
+  /** Collection of diagnostic data. */
+  value: Diagnostics[];
   /**
    * Link to next page of resources.
    * NOTE: This property will not be serialized. It can only be populated by the server.
@@ -881,20 +1515,197 @@ export interface DaprComponentsCollection {
   readonly nextLink?: string;
 }
 
-/** Dapr component metadata. */
-export interface DaprMetadata {
-  /** Metadata property name. */
-  name?: string;
-  /** Metadata property value. */
-  value?: string;
-  /** Name of the Dapr Component secret from which to pull the metadata property value. */
-  secretRef?: string;
+/** Diagnostics resource specific properties */
+export interface DiagnosticsProperties {
+  /** Metadata of the diagnostics response. */
+  metadata?: DiagnosticsDefinition;
+  /** Set of data collections associated with the response. */
+  dataset?: DiagnosticsDataApiResponse[];
+  /** Status of the diagnostics response. */
+  status?: DiagnosticsStatus;
+  /** List of data providers' metadata. */
+  dataProviderMetadata?: DiagnosticDataProviderMetadata;
 }
 
-/** Dapr component Secrets Collection ARM resource. */
-export interface DaprSecretsCollection {
-  /** Collection of secrets used by a Dapr component */
-  value: Secret[];
+/** Metadata of the diagnostics response */
+export interface DiagnosticsDefinition {
+  /**
+   * Unique detector name
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly id?: string;
+  /**
+   * Display Name of the detector
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly name?: string;
+  /**
+   * Details of the diagnostics info
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly description?: string;
+  /**
+   * Authors' names of the detector
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly author?: string;
+  /**
+   * Category of the detector
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly category?: string;
+  /** List of support topics */
+  supportTopicList?: DiagnosticSupportTopic[];
+  /** List of analysis types */
+  analysisTypes?: string[];
+  /**
+   * Authors' names of the detector
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly type?: string;
+  /**
+   * Authors' names of the detector
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly score?: number;
+}
+
+/** Support topic information */
+export interface DiagnosticSupportTopic {
+  /**
+   * Unique topic identifier
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly id?: string;
+  /**
+   * PES identifier
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly pesId?: string;
+}
+
+/** Diagnostics data returned from a detector */
+export interface DiagnosticsDataApiResponse {
+  /** Table response */
+  table?: DiagnosticDataTableResponseObject;
+  /** Details of the table response */
+  renderingProperties?: DiagnosticRendering;
+}
+
+/** Diagnostics data table */
+export interface DiagnosticDataTableResponseObject {
+  /** Table name */
+  tableName?: string;
+  /** Columns in the table */
+  columns?: DiagnosticDataTableResponseColumn[];
+  /** Rows in the table */
+  rows?: Record<string, unknown>[];
+}
+
+/** Diagnostics data column */
+export interface DiagnosticDataTableResponseColumn {
+  /** Column name */
+  columnName?: string;
+  /** Data type of the column */
+  dataType?: string;
+  /** Column type */
+  columnType?: string;
+}
+
+/** Rendering details of a diagnostics table */
+export interface DiagnosticRendering {
+  /** Rendering type */
+  type?: number;
+  /** Title of the table */
+  title?: string;
+  /** Description of the table */
+  description?: string;
+  /** Flag if the table should be rendered */
+  isVisible?: boolean;
+}
+
+/** Rendering details of a diagnostics table */
+export interface DiagnosticsStatus {
+  /** Diagnostic message */
+  message?: string;
+  /** Status */
+  statusId?: number;
+}
+
+/** Details of a diagnostics data provider */
+export interface DiagnosticDataProviderMetadata {
+  /** Name of data provider */
+  providerName?: string;
+  /** Collection of properties */
+  propertyBag?: DiagnosticDataProviderMetadataPropertyBagItem[];
+}
+
+/** Property details */
+export interface DiagnosticDataProviderMetadataPropertyBagItem {
+  /** Property name */
+  name?: string;
+  /** Property value */
+  value?: string;
+}
+
+/** Configuration properties for apps environment to join a Virtual Network */
+export interface VnetConfiguration {
+  /** Boolean indicating the environment only has an internal load balancer. These environments do not have a public static IP resource. They must provide infrastructureSubnetId if enabling this property */
+  internal?: boolean;
+  /** Resource ID of a subnet for infrastructure components. Must not overlap with any other provided IP ranges. */
+  infrastructureSubnetId?: string;
+  /** CIDR notation IP range assigned to the Docker bridge, network. Must not overlap with any other provided IP ranges. */
+  dockerBridgeCidr?: string;
+  /** IP range in CIDR notation that can be reserved for environment infrastructure IP addresses. Must not overlap with any other provided IP ranges. */
+  platformReservedCidr?: string;
+  /**  An IP address from the IP range defined by platformReservedCidr that will be reserved for the internal DNS server. */
+  platformReservedDnsIP?: string;
+}
+
+/** Configuration of application logs */
+export interface AppLogsConfiguration {
+  /** Logs destination */
+  destination?: string;
+  /** Log Analytics configuration */
+  logAnalyticsConfiguration?: LogAnalyticsConfiguration;
+}
+
+/** Log analytics configuration */
+export interface LogAnalyticsConfiguration {
+  /** Log analytics customer id */
+  customerId?: string;
+  /** Log analytics customer key */
+  sharedKey?: string;
+}
+
+/** Workload profile to scope container app execution. */
+export interface WorkloadProfile {
+  /** Workload profile type for the workloads to run on. */
+  name: string;
+  /** Workload profile type for the workloads to run on. */
+  workloadProfileType: string;
+  /** The minimum capacity. */
+  minimumCount?: number;
+  /** The maximum capacity. */
+  maximumCount?: number;
+}
+
+/** Configuration properties Keda component */
+export interface KedaConfiguration {
+  /**
+   * The version of Keda
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly version?: string;
+}
+
+/** Configuration properties Dapr component */
+export interface DaprConfiguration {
+  /**
+   * The version of Dapr
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly version?: string;
 }
 
 /** Available operations of the service */
@@ -943,42 +1754,39 @@ export interface ManagedEnvironmentsCollection {
   readonly nextLink?: string;
 }
 
-/** Configuration properties for apps environment to join a Virtual Network */
-export interface VnetConfiguration {
-  /** Boolean indicating the environment only has an internal load balancer. These environments do not have a public static IP resource, must provide ControlPlaneSubnetResourceId and AppSubnetResourceId if enabling this property */
-  internal?: boolean;
-  /** Resource ID of a subnet for infrastructure components. This subnet must be in the same VNET as the subnet defined in runtimeSubnetId. Must not overlap with any other provided IP ranges. */
-  infrastructureSubnetId?: string;
-  /** Resource ID of a subnet that Container App containers are injected into. This subnet must be in the same VNET as the subnet defined in infrastructureSubnetId. Must not overlap with any other provided IP ranges. */
-  runtimeSubnetId?: string;
-  /** CIDR notation IP range assigned to the Docker bridge, network. Must not overlap with any other provided IP ranges. */
-  dockerBridgeCidr?: string;
-  /** IP range in CIDR notation that can be reserved for environment infrastructure IP addresses. Must not overlap with any other provided IP ranges. */
-  platformReservedCidr?: string;
-  /**  An IP address from the IP range defined by platformReservedCidr that will be reserved for the internal DNS server. */
-  platformReservedDnsIP?: string;
+/** Certificate resource specific properties */
+export interface ManagedCertificateProperties {
+  /**
+   * Provisioning state of the certificate.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly provisioningState?: CertificateProvisioningState;
+  /** Subject name of the certificate. */
+  subjectName?: string;
+  /**
+   * Any error occurred during the certificate provision.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly error?: string;
+  /** Selected type of domain control validation for managed certificates. */
+  domainControlValidation?: ManagedCertificateDomainControlValidation;
+  /**
+   * A TXT token used for DNS TXT domain control validation when issuing this type of managed certificates.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly validationToken?: string;
 }
 
-/** Configuration of application logs */
-export interface AppLogsConfiguration {
-  /** Logs destination */
-  destination?: string;
-  /** Log Analytics configuration */
-  logAnalyticsConfiguration?: LogAnalyticsConfiguration;
+/** A managed certificate to update */
+export interface ManagedCertificatePatch {
+  /** Application-specific metadata in the form of key-value pairs. */
+  tags?: { [propertyName: string]: string };
 }
 
-/** Log analytics configuration */
-export interface LogAnalyticsConfiguration {
-  /** Log analytics customer id */
-  customerId?: string;
-  /** Log analytics customer key */
-  sharedKey?: string;
-}
-
-/** Collection of Certificates. */
-export interface CertificateCollection {
+/** Collection of Managed Certificates. */
+export interface ManagedCertificateCollection {
   /** Collection of resources. */
-  value: Certificate[];
+  value: ManagedCertificate[];
   /**
    * Link to next page of resources.
    * NOTE: This property will not be serialized. It can only be populated by the server.
@@ -986,76 +1794,25 @@ export interface CertificateCollection {
   readonly nextLink?: string;
 }
 
-/** Certificate resource specific properties */
-export interface CertificateProperties {
+/** Collection of workloadProfileStates */
+export interface WorkloadProfileStatesCollection {
+  /** Collection of resources. */
+  value: WorkloadProfileStates[];
   /**
-   * Provisioning state of the certificate.
+   * Link to next page of resources.
    * NOTE: This property will not be serialized. It can only be populated by the server.
    */
-  readonly provisioningState?: CertificateProvisioningState;
-  /** Certificate password. */
-  password?: string;
-  /**
-   * Subject name of the certificate.
-   * NOTE: This property will not be serialized. It can only be populated by the server.
-   */
-  readonly subjectName?: string;
-  /** PFX or PEM blob */
-  value?: Uint8Array;
-  /**
-   * Certificate issuer.
-   * NOTE: This property will not be serialized. It can only be populated by the server.
-   */
-  readonly issuer?: string;
-  /**
-   * Certificate issue Date.
-   * NOTE: This property will not be serialized. It can only be populated by the server.
-   */
-  readonly issueDate?: Date;
-  /**
-   * Certificate expiration date.
-   * NOTE: This property will not be serialized. It can only be populated by the server.
-   */
-  readonly expirationDate?: Date;
-  /**
-   * Certificate thumbprint.
-   * NOTE: This property will not be serialized. It can only be populated by the server.
-   */
-  readonly thumbprint?: string;
-  /**
-   * Is the certificate valid?.
-   * NOTE: This property will not be serialized. It can only be populated by the server.
-   */
-  readonly valid?: boolean;
-  /**
-   * Public key hash.
-   * NOTE: This property will not be serialized. It can only be populated by the server.
-   */
-  readonly publicKeyHash?: string;
+  readonly nextLink?: string;
 }
 
-/** A certificate to update */
-export interface CertificatePatch {
-  /** Application-specific metadata in the form of key-value pairs. */
-  tags?: { [propertyName: string]: string };
-}
-
-/** The check availability request body. */
-export interface CheckNameAvailabilityRequest {
-  /** The name of the resource for which availability needs to be checked. */
-  name?: string;
-  /** The resource type. */
-  type?: string;
-}
-
-/** The check availability result. */
-export interface CheckNameAvailabilityResponse {
-  /** Indicates if the resource name is available. */
-  nameAvailable?: boolean;
-  /** The reason why the given name is not available. */
-  reason?: CheckNameAvailabilityReason;
-  /** Detailed reason why the given name is available. */
-  message?: string;
+/** Workload Profile resource specific properties. */
+export interface WorkloadProfileStatesProperties {
+  /** Minimum count of instances. */
+  minimumCount?: number;
+  /** Maximum count of nodes. */
+  maximumCount?: number;
+  /** Current count of nodes. */
+  currentCount?: number;
 }
 
 /** Collection of Storage for Environments */
@@ -1068,18 +1825,6 @@ export interface ManagedEnvironmentStoragesCollection {
 export interface ManagedEnvironmentStorageProperties {
   /** Azure file properties */
   azureFile?: AzureFileProperties;
-}
-
-/** Azure File Properties. */
-export interface AzureFileProperties {
-  /** Storage account name for azure file. */
-  accountName?: string;
-  /** Storage account key for azure file. */
-  accountKey?: string;
-  /** Access mode for storage */
-  accessMode?: AccessMode;
-  /** Azure file share name. */
-  shareName?: string;
 }
 
 /** SourceControl collection ARM resource. */
@@ -1136,18 +1881,27 @@ export interface AzureCredentials {
 }
 
 /** The resource model definition for a Azure Resource Manager proxy resource. It will not have tags and a location */
-export type ProxyResource = Resource & {};
+export interface ProxyResource extends Resource {}
 
 /** The resource model definition for an Azure Resource Manager tracked top level resource which has 'tags' and a 'location' */
-export type TrackedResource = Resource & {
+export interface TrackedResource extends Resource {
   /** Resource tags. */
   tags?: { [propertyName: string]: string };
   /** The geo-location where the resource lives */
   location: string;
-};
+}
+
+/** Container App init container definition */
+export interface InitContainer extends BaseContainer {}
+
+/** Container App container definition */
+export interface Container extends BaseContainer {
+  /** List of probes for the container. */
+  probes?: ContainerAppProbe[];
+}
 
 /** Configuration settings for the Azure ContainerApp Service Authentication / Authorization feature. */
-export type AuthConfig = ProxyResource & {
+export interface AuthConfig extends ProxyResource {
   /** The configuration settings of the platform of ContainerApp Service Authentication/Authorization. */
   platform?: AuthPlatform;
   /** The configuration settings that determines the validation flow of users using  Service Authentication/Authorization. */
@@ -1158,60 +1912,63 @@ export type AuthConfig = ProxyResource & {
   login?: Login;
   /** The configuration settings of the HTTP requests for authentication and authorization requests made against ContainerApp Service Authentication/Authorization. */
   httpSettings?: HttpSettings;
-};
+}
 
-/** Custom domain analysis. */
-export type CustomHostnameAnalysisResult = ProxyResource & {
-  /**
-   * Host name that was analyzed
-   * NOTE: This property will not be serialized. It can only be populated by the server.
-   */
-  readonly hostName?: string;
-  /**
-   * <code>true</code> if hostname is already verified; otherwise, <code>false</code>.
-   * NOTE: This property will not be serialized. It can only be populated by the server.
-   */
-  readonly isHostnameAlreadyVerified?: boolean;
-  /**
-   * DNS verification test result.
-   * NOTE: This property will not be serialized. It can only be populated by the server.
-   */
-  readonly customDomainVerificationTest?: DnsVerificationTestResult;
-  /**
-   * Raw failure information if DNS verification fails.
-   * NOTE: This property will not be serialized. It can only be populated by the server.
-   */
-  readonly customDomainVerificationFailureInfo?: DefaultErrorResponse;
-  /**
-   * <code>true</code> if there is a conflict on the Container App's managed environment; otherwise, <code>false</code>.
-   * NOTE: This property will not be serialized. It can only be populated by the server.
-   */
-  readonly hasConflictOnManagedEnvironment?: boolean;
-  /**
-   * Name of the conflicting Container App on the Managed Environment if it's within the same subscription.
-   * NOTE: This property will not be serialized. It can only be populated by the server.
-   */
-  readonly conflictingContainerAppResourceId?: string;
-  /** CName records visible for this hostname. */
-  cNameRecords?: string[];
-  /** TXT records visible for this hostname. */
-  txtRecords?: string[];
-  /** A records visible for this hostname. */
-  aRecords?: string[];
-  /** Alternate CName records visible for this hostname. */
-  alternateCNameRecords?: string[];
-  /** Alternate TXT records visible for this hostname. */
-  alternateTxtRecords?: string[];
-};
+/** A workload profile with specific hardware configure to run container apps. */
+export interface AvailableWorkloadProfile extends ProxyResource {
+  /** Region of the workload profile. */
+  location?: string;
+  /** Revision resource specific properties */
+  properties?: AvailableWorkloadProfileProperties;
+}
+
+/** Billing meter. */
+export interface BillingMeter extends ProxyResource {
+  /** Region for the billing meter. */
+  location?: string;
+  /** Revision resource specific properties */
+  properties?: BillingMeterProperties;
+}
+
+/** Dapr Component. */
+export interface DaprComponent extends ProxyResource {
+  /** Component type */
+  componentType?: string;
+  /** Component version */
+  version?: string;
+  /** Boolean describing if the component errors are ignores */
+  ignoreErrors?: boolean;
+  /** Initialization timeout */
+  initTimeout?: string;
+  /** Collection of secrets used by a Dapr component */
+  secrets?: Secret[];
+  /** Name of a Dapr component to retrieve component secrets from */
+  secretStoreComponent?: string;
+  /** Component metadata */
+  metadata?: DaprMetadata[];
+  /** Names of container apps that can use this Dapr component */
+  scopes?: string[];
+}
+
+/** Storage resource for connectedEnvironment. */
+export interface ConnectedEnvironmentStorage extends ProxyResource {
+  /** Storage properties */
+  properties?: ConnectedEnvironmentStorageProperties;
+}
 
 /** Container App Revision. */
-export type Revision = ProxyResource & {
+export interface Revision extends ProxyResource {
   /**
    * Timestamp describing when the revision was created
    * by controller
    * NOTE: This property will not be serialized. It can only be populated by the server.
    */
   readonly createdTime?: Date;
+  /**
+   * Timestamp describing when the revision was last active. Only meaningful when revision is inactive
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly lastActiveTime?: Date;
   /**
    * Fully qualified domain name of the revision
    * NOTE: This property will not be serialized. It can only be populated by the server.
@@ -1254,10 +2011,10 @@ export type Revision = ProxyResource & {
    * NOTE: This property will not be serialized. It can only be populated by the server.
    */
   readonly provisioningState?: RevisionProvisioningState;
-};
+}
 
 /** Container App Revision Replica. */
-export type Replica = ProxyResource & {
+export interface Replica extends ProxyResource {
   /**
    * Timestamp describing when the pod was created by controller
    * NOTE: This property will not be serialized. It can only be populated by the server.
@@ -1265,34 +2022,28 @@ export type Replica = ProxyResource & {
   readonly createdTime?: Date;
   /** The containers collection under a replica. */
   containers?: ReplicaContainer[];
-};
+}
 
-/** Dapr Component. */
-export type DaprComponent = ProxyResource & {
-  /** Component type */
-  componentType?: string;
-  /** Component version */
-  version?: string;
-  /** Boolean describing if the component errors are ignores */
-  ignoreErrors?: boolean;
-  /** Initialization timeout */
-  initTimeout?: string;
-  /** Collection of secrets used by a Dapr component */
-  secrets?: Secret[];
-  /** Component metadata */
-  metadata?: DaprMetadata[];
-  /** Names of container apps that can use this Dapr component */
-  scopes?: string[];
-};
+/** Diagnostics data for a resource. */
+export interface Diagnostics extends ProxyResource {
+  /** Diagnostics resource specific properties */
+  properties?: DiagnosticsProperties;
+}
+
+/** Collection of all the workload Profile States for a Managed Environment.. */
+export interface WorkloadProfileStates extends ProxyResource {
+  /** Workload Profile resource specific properties. */
+  properties?: WorkloadProfileStatesProperties;
+}
 
 /** Storage resource for managedEnvironment. */
-export type ManagedEnvironmentStorage = ProxyResource & {
+export interface ManagedEnvironmentStorage extends ProxyResource {
   /** Storage properties */
   properties?: ManagedEnvironmentStorageProperties;
-};
+}
 
 /** Container App SourceControl. */
-export type SourceControl = ProxyResource & {
+export interface SourceControl extends ProxyResource {
   /**
    * Current provisioning State of the operation
    * NOTE: This property will not be serialized. It can only be populated by the server.
@@ -1308,24 +2059,70 @@ export type SourceControl = ProxyResource & {
    * as they were at the creation time
    */
   githubActionConfiguration?: GithubActionConfiguration;
-};
+}
+
+/** An environment for Kubernetes cluster specialized for web workloads by Azure App Service */
+export interface ConnectedEnvironment extends TrackedResource {
+  /** The complex type of the extended location. */
+  extendedLocation?: ExtendedLocation;
+  /**
+   * Provisioning state of the Kubernetes Environment.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly provisioningState?: ConnectedEnvironmentProvisioningState;
+  /**
+   * Any errors that occurred during deployment or deployment validation
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly deploymentErrors?: string;
+  /**
+   * Default Domain Name for the cluster
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly defaultDomain?: string;
+  /** Static IP of the connectedEnvironment */
+  staticIp?: string;
+  /** Application Insights connection string used by Dapr to export Service to Service communication telemetry */
+  daprAIConnectionString?: string;
+  /** Custom domain configuration for the environment */
+  customDomainConfiguration?: CustomDomainConfiguration;
+}
+
+/** Certificate used for Custom Domain bindings of Container Apps in a Managed Environment */
+export interface Certificate extends TrackedResource {
+  /** Certificate resource specific properties */
+  properties?: CertificateProperties;
+}
 
 /** Container App. */
-export type ContainerApp = TrackedResource & {
+export interface ContainerApp extends TrackedResource {
+  /** The complex type of the extended location. */
+  extendedLocation?: ExtendedLocation;
   /** managed identities for the Container App to interact with other Azure services without maintaining any secrets or credentials in code. */
   identity?: ManagedServiceIdentity;
+  /** The fully qualified resource ID of the resource that manages this resource. Indicates if this resource is managed by another Azure resource. If this is present, complete mode deployment will not delete the resource if it is removed from the template since it is managed by another resource. */
+  managedBy?: string;
   /**
    * Provisioning state of the Container App.
    * NOTE: This property will not be serialized. It can only be populated by the server.
    */
   readonly provisioningState?: ContainerAppProvisioningState;
-  /** Resource ID of the Container App's environment. */
+  /** Deprecated. Resource ID of the Container App's environment. */
   managedEnvironmentId?: string;
+  /** Resource ID of environment. */
+  environmentId?: string;
+  /** Workload profile name to pin for container app execution. */
+  workloadProfileName?: string;
   /**
    * Name of the latest revision of the Container App.
    * NOTE: This property will not be serialized. It can only be populated by the server.
    */
   readonly latestRevisionName?: string;
+  /**
+   * Name of the latest ready revision of the Container App.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly latestReadyRevisionName?: string;
   /**
    * Fully Qualified Domain Name of the latest revision of the Container App.
    * NOTE: This property will not be serialized. It can only be populated by the server.
@@ -1344,11 +2141,61 @@ export type ContainerApp = TrackedResource & {
    * Outbound IP Addresses for container app.
    * NOTE: This property will not be serialized. It can only be populated by the server.
    */
-  readonly outboundIPAddresses?: string[];
-};
+  readonly outboundIpAddresses?: string[];
+  /**
+   * The endpoint of the eventstream of the container app.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly eventStreamEndpoint?: string;
+}
+
+/** Container App Auth Token. */
+export interface ContainerAppAuthToken extends TrackedResource {
+  /**
+   * Auth token value.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly token?: string;
+  /**
+   * Token expiration date.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly expires?: Date;
+}
+
+/** Container App Job */
+export interface Job extends TrackedResource {
+  /** Managed identities needed by a container app job to interact with other Azure services to not maintain any secrets or credentials in code. */
+  identity?: ManagedServiceIdentity;
+  /**
+   * Provisioning state of the Container Apps Job.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly provisioningState?: JobProvisioningState;
+  /** Resource ID of environment. */
+  environmentId?: string;
+  /** Workload profile name to pin for container apps job execution. */
+  workloadProfileName?: string;
+  /** Container Apps Job configuration properties. */
+  configuration?: JobConfiguration;
+  /** Container Apps job definition. */
+  template?: JobTemplate;
+  /**
+   * Outbound IP Addresses of a container apps job.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly outboundIpAddresses?: string[];
+  /**
+   * The endpoint of the eventstream of the container apps job.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly eventStreamEndpoint?: string;
+}
 
 /** An environment for hosting container apps */
-export type ManagedEnvironment = TrackedResource & {
+export interface ManagedEnvironment extends TrackedResource {
+  /** Kind of the Environment. */
+  kind?: string;
   /**
    * Provisioning state of the Environment.
    * NOTE: This property will not be serialized. It can only be populated by the server.
@@ -1383,19 +2230,92 @@ export type ManagedEnvironment = TrackedResource & {
   appLogsConfiguration?: AppLogsConfiguration;
   /** Whether or not this Managed Environment is zone-redundant. */
   zoneRedundant?: boolean;
-};
+  /** Custom domain configuration for the environment */
+  customDomainConfiguration?: CustomDomainConfiguration;
+  /**
+   * The endpoint of the eventstream of the Environment.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly eventStreamEndpoint?: string;
+  /** Workload profiles configured for the Managed Environment. */
+  workloadProfiles?: WorkloadProfile[];
+  /** The configuration of Keda component. */
+  kedaConfiguration?: KedaConfiguration;
+  /** The configuration of Dapr component. */
+  daprConfiguration?: DaprConfiguration;
+  /** Name of the platform-managed resource group created for the Managed Environment to host infrastructure resources. If a subnet ID is provided, this resource group will be created in the same subscription as the subnet. */
+  infrastructureResourceGroup?: string;
+}
 
-/** Certificate used for Custom Domain bindings of Container Apps in a Managed Environment */
-export type Certificate = TrackedResource & {
+/** Managed certificates used for Custom Domain bindings of Container Apps in a Managed Environment */
+export interface ManagedCertificate extends TrackedResource {
   /** Certificate resource specific properties */
-  properties?: CertificateProperties;
-};
+  properties?: ManagedCertificateProperties;
+}
+
+/** Environment Auth Token. */
+export interface EnvironmentAuthToken extends TrackedResource {
+  /**
+   * Auth token value.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly token?: string;
+  /**
+   * Token expiration date.
+   * NOTE: This property will not be serialized. It can only be populated by the server.
+   */
+  readonly expires?: Date;
+}
+
+/** Defines headers for ConnectedEnvironments_delete operation. */
+export interface ConnectedEnvironmentsDeleteHeaders {
+  location?: string;
+}
+
+/** Defines headers for ContainerApps_delete operation. */
+export interface ContainerAppsDeleteHeaders {
+  location?: string;
+}
+
+/** Defines headers for ContainerApps_update operation. */
+export interface ContainerAppsUpdateHeaders {
+  location?: string;
+}
+
+/** Defines headers for Jobs_delete operation. */
+export interface JobsDeleteHeaders {
+  location?: string;
+}
+
+/** Defines headers for Jobs_update operation. */
+export interface JobsUpdateHeaders {
+  location?: string;
+}
+
+/** Defines headers for Jobs_start operation. */
+export interface JobsStartHeaders {
+  location?: string;
+}
+
+/** Defines headers for Jobs_stopExecution operation. */
+export interface JobsStopExecutionHeaders {
+  location?: string;
+}
+
+/** Defines headers for Jobs_stopMultipleExecutions operation. */
+export interface JobsStopMultipleExecutionsHeaders {
+  location?: string;
+}
 
 /** Known values of {@link CreatedByType} that the service accepts. */
 export enum KnownCreatedByType {
+  /** User */
   User = "User",
+  /** Application */
   Application = "Application",
+  /** ManagedIdentity */
   ManagedIdentity = "ManagedIdentity",
+  /** Key */
   Key = "Key"
 }
 
@@ -1411,11 +2331,147 @@ export enum KnownCreatedByType {
  */
 export type CreatedByType = string;
 
+/** Known values of {@link Applicability} that the service accepts. */
+export enum KnownApplicability {
+  /** LocationDefault */
+  LocationDefault = "LocationDefault",
+  /** Custom */
+  Custom = "Custom"
+}
+
+/**
+ * Defines values for Applicability. \
+ * {@link KnownApplicability} can be used interchangeably with Applicability,
+ *  this enum contains the known values that the service supports.
+ * ### Known values supported by the service
+ * **LocationDefault** \
+ * **Custom**
+ */
+export type Applicability = string;
+
+/** Known values of {@link ExtendedLocationTypes} that the service accepts. */
+export enum KnownExtendedLocationTypes {
+  /** CustomLocation */
+  CustomLocation = "CustomLocation"
+}
+
+/**
+ * Defines values for ExtendedLocationTypes. \
+ * {@link KnownExtendedLocationTypes} can be used interchangeably with ExtendedLocationTypes,
+ *  this enum contains the known values that the service supports.
+ * ### Known values supported by the service
+ * **CustomLocation**
+ */
+export type ExtendedLocationTypes = string;
+
+/** Known values of {@link ConnectedEnvironmentProvisioningState} that the service accepts. */
+export enum KnownConnectedEnvironmentProvisioningState {
+  /** Succeeded */
+  Succeeded = "Succeeded",
+  /** Failed */
+  Failed = "Failed",
+  /** Canceled */
+  Canceled = "Canceled",
+  /** Waiting */
+  Waiting = "Waiting",
+  /** InitializationInProgress */
+  InitializationInProgress = "InitializationInProgress",
+  /** InfrastructureSetupInProgress */
+  InfrastructureSetupInProgress = "InfrastructureSetupInProgress",
+  /** InfrastructureSetupComplete */
+  InfrastructureSetupComplete = "InfrastructureSetupComplete",
+  /** ScheduledForDelete */
+  ScheduledForDelete = "ScheduledForDelete"
+}
+
+/**
+ * Defines values for ConnectedEnvironmentProvisioningState. \
+ * {@link KnownConnectedEnvironmentProvisioningState} can be used interchangeably with ConnectedEnvironmentProvisioningState,
+ *  this enum contains the known values that the service supports.
+ * ### Known values supported by the service
+ * **Succeeded** \
+ * **Failed** \
+ * **Canceled** \
+ * **Waiting** \
+ * **InitializationInProgress** \
+ * **InfrastructureSetupInProgress** \
+ * **InfrastructureSetupComplete** \
+ * **ScheduledForDelete**
+ */
+export type ConnectedEnvironmentProvisioningState = string;
+
+/** Known values of {@link CheckNameAvailabilityReason} that the service accepts. */
+export enum KnownCheckNameAvailabilityReason {
+  /** Invalid */
+  Invalid = "Invalid",
+  /** AlreadyExists */
+  AlreadyExists = "AlreadyExists"
+}
+
+/**
+ * Defines values for CheckNameAvailabilityReason. \
+ * {@link KnownCheckNameAvailabilityReason} can be used interchangeably with CheckNameAvailabilityReason,
+ *  this enum contains the known values that the service supports.
+ * ### Known values supported by the service
+ * **Invalid** \
+ * **AlreadyExists**
+ */
+export type CheckNameAvailabilityReason = string;
+
+/** Known values of {@link CertificateProvisioningState} that the service accepts. */
+export enum KnownCertificateProvisioningState {
+  /** Succeeded */
+  Succeeded = "Succeeded",
+  /** Failed */
+  Failed = "Failed",
+  /** Canceled */
+  Canceled = "Canceled",
+  /** DeleteFailed */
+  DeleteFailed = "DeleteFailed",
+  /** Pending */
+  Pending = "Pending"
+}
+
+/**
+ * Defines values for CertificateProvisioningState. \
+ * {@link KnownCertificateProvisioningState} can be used interchangeably with CertificateProvisioningState,
+ *  this enum contains the known values that the service supports.
+ * ### Known values supported by the service
+ * **Succeeded** \
+ * **Failed** \
+ * **Canceled** \
+ * **DeleteFailed** \
+ * **Pending**
+ */
+export type CertificateProvisioningState = string;
+
+/** Known values of {@link AccessMode} that the service accepts. */
+export enum KnownAccessMode {
+  /** ReadOnly */
+  ReadOnly = "ReadOnly",
+  /** ReadWrite */
+  ReadWrite = "ReadWrite"
+}
+
+/**
+ * Defines values for AccessMode. \
+ * {@link KnownAccessMode} can be used interchangeably with AccessMode,
+ *  this enum contains the known values that the service supports.
+ * ### Known values supported by the service
+ * **ReadOnly** \
+ * **ReadWrite**
+ */
+export type AccessMode = string;
+
 /** Known values of {@link ManagedServiceIdentityType} that the service accepts. */
 export enum KnownManagedServiceIdentityType {
+  /** None */
   None = "None",
+  /** SystemAssigned */
   SystemAssigned = "SystemAssigned",
+  /** UserAssigned */
   UserAssigned = "UserAssigned",
+  /** SystemAssignedUserAssigned */
   SystemAssignedUserAssigned = "SystemAssigned,UserAssigned"
 }
 
@@ -1433,10 +2489,16 @@ export type ManagedServiceIdentityType = string;
 
 /** Known values of {@link ContainerAppProvisioningState} that the service accepts. */
 export enum KnownContainerAppProvisioningState {
+  /** InProgress */
   InProgress = "InProgress",
+  /** Succeeded */
   Succeeded = "Succeeded",
+  /** Failed */
   Failed = "Failed",
-  Canceled = "Canceled"
+  /** Canceled */
+  Canceled = "Canceled",
+  /** Deleting */
+  Deleting = "Deleting"
 }
 
 /**
@@ -1447,13 +2509,16 @@ export enum KnownContainerAppProvisioningState {
  * **InProgress** \
  * **Succeeded** \
  * **Failed** \
- * **Canceled**
+ * **Canceled** \
+ * **Deleting**
  */
 export type ContainerAppProvisioningState = string;
 
 /** Known values of {@link ActiveRevisionsMode} that the service accepts. */
 export enum KnownActiveRevisionsMode {
+  /** Multiple */
   Multiple = "Multiple",
+  /** Single */
   Single = "Single"
 }
 
@@ -1469,9 +2534,14 @@ export type ActiveRevisionsMode = string;
 
 /** Known values of {@link IngressTransportMethod} that the service accepts. */
 export enum KnownIngressTransportMethod {
+  /** Auto */
   Auto = "auto",
+  /** Http */
   Http = "http",
-  Http2 = "http2"
+  /** Http2 */
+  Http2 = "http2",
+  /** Tcp */
+  Tcp = "tcp"
 }
 
 /**
@@ -1481,13 +2551,16 @@ export enum KnownIngressTransportMethod {
  * ### Known values supported by the service
  * **auto** \
  * **http** \
- * **http2**
+ * **http2** \
+ * **tcp**
  */
 export type IngressTransportMethod = string;
 
 /** Known values of {@link BindingType} that the service accepts. */
 export enum KnownBindingType {
+  /** Disabled */
   Disabled = "Disabled",
+  /** SniEnabled */
   SniEnabled = "SniEnabled"
 }
 
@@ -1501,9 +2574,68 @@ export enum KnownBindingType {
  */
 export type BindingType = string;
 
+/** Known values of {@link Action} that the service accepts. */
+export enum KnownAction {
+  /** Allow */
+  Allow = "Allow",
+  /** Deny */
+  Deny = "Deny"
+}
+
+/**
+ * Defines values for Action. \
+ * {@link KnownAction} can be used interchangeably with Action,
+ *  this enum contains the known values that the service supports.
+ * ### Known values supported by the service
+ * **Allow** \
+ * **Deny**
+ */
+export type Action = string;
+
+/** Known values of {@link Affinity} that the service accepts. */
+export enum KnownAffinity {
+  /** Sticky */
+  Sticky = "sticky",
+  /** None */
+  None = "none"
+}
+
+/**
+ * Defines values for Affinity. \
+ * {@link KnownAffinity} can be used interchangeably with Affinity,
+ *  this enum contains the known values that the service supports.
+ * ### Known values supported by the service
+ * **sticky** \
+ * **none**
+ */
+export type Affinity = string;
+
+/** Known values of {@link IngressClientCertificateMode} that the service accepts. */
+export enum KnownIngressClientCertificateMode {
+  /** Ignore */
+  Ignore = "ignore",
+  /** Accept */
+  Accept = "accept",
+  /** Require */
+  Require = "require"
+}
+
+/**
+ * Defines values for IngressClientCertificateMode. \
+ * {@link KnownIngressClientCertificateMode} can be used interchangeably with IngressClientCertificateMode,
+ *  this enum contains the known values that the service supports.
+ * ### Known values supported by the service
+ * **ignore** \
+ * **accept** \
+ * **require**
+ */
+export type IngressClientCertificateMode = string;
+
 /** Known values of {@link AppProtocol} that the service accepts. */
 export enum KnownAppProtocol {
+  /** Http */
   Http = "http",
+  /** Grpc */
   Grpc = "grpc"
 }
 
@@ -1517,9 +2649,35 @@ export enum KnownAppProtocol {
  */
 export type AppProtocol = string;
 
+/** Known values of {@link LogLevel} that the service accepts. */
+export enum KnownLogLevel {
+  /** Info */
+  Info = "info",
+  /** Debug */
+  Debug = "debug",
+  /** Warn */
+  Warn = "warn",
+  /** Error */
+  Error = "error"
+}
+
+/**
+ * Defines values for LogLevel. \
+ * {@link KnownLogLevel} can be used interchangeably with LogLevel,
+ *  this enum contains the known values that the service supports.
+ * ### Known values supported by the service
+ * **info** \
+ * **debug** \
+ * **warn** \
+ * **error**
+ */
+export type LogLevel = string;
+
 /** Known values of {@link Scheme} that the service accepts. */
 export enum KnownScheme {
+  /** Http */
   Http = "HTTP",
+  /** Https */
   Https = "HTTPS"
 }
 
@@ -1535,8 +2693,11 @@ export type Scheme = string;
 
 /** Known values of {@link Type} that the service accepts. */
 export enum KnownType {
+  /** Liveness */
   Liveness = "Liveness",
+  /** Readiness */
   Readiness = "Readiness",
+  /** Startup */
   Startup = "Startup"
 }
 
@@ -1553,8 +2714,12 @@ export type Type = string;
 
 /** Known values of {@link StorageType} that the service accepts. */
 export enum KnownStorageType {
+  /** AzureFile */
   AzureFile = "AzureFile",
-  EmptyDir = "EmptyDir"
+  /** EmptyDir */
+  EmptyDir = "EmptyDir",
+  /** Secret */
+  Secret = "Secret"
 }
 
 /**
@@ -1563,14 +2728,99 @@ export enum KnownStorageType {
  *  this enum contains the known values that the service supports.
  * ### Known values supported by the service
  * **AzureFile** \
- * **EmptyDir**
+ * **EmptyDir** \
+ * **Secret**
  */
 export type StorageType = string;
 
+/** Known values of {@link JobProvisioningState} that the service accepts. */
+export enum KnownJobProvisioningState {
+  /** InProgress */
+  InProgress = "InProgress",
+  /** Succeeded */
+  Succeeded = "Succeeded",
+  /** Failed */
+  Failed = "Failed",
+  /** Canceled */
+  Canceled = "Canceled",
+  /** Deleting */
+  Deleting = "Deleting"
+}
+
+/**
+ * Defines values for JobProvisioningState. \
+ * {@link KnownJobProvisioningState} can be used interchangeably with JobProvisioningState,
+ *  this enum contains the known values that the service supports.
+ * ### Known values supported by the service
+ * **InProgress** \
+ * **Succeeded** \
+ * **Failed** \
+ * **Canceled** \
+ * **Deleting**
+ */
+export type JobProvisioningState = string;
+
+/** Known values of {@link TriggerType} that the service accepts. */
+export enum KnownTriggerType {
+  /** Scheduled */
+  Scheduled = "Scheduled",
+  /** Event */
+  Event = "Event",
+  /** Manual */
+  Manual = "Manual"
+}
+
+/**
+ * Defines values for TriggerType. \
+ * {@link KnownTriggerType} can be used interchangeably with TriggerType,
+ *  this enum contains the known values that the service supports.
+ * ### Known values supported by the service
+ * **Scheduled** \
+ * **Event** \
+ * **Manual**
+ */
+export type TriggerType = string;
+
+/** Known values of {@link JobExecutionRunningState} that the service accepts. */
+export enum KnownJobExecutionRunningState {
+  /** Running */
+  Running = "Running",
+  /** Processing */
+  Processing = "Processing",
+  /** Stopped */
+  Stopped = "Stopped",
+  /** Degraded */
+  Degraded = "Degraded",
+  /** Failed */
+  Failed = "Failed",
+  /** Unknown */
+  Unknown = "Unknown",
+  /** Succeeded */
+  Succeeded = "Succeeded"
+}
+
+/**
+ * Defines values for JobExecutionRunningState. \
+ * {@link KnownJobExecutionRunningState} can be used interchangeably with JobExecutionRunningState,
+ *  this enum contains the known values that the service supports.
+ * ### Known values supported by the service
+ * **Running** \
+ * **Processing** \
+ * **Stopped** \
+ * **Degraded** \
+ * **Failed** \
+ * **Unknown** \
+ * **Succeeded**
+ */
+export type JobExecutionRunningState = string;
+
 /** Known values of {@link RevisionHealthState} that the service accepts. */
 export enum KnownRevisionHealthState {
+  /** Healthy */
   Healthy = "Healthy",
+  /** Unhealthy */
   Unhealthy = "Unhealthy",
+  /** None */
   None = "None"
 }
 
@@ -1587,10 +2837,15 @@ export type RevisionHealthState = string;
 
 /** Known values of {@link RevisionProvisioningState} that the service accepts. */
 export enum KnownRevisionProvisioningState {
+  /** Provisioning */
   Provisioning = "Provisioning",
+  /** Provisioned */
   Provisioned = "Provisioned",
+  /** Failed */
   Failed = "Failed",
+  /** Deprovisioning */
   Deprovisioning = "Deprovisioning",
+  /** Deprovisioned */
   Deprovisioned = "Deprovisioned"
 }
 
@@ -1609,15 +2864,25 @@ export type RevisionProvisioningState = string;
 
 /** Known values of {@link EnvironmentProvisioningState} that the service accepts. */
 export enum KnownEnvironmentProvisioningState {
+  /** Succeeded */
   Succeeded = "Succeeded",
+  /** Failed */
   Failed = "Failed",
+  /** Canceled */
   Canceled = "Canceled",
+  /** Waiting */
   Waiting = "Waiting",
+  /** InitializationInProgress */
   InitializationInProgress = "InitializationInProgress",
+  /** InfrastructureSetupInProgress */
   InfrastructureSetupInProgress = "InfrastructureSetupInProgress",
+  /** InfrastructureSetupComplete */
   InfrastructureSetupComplete = "InfrastructureSetupComplete",
+  /** ScheduledForDelete */
   ScheduledForDelete = "ScheduledForDelete",
+  /** UpgradeRequested */
   UpgradeRequested = "UpgradeRequested",
+  /** UpgradeFailed */
   UpgradeFailed = "UpgradeFailed"
 }
 
@@ -1639,65 +2904,36 @@ export enum KnownEnvironmentProvisioningState {
  */
 export type EnvironmentProvisioningState = string;
 
-/** Known values of {@link CertificateProvisioningState} that the service accepts. */
-export enum KnownCertificateProvisioningState {
-  Succeeded = "Succeeded",
-  Failed = "Failed",
-  Canceled = "Canceled",
-  DeleteFailed = "DeleteFailed",
-  Pending = "Pending"
+/** Known values of {@link ManagedCertificateDomainControlValidation} that the service accepts. */
+export enum KnownManagedCertificateDomainControlValidation {
+  /** Cname */
+  Cname = "CNAME",
+  /** Http */
+  Http = "HTTP",
+  /** TXT */
+  TXT = "TXT"
 }
 
 /**
- * Defines values for CertificateProvisioningState. \
- * {@link KnownCertificateProvisioningState} can be used interchangeably with CertificateProvisioningState,
+ * Defines values for ManagedCertificateDomainControlValidation. \
+ * {@link KnownManagedCertificateDomainControlValidation} can be used interchangeably with ManagedCertificateDomainControlValidation,
  *  this enum contains the known values that the service supports.
  * ### Known values supported by the service
- * **Succeeded** \
- * **Failed** \
- * **Canceled** \
- * **DeleteFailed** \
- * **Pending**
+ * **CNAME** \
+ * **HTTP** \
+ * **TXT**
  */
-export type CertificateProvisioningState = string;
-
-/** Known values of {@link CheckNameAvailabilityReason} that the service accepts. */
-export enum KnownCheckNameAvailabilityReason {
-  Invalid = "Invalid",
-  AlreadyExists = "AlreadyExists"
-}
-
-/**
- * Defines values for CheckNameAvailabilityReason. \
- * {@link KnownCheckNameAvailabilityReason} can be used interchangeably with CheckNameAvailabilityReason,
- *  this enum contains the known values that the service supports.
- * ### Known values supported by the service
- * **Invalid** \
- * **AlreadyExists**
- */
-export type CheckNameAvailabilityReason = string;
-
-/** Known values of {@link AccessMode} that the service accepts. */
-export enum KnownAccessMode {
-  ReadOnly = "ReadOnly",
-  ReadWrite = "ReadWrite"
-}
-
-/**
- * Defines values for AccessMode. \
- * {@link KnownAccessMode} can be used interchangeably with AccessMode,
- *  this enum contains the known values that the service supports.
- * ### Known values supported by the service
- * **ReadOnly** \
- * **ReadWrite**
- */
-export type AccessMode = string;
+export type ManagedCertificateDomainControlValidation = string;
 
 /** Known values of {@link SourceControlOperationState} that the service accepts. */
 export enum KnownSourceControlOperationState {
+  /** InProgress */
   InProgress = "InProgress",
+  /** Succeeded */
   Succeeded = "Succeeded",
+  /** Failed */
   Failed = "Failed",
+  /** Canceled */
   Canceled = "Canceled"
 }
 
@@ -1760,6 +2996,203 @@ export interface ContainerAppsAuthConfigsListByContainerAppNextOptionalParams
 export type ContainerAppsAuthConfigsListByContainerAppNextResponse = AuthConfigCollection;
 
 /** Optional parameters. */
+export interface AvailableWorkloadProfilesGetOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the get operation. */
+export type AvailableWorkloadProfilesGetResponse = AvailableWorkloadProfilesCollection;
+
+/** Optional parameters. */
+export interface AvailableWorkloadProfilesGetNextOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the getNext operation. */
+export type AvailableWorkloadProfilesGetNextResponse = AvailableWorkloadProfilesCollection;
+
+/** Optional parameters. */
+export interface BillingMetersGetOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the get operation. */
+export type BillingMetersGetResponse = BillingMeterCollection;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsListBySubscriptionOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listBySubscription operation. */
+export type ConnectedEnvironmentsListBySubscriptionResponse = ConnectedEnvironmentCollection;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsListByResourceGroupOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listByResourceGroup operation. */
+export type ConnectedEnvironmentsListByResourceGroupResponse = ConnectedEnvironmentCollection;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsGetOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the get operation. */
+export type ConnectedEnvironmentsGetResponse = ConnectedEnvironment;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsCreateOrUpdateOptionalParams
+  extends coreClient.OperationOptions {
+  /** Delay to wait until next poll, in milliseconds. */
+  updateIntervalInMs?: number;
+  /** A serialized poller which can be used to resume an existing paused Long-Running-Operation. */
+  resumeFrom?: string;
+}
+
+/** Contains response data for the createOrUpdate operation. */
+export type ConnectedEnvironmentsCreateOrUpdateResponse = ConnectedEnvironment;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsDeleteOptionalParams
+  extends coreClient.OperationOptions {
+  /** Delay to wait until next poll, in milliseconds. */
+  updateIntervalInMs?: number;
+  /** A serialized poller which can be used to resume an existing paused Long-Running-Operation. */
+  resumeFrom?: string;
+}
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsUpdateOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the update operation. */
+export type ConnectedEnvironmentsUpdateResponse = ConnectedEnvironment;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsCheckNameAvailabilityOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the checkNameAvailability operation. */
+export type ConnectedEnvironmentsCheckNameAvailabilityResponse = CheckNameAvailabilityResponse;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsListBySubscriptionNextOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listBySubscriptionNext operation. */
+export type ConnectedEnvironmentsListBySubscriptionNextResponse = ConnectedEnvironmentCollection;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsListByResourceGroupNextOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listByResourceGroupNext operation. */
+export type ConnectedEnvironmentsListByResourceGroupNextResponse = ConnectedEnvironmentCollection;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsCertificatesListOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the list operation. */
+export type ConnectedEnvironmentsCertificatesListResponse = CertificateCollection;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsCertificatesGetOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the get operation. */
+export type ConnectedEnvironmentsCertificatesGetResponse = Certificate;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsCertificatesCreateOrUpdateOptionalParams
+  extends coreClient.OperationOptions {
+  /** Certificate to be created or updated */
+  certificateEnvelope?: Certificate;
+}
+
+/** Contains response data for the createOrUpdate operation. */
+export type ConnectedEnvironmentsCertificatesCreateOrUpdateResponse = Certificate;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsCertificatesDeleteOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsCertificatesUpdateOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the update operation. */
+export type ConnectedEnvironmentsCertificatesUpdateResponse = Certificate;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsCertificatesListNextOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listNext operation. */
+export type ConnectedEnvironmentsCertificatesListNextResponse = CertificateCollection;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsDaprComponentsListOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the list operation. */
+export type ConnectedEnvironmentsDaprComponentsListResponse = DaprComponentsCollection;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsDaprComponentsGetOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the get operation. */
+export type ConnectedEnvironmentsDaprComponentsGetResponse = DaprComponent;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsDaprComponentsCreateOrUpdateOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the createOrUpdate operation. */
+export type ConnectedEnvironmentsDaprComponentsCreateOrUpdateResponse = DaprComponent;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsDaprComponentsDeleteOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsDaprComponentsListSecretsOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listSecrets operation. */
+export type ConnectedEnvironmentsDaprComponentsListSecretsResponse = DaprSecretsCollection;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsDaprComponentsListNextOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listNext operation. */
+export type ConnectedEnvironmentsDaprComponentsListNextResponse = DaprComponentsCollection;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsStoragesListOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the list operation. */
+export type ConnectedEnvironmentsStoragesListResponse = ConnectedEnvironmentStoragesCollection;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsStoragesGetOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the get operation. */
+export type ConnectedEnvironmentsStoragesGetResponse = ConnectedEnvironmentStorage;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsStoragesCreateOrUpdateOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the createOrUpdate operation. */
+export type ConnectedEnvironmentsStoragesCreateOrUpdateResponse = ConnectedEnvironmentStorage;
+
+/** Optional parameters. */
+export interface ConnectedEnvironmentsStoragesDeleteOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Optional parameters. */
 export interface ContainerAppsListBySubscriptionOptionalParams
   extends coreClient.OperationOptions {}
 
@@ -1810,6 +3243,9 @@ export interface ContainerAppsUpdateOptionalParams
   resumeFrom?: string;
 }
 
+/** Contains response data for the update operation. */
+export type ContainerAppsUpdateResponse = ContainerApp;
+
 /** Optional parameters. */
 export interface ContainerAppsListCustomHostNameAnalysisOptionalParams
   extends coreClient.OperationOptions {
@@ -1828,6 +3264,13 @@ export interface ContainerAppsListSecretsOptionalParams
 export type ContainerAppsListSecretsResponse = SecretsCollection;
 
 /** Optional parameters. */
+export interface ContainerAppsGetAuthTokenOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the getAuthToken operation. */
+export type ContainerAppsGetAuthTokenResponse = ContainerAppAuthToken;
+
+/** Optional parameters. */
 export interface ContainerAppsListBySubscriptionNextOptionalParams
   extends coreClient.OperationOptions {}
 
@@ -1840,6 +3283,127 @@ export interface ContainerAppsListByResourceGroupNextOptionalParams
 
 /** Contains response data for the listByResourceGroupNext operation. */
 export type ContainerAppsListByResourceGroupNextResponse = ContainerAppCollection;
+
+/** Optional parameters. */
+export interface JobsListBySubscriptionOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listBySubscription operation. */
+export type JobsListBySubscriptionResponse = JobsCollection;
+
+/** Optional parameters. */
+export interface JobsListByResourceGroupOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listByResourceGroup operation. */
+export type JobsListByResourceGroupResponse = JobsCollection;
+
+/** Optional parameters. */
+export interface JobsGetOptionalParams extends coreClient.OperationOptions {}
+
+/** Contains response data for the get operation. */
+export type JobsGetResponse = Job;
+
+/** Optional parameters. */
+export interface JobsCreateOrUpdateOptionalParams
+  extends coreClient.OperationOptions {
+  /** Delay to wait until next poll, in milliseconds. */
+  updateIntervalInMs?: number;
+  /** A serialized poller which can be used to resume an existing paused Long-Running-Operation. */
+  resumeFrom?: string;
+}
+
+/** Contains response data for the createOrUpdate operation. */
+export type JobsCreateOrUpdateResponse = Job;
+
+/** Optional parameters. */
+export interface JobsDeleteOptionalParams extends coreClient.OperationOptions {
+  /** Delay to wait until next poll, in milliseconds. */
+  updateIntervalInMs?: number;
+  /** A serialized poller which can be used to resume an existing paused Long-Running-Operation. */
+  resumeFrom?: string;
+}
+
+/** Optional parameters. */
+export interface JobsUpdateOptionalParams extends coreClient.OperationOptions {
+  /** Delay to wait until next poll, in milliseconds. */
+  updateIntervalInMs?: number;
+  /** A serialized poller which can be used to resume an existing paused Long-Running-Operation. */
+  resumeFrom?: string;
+}
+
+/** Contains response data for the update operation. */
+export type JobsUpdateResponse = Job;
+
+/** Optional parameters. */
+export interface JobsStartOptionalParams extends coreClient.OperationOptions {
+  /** Delay to wait until next poll, in milliseconds. */
+  updateIntervalInMs?: number;
+  /** A serialized poller which can be used to resume an existing paused Long-Running-Operation. */
+  resumeFrom?: string;
+}
+
+/** Contains response data for the start operation. */
+export type JobsStartResponse = JobExecutionBase;
+
+/** Optional parameters. */
+export interface JobsStopExecutionOptionalParams
+  extends coreClient.OperationOptions {
+  /** Delay to wait until next poll, in milliseconds. */
+  updateIntervalInMs?: number;
+  /** A serialized poller which can be used to resume an existing paused Long-Running-Operation. */
+  resumeFrom?: string;
+}
+
+/** Optional parameters. */
+export interface JobsStopMultipleExecutionsOptionalParams
+  extends coreClient.OperationOptions {
+  /** Delay to wait until next poll, in milliseconds. */
+  updateIntervalInMs?: number;
+  /** A serialized poller which can be used to resume an existing paused Long-Running-Operation. */
+  resumeFrom?: string;
+}
+
+/** Contains response data for the stopMultipleExecutions operation. */
+export type JobsStopMultipleExecutionsResponse = ContainerAppJobExecutions;
+
+/** Optional parameters. */
+export interface JobsListSecretsOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listSecrets operation. */
+export type JobsListSecretsResponse = JobSecretsCollection;
+
+/** Optional parameters. */
+export interface JobsListBySubscriptionNextOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listBySubscriptionNext operation. */
+export type JobsListBySubscriptionNextResponse = JobsCollection;
+
+/** Optional parameters. */
+export interface JobsListByResourceGroupNextOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listByResourceGroupNext operation. */
+export type JobsListByResourceGroupNextResponse = JobsCollection;
+
+/** Optional parameters. */
+export interface JobsExecutionsListOptionalParams
+  extends coreClient.OperationOptions {
+  /** The filter to apply on the operation. */
+  filter?: string;
+}
+
+/** Contains response data for the list operation. */
+export type JobsExecutionsListResponse = ContainerAppJobExecutions;
+
+/** Optional parameters. */
+export interface JobsExecutionsListNextOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listNext operation. */
+export type JobsExecutionsListNextResponse = ContainerAppJobExecutions;
 
 /** Optional parameters. */
 export interface ContainerAppsRevisionsListRevisionsOptionalParams
@@ -1872,10 +3436,7 @@ export interface ContainerAppsRevisionsRestartRevisionOptionalParams
 
 /** Optional parameters. */
 export interface ContainerAppsRevisionsListRevisionsNextOptionalParams
-  extends coreClient.OperationOptions {
-  /** The filter to apply on the operation. */
-  filter?: string;
-}
+  extends coreClient.OperationOptions {}
 
 /** Contains response data for the listRevisionsNext operation. */
 export type ContainerAppsRevisionsListRevisionsNextResponse = RevisionCollection;
@@ -1895,43 +3456,77 @@ export interface ContainerAppsRevisionReplicasListReplicasOptionalParams
 export type ContainerAppsRevisionReplicasListReplicasResponse = ReplicaCollection;
 
 /** Optional parameters. */
-export interface DaprComponentsListOptionalParams
+export interface ContainerAppsDiagnosticsListDetectorsOptionalParams
   extends coreClient.OperationOptions {}
 
-/** Contains response data for the list operation. */
-export type DaprComponentsListResponse = DaprComponentsCollection;
+/** Contains response data for the listDetectors operation. */
+export type ContainerAppsDiagnosticsListDetectorsResponse = DiagnosticsCollection;
 
 /** Optional parameters. */
-export interface DaprComponentsGetOptionalParams
+export interface ContainerAppsDiagnosticsGetDetectorOptionalParams
   extends coreClient.OperationOptions {}
 
-/** Contains response data for the get operation. */
-export type DaprComponentsGetResponse = DaprComponent;
+/** Contains response data for the getDetector operation. */
+export type ContainerAppsDiagnosticsGetDetectorResponse = Diagnostics;
 
 /** Optional parameters. */
-export interface DaprComponentsCreateOrUpdateOptionalParams
-  extends coreClient.OperationOptions {}
+export interface ContainerAppsDiagnosticsListRevisionsOptionalParams
+  extends coreClient.OperationOptions {
+  /** The filter to apply on the operation. */
+  filter?: string;
+}
 
-/** Contains response data for the createOrUpdate operation. */
-export type DaprComponentsCreateOrUpdateResponse = DaprComponent;
-
-/** Optional parameters. */
-export interface DaprComponentsDeleteOptionalParams
-  extends coreClient.OperationOptions {}
-
-/** Optional parameters. */
-export interface DaprComponentsListSecretsOptionalParams
-  extends coreClient.OperationOptions {}
-
-/** Contains response data for the listSecrets operation. */
-export type DaprComponentsListSecretsResponse = DaprSecretsCollection;
+/** Contains response data for the listRevisions operation. */
+export type ContainerAppsDiagnosticsListRevisionsResponse = RevisionCollection;
 
 /** Optional parameters. */
-export interface DaprComponentsListNextOptionalParams
+export interface ContainerAppsDiagnosticsGetRevisionOptionalParams
   extends coreClient.OperationOptions {}
 
-/** Contains response data for the listNext operation. */
-export type DaprComponentsListNextResponse = DaprComponentsCollection;
+/** Contains response data for the getRevision operation. */
+export type ContainerAppsDiagnosticsGetRevisionResponse = Revision;
+
+/** Optional parameters. */
+export interface ContainerAppsDiagnosticsGetRootOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the getRoot operation. */
+export type ContainerAppsDiagnosticsGetRootResponse = ContainerApp;
+
+/** Optional parameters. */
+export interface ContainerAppsDiagnosticsListDetectorsNextOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listDetectorsNext operation. */
+export type ContainerAppsDiagnosticsListDetectorsNextResponse = DiagnosticsCollection;
+
+/** Optional parameters. */
+export interface ContainerAppsDiagnosticsListRevisionsNextOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listRevisionsNext operation. */
+export type ContainerAppsDiagnosticsListRevisionsNextResponse = RevisionCollection;
+
+/** Optional parameters. */
+export interface ManagedEnvironmentDiagnosticsListDetectorsOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listDetectors operation. */
+export type ManagedEnvironmentDiagnosticsListDetectorsResponse = DiagnosticsCollection;
+
+/** Optional parameters. */
+export interface ManagedEnvironmentDiagnosticsGetDetectorOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the getDetector operation. */
+export type ManagedEnvironmentDiagnosticsGetDetectorResponse = Diagnostics;
+
+/** Optional parameters. */
+export interface ManagedEnvironmentsDiagnosticsGetRootOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the getRoot operation. */
+export type ManagedEnvironmentsDiagnosticsGetRootResponse = ManagedEnvironment;
 
 /** Optional parameters. */
 export interface OperationsListOptionalParams
@@ -1998,6 +3593,23 @@ export interface ManagedEnvironmentsUpdateOptionalParams
   resumeFrom?: string;
 }
 
+/** Contains response data for the update operation. */
+export type ManagedEnvironmentsUpdateResponse = ManagedEnvironment;
+
+/** Optional parameters. */
+export interface ManagedEnvironmentsGetAuthTokenOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the getAuthToken operation. */
+export type ManagedEnvironmentsGetAuthTokenResponse = EnvironmentAuthToken;
+
+/** Optional parameters. */
+export interface ManagedEnvironmentsListWorkloadProfileStatesOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listWorkloadProfileStates operation. */
+export type ManagedEnvironmentsListWorkloadProfileStatesResponse = WorkloadProfileStatesCollection;
+
 /** Optional parameters. */
 export interface ManagedEnvironmentsListBySubscriptionNextOptionalParams
   extends coreClient.OperationOptions {}
@@ -2011,6 +3623,13 @@ export interface ManagedEnvironmentsListByResourceGroupNextOptionalParams
 
 /** Contains response data for the listByResourceGroupNext operation. */
 export type ManagedEnvironmentsListByResourceGroupNextResponse = ManagedEnvironmentsCollection;
+
+/** Optional parameters. */
+export interface ManagedEnvironmentsListWorkloadProfileStatesNextOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listWorkloadProfileStatesNext operation. */
+export type ManagedEnvironmentsListWorkloadProfileStatesNextResponse = WorkloadProfileStatesCollection;
 
 /** Optional parameters. */
 export interface CertificatesListOptionalParams
@@ -2055,11 +3674,96 @@ export interface CertificatesListNextOptionalParams
 export type CertificatesListNextResponse = CertificateCollection;
 
 /** Optional parameters. */
+export interface ManagedCertificatesGetOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the get operation. */
+export type ManagedCertificatesGetResponse = ManagedCertificate;
+
+/** Optional parameters. */
+export interface ManagedCertificatesCreateOrUpdateOptionalParams
+  extends coreClient.OperationOptions {
+  /** Managed Certificate to be created or updated */
+  managedCertificateEnvelope?: ManagedCertificate;
+  /** Delay to wait until next poll, in milliseconds. */
+  updateIntervalInMs?: number;
+  /** A serialized poller which can be used to resume an existing paused Long-Running-Operation. */
+  resumeFrom?: string;
+}
+
+/** Contains response data for the createOrUpdate operation. */
+export type ManagedCertificatesCreateOrUpdateResponse = ManagedCertificate;
+
+/** Optional parameters. */
+export interface ManagedCertificatesDeleteOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Optional parameters. */
+export interface ManagedCertificatesUpdateOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the update operation. */
+export type ManagedCertificatesUpdateResponse = ManagedCertificate;
+
+/** Optional parameters. */
+export interface ManagedCertificatesListOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the list operation. */
+export type ManagedCertificatesListResponse = ManagedCertificateCollection;
+
+/** Optional parameters. */
+export interface ManagedCertificatesListNextOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listNext operation. */
+export type ManagedCertificatesListNextResponse = ManagedCertificateCollection;
+
+/** Optional parameters. */
 export interface NamespacesCheckNameAvailabilityOptionalParams
   extends coreClient.OperationOptions {}
 
 /** Contains response data for the checkNameAvailability operation. */
 export type NamespacesCheckNameAvailabilityResponse = CheckNameAvailabilityResponse;
+
+/** Optional parameters. */
+export interface DaprComponentsListOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the list operation. */
+export type DaprComponentsListResponse = DaprComponentsCollection;
+
+/** Optional parameters. */
+export interface DaprComponentsGetOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the get operation. */
+export type DaprComponentsGetResponse = DaprComponent;
+
+/** Optional parameters. */
+export interface DaprComponentsCreateOrUpdateOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the createOrUpdate operation. */
+export type DaprComponentsCreateOrUpdateResponse = DaprComponent;
+
+/** Optional parameters. */
+export interface DaprComponentsDeleteOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Optional parameters. */
+export interface DaprComponentsListSecretsOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listSecrets operation. */
+export type DaprComponentsListSecretsResponse = DaprSecretsCollection;
+
+/** Optional parameters. */
+export interface DaprComponentsListNextOptionalParams
+  extends coreClient.OperationOptions {}
+
+/** Contains response data for the listNext operation. */
+export type DaprComponentsListNextResponse = DaprComponentsCollection;
 
 /** Optional parameters. */
 export interface ManagedEnvironmentsStoragesListOptionalParams

@@ -6,20 +6,27 @@
  * Changes may cause incorrect behavior and will be lost if the code is regenerated.
  */
 
-import { PagedAsyncIterableIterator } from "@azure/core-paging";
+import { PagedAsyncIterableIterator, PageSettings } from "@azure/core-paging";
+import { setContinuationToken } from "../pagingHelper";
 import { PartnerDestinations } from "../operationsInterfaces";
 import * as coreClient from "@azure/core-client";
 import * as Mappers from "../models/mappers";
 import * as Parameters from "../models/parameters";
 import { EventGridManagementClient } from "../eventGridManagementClient";
-import { PollerLike, PollOperationState, LroEngine } from "@azure/core-lro";
-import { LroImpl } from "../lroImpl";
+import {
+  SimplePollerLike,
+  OperationState,
+  createHttpPoller
+} from "@azure/core-lro";
+import { createLroSpec } from "../lroImpl";
 import {
   PartnerDestination,
   PartnerDestinationsListBySubscriptionNextOptionalParams,
   PartnerDestinationsListBySubscriptionOptionalParams,
+  PartnerDestinationsListBySubscriptionResponse,
   PartnerDestinationsListByResourceGroupNextOptionalParams,
   PartnerDestinationsListByResourceGroupOptionalParams,
+  PartnerDestinationsListByResourceGroupResponse,
   PartnerDestinationsGetOptionalParams,
   PartnerDestinationsGetResponse,
   PartnerDestinationsCreateOrUpdateOptionalParams,
@@ -28,8 +35,6 @@ import {
   PartnerDestinationUpdateParameters,
   PartnerDestinationsUpdateOptionalParams,
   PartnerDestinationsUpdateResponse,
-  PartnerDestinationsListBySubscriptionResponse,
-  PartnerDestinationsListByResourceGroupResponse,
   PartnerDestinationsActivateOptionalParams,
   PartnerDestinationsActivateResponse,
   PartnerDestinationsListBySubscriptionNextResponse,
@@ -64,22 +69,34 @@ export class PartnerDestinationsImpl implements PartnerDestinations {
       [Symbol.asyncIterator]() {
         return this;
       },
-      byPage: () => {
-        return this.listBySubscriptionPagingPage(options);
+      byPage: (settings?: PageSettings) => {
+        if (settings?.maxPageSize) {
+          throw new Error("maxPageSize is not supported by this operation.");
+        }
+        return this.listBySubscriptionPagingPage(options, settings);
       }
     };
   }
 
   private async *listBySubscriptionPagingPage(
-    options?: PartnerDestinationsListBySubscriptionOptionalParams
+    options?: PartnerDestinationsListBySubscriptionOptionalParams,
+    settings?: PageSettings
   ): AsyncIterableIterator<PartnerDestination[]> {
-    let result = await this._listBySubscription(options);
-    yield result.value || [];
-    let continuationToken = result.nextLink;
+    let result: PartnerDestinationsListBySubscriptionResponse;
+    let continuationToken = settings?.continuationToken;
+    if (!continuationToken) {
+      result = await this._listBySubscription(options);
+      let page = result.value || [];
+      continuationToken = result.nextLink;
+      setContinuationToken(page, continuationToken);
+      yield page;
+    }
     while (continuationToken) {
       result = await this._listBySubscriptionNext(continuationToken, options);
       continuationToken = result.nextLink;
-      yield result.value || [];
+      let page = result.value || [];
+      setContinuationToken(page, continuationToken);
+      yield page;
     }
   }
 
@@ -108,19 +125,33 @@ export class PartnerDestinationsImpl implements PartnerDestinations {
       [Symbol.asyncIterator]() {
         return this;
       },
-      byPage: () => {
-        return this.listByResourceGroupPagingPage(resourceGroupName, options);
+      byPage: (settings?: PageSettings) => {
+        if (settings?.maxPageSize) {
+          throw new Error("maxPageSize is not supported by this operation.");
+        }
+        return this.listByResourceGroupPagingPage(
+          resourceGroupName,
+          options,
+          settings
+        );
       }
     };
   }
 
   private async *listByResourceGroupPagingPage(
     resourceGroupName: string,
-    options?: PartnerDestinationsListByResourceGroupOptionalParams
+    options?: PartnerDestinationsListByResourceGroupOptionalParams,
+    settings?: PageSettings
   ): AsyncIterableIterator<PartnerDestination[]> {
-    let result = await this._listByResourceGroup(resourceGroupName, options);
-    yield result.value || [];
-    let continuationToken = result.nextLink;
+    let result: PartnerDestinationsListByResourceGroupResponse;
+    let continuationToken = settings?.continuationToken;
+    if (!continuationToken) {
+      result = await this._listByResourceGroup(resourceGroupName, options);
+      let page = result.value || [];
+      continuationToken = result.nextLink;
+      setContinuationToken(page, continuationToken);
+      yield page;
+    }
     while (continuationToken) {
       result = await this._listByResourceGroupNext(
         resourceGroupName,
@@ -128,7 +159,9 @@ export class PartnerDestinationsImpl implements PartnerDestinations {
         options
       );
       continuationToken = result.nextLink;
-      yield result.value || [];
+      let page = result.value || [];
+      setContinuationToken(page, continuationToken);
+      yield page;
     }
   }
 
@@ -168,41 +201,24 @@ export class PartnerDestinationsImpl implements PartnerDestinations {
    * @param partnerDestination Partner destination create information.
    * @param options The options parameters.
    */
-  createOrUpdate(
+  async beginCreateOrUpdate(
     resourceGroupName: string,
     partnerDestinationName: string,
     partnerDestination: PartnerDestination,
     options?: PartnerDestinationsCreateOrUpdateOptionalParams
-  ): Promise<PartnerDestinationsCreateOrUpdateResponse> {
-    return this.client.sendOperationRequest(
-      {
-        resourceGroupName,
-        partnerDestinationName,
-        partnerDestination,
-        options
-      },
-      createOrUpdateOperationSpec
-    );
-  }
-
-  /**
-   * Delete existing partner destination.
-   * @param resourceGroupName The name of the resource group within the user's subscription.
-   * @param partnerDestinationName Name of the partner destination.
-   * @param options The options parameters.
-   */
-  async beginDelete(
-    resourceGroupName: string,
-    partnerDestinationName: string,
-    options?: PartnerDestinationsDeleteOptionalParams
-  ): Promise<PollerLike<PollOperationState<void>, void>> {
+  ): Promise<
+    SimplePollerLike<
+      OperationState<PartnerDestinationsCreateOrUpdateResponse>,
+      PartnerDestinationsCreateOrUpdateResponse
+    >
+  > {
     const directSendOperation = async (
       args: coreClient.OperationArguments,
       spec: coreClient.OperationSpec
-    ): Promise<void> => {
+    ): Promise<PartnerDestinationsCreateOrUpdateResponse> => {
       return this.client.sendOperationRequest(args, spec);
     };
-    const sendOperation = async (
+    const sendOperationFn = async (
       args: coreClient.OperationArguments,
       spec: coreClient.OperationSpec
     ) => {
@@ -235,14 +251,109 @@ export class PartnerDestinationsImpl implements PartnerDestinations {
       };
     };
 
-    const lro = new LroImpl(
-      sendOperation,
-      { resourceGroupName, partnerDestinationName, options },
-      deleteOperationSpec
+    const lro = createLroSpec({
+      sendOperationFn,
+      args: {
+        resourceGroupName,
+        partnerDestinationName,
+        partnerDestination,
+        options
+      },
+      spec: createOrUpdateOperationSpec
+    });
+    const poller = await createHttpPoller<
+      PartnerDestinationsCreateOrUpdateResponse,
+      OperationState<PartnerDestinationsCreateOrUpdateResponse>
+    >(lro, {
+      restoreFrom: options?.resumeFrom,
+      intervalInMs: options?.updateIntervalInMs,
+      resourceLocationConfig: "azure-async-operation"
+    });
+    await poller.poll();
+    return poller;
+  }
+
+  /**
+   * Asynchronously creates a new partner destination with the specified parameters.
+   * @param resourceGroupName The name of the resource group within the user's subscription.
+   * @param partnerDestinationName Name of the partner destination.
+   * @param partnerDestination Partner destination create information.
+   * @param options The options parameters.
+   */
+  async beginCreateOrUpdateAndWait(
+    resourceGroupName: string,
+    partnerDestinationName: string,
+    partnerDestination: PartnerDestination,
+    options?: PartnerDestinationsCreateOrUpdateOptionalParams
+  ): Promise<PartnerDestinationsCreateOrUpdateResponse> {
+    const poller = await this.beginCreateOrUpdate(
+      resourceGroupName,
+      partnerDestinationName,
+      partnerDestination,
+      options
     );
-    const poller = new LroEngine(lro, {
-      resumeFrom: options?.resumeFrom,
-      intervalInMs: options?.updateIntervalInMs
+    return poller.pollUntilDone();
+  }
+
+  /**
+   * Delete existing partner destination.
+   * @param resourceGroupName The name of the resource group within the user's subscription.
+   * @param partnerDestinationName Name of the partner destination.
+   * @param options The options parameters.
+   */
+  async beginDelete(
+    resourceGroupName: string,
+    partnerDestinationName: string,
+    options?: PartnerDestinationsDeleteOptionalParams
+  ): Promise<SimplePollerLike<OperationState<void>, void>> {
+    const directSendOperation = async (
+      args: coreClient.OperationArguments,
+      spec: coreClient.OperationSpec
+    ): Promise<void> => {
+      return this.client.sendOperationRequest(args, spec);
+    };
+    const sendOperationFn = async (
+      args: coreClient.OperationArguments,
+      spec: coreClient.OperationSpec
+    ) => {
+      let currentRawResponse:
+        | coreClient.FullOperationResponse
+        | undefined = undefined;
+      const providedCallback = args.options?.onResponse;
+      const callback: coreClient.RawResponseCallback = (
+        rawResponse: coreClient.FullOperationResponse,
+        flatResponse: unknown
+      ) => {
+        currentRawResponse = rawResponse;
+        providedCallback?.(rawResponse, flatResponse);
+      };
+      const updatedArgs = {
+        ...args,
+        options: {
+          ...args.options,
+          onResponse: callback
+        }
+      };
+      const flatResponse = await directSendOperation(updatedArgs, spec);
+      return {
+        flatResponse,
+        rawResponse: {
+          statusCode: currentRawResponse!.status,
+          body: currentRawResponse!.parsedBody,
+          headers: currentRawResponse!.headers.toJSON()
+        }
+      };
+    };
+
+    const lro = createLroSpec({
+      sendOperationFn,
+      args: { resourceGroupName, partnerDestinationName, options },
+      spec: deleteOperationSpec
+    });
+    const poller = await createHttpPoller<void, OperationState<void>>(lro, {
+      restoreFrom: options?.resumeFrom,
+      intervalInMs: options?.updateIntervalInMs,
+      resourceLocationConfig: "location"
     });
     await poller.poll();
     return poller;
@@ -274,21 +385,98 @@ export class PartnerDestinationsImpl implements PartnerDestinations {
    * @param partnerDestinationUpdateParameters Partner destination update information.
    * @param options The options parameters.
    */
-  update(
+  async beginUpdate(
     resourceGroupName: string,
     partnerDestinationName: string,
     partnerDestinationUpdateParameters: PartnerDestinationUpdateParameters,
     options?: PartnerDestinationsUpdateOptionalParams
-  ): Promise<PartnerDestinationsUpdateResponse> {
-    return this.client.sendOperationRequest(
-      {
+  ): Promise<
+    SimplePollerLike<
+      OperationState<PartnerDestinationsUpdateResponse>,
+      PartnerDestinationsUpdateResponse
+    >
+  > {
+    const directSendOperation = async (
+      args: coreClient.OperationArguments,
+      spec: coreClient.OperationSpec
+    ): Promise<PartnerDestinationsUpdateResponse> => {
+      return this.client.sendOperationRequest(args, spec);
+    };
+    const sendOperationFn = async (
+      args: coreClient.OperationArguments,
+      spec: coreClient.OperationSpec
+    ) => {
+      let currentRawResponse:
+        | coreClient.FullOperationResponse
+        | undefined = undefined;
+      const providedCallback = args.options?.onResponse;
+      const callback: coreClient.RawResponseCallback = (
+        rawResponse: coreClient.FullOperationResponse,
+        flatResponse: unknown
+      ) => {
+        currentRawResponse = rawResponse;
+        providedCallback?.(rawResponse, flatResponse);
+      };
+      const updatedArgs = {
+        ...args,
+        options: {
+          ...args.options,
+          onResponse: callback
+        }
+      };
+      const flatResponse = await directSendOperation(updatedArgs, spec);
+      return {
+        flatResponse,
+        rawResponse: {
+          statusCode: currentRawResponse!.status,
+          body: currentRawResponse!.parsedBody,
+          headers: currentRawResponse!.headers.toJSON()
+        }
+      };
+    };
+
+    const lro = createLroSpec({
+      sendOperationFn,
+      args: {
         resourceGroupName,
         partnerDestinationName,
         partnerDestinationUpdateParameters,
         options
       },
-      updateOperationSpec
+      spec: updateOperationSpec
+    });
+    const poller = await createHttpPoller<
+      PartnerDestinationsUpdateResponse,
+      OperationState<PartnerDestinationsUpdateResponse>
+    >(lro, {
+      restoreFrom: options?.resumeFrom,
+      intervalInMs: options?.updateIntervalInMs,
+      resourceLocationConfig: "azure-async-operation"
+    });
+    await poller.poll();
+    return poller;
+  }
+
+  /**
+   * Asynchronously updates a partner destination with the specified parameters.
+   * @param resourceGroupName The name of the resource group within the user's subscription.
+   * @param partnerDestinationName Name of the partner destination.
+   * @param partnerDestinationUpdateParameters Partner destination update information.
+   * @param options The options parameters.
+   */
+  async beginUpdateAndWait(
+    resourceGroupName: string,
+    partnerDestinationName: string,
+    partnerDestinationUpdateParameters: PartnerDestinationUpdateParameters,
+    options?: PartnerDestinationsUpdateOptionalParams
+  ): Promise<PartnerDestinationsUpdateResponse> {
+    const poller = await this.beginUpdate(
+      resourceGroupName,
+      partnerDestinationName,
+      partnerDestinationUpdateParameters,
+      options
     );
+    return poller.pollUntilDone();
   }
 
   /**
@@ -379,7 +567,9 @@ const getOperationSpec: coreClient.OperationSpec = {
     200: {
       bodyMapper: Mappers.PartnerDestination
     },
-    default: {}
+    default: {
+      bodyMapper: Mappers.ErrorResponse
+    }
   },
   queryParameters: [Parameters.apiVersion],
   urlParameters: [
@@ -402,7 +592,15 @@ const createOrUpdateOperationSpec: coreClient.OperationSpec = {
     201: {
       bodyMapper: Mappers.PartnerDestination
     },
-    default: {}
+    202: {
+      bodyMapper: Mappers.PartnerDestination
+    },
+    204: {
+      bodyMapper: Mappers.PartnerDestination
+    },
+    default: {
+      bodyMapper: Mappers.ErrorResponse
+    }
   },
   requestBody: Parameters.partnerDestination,
   queryParameters: [Parameters.apiVersion],
@@ -420,7 +618,15 @@ const deleteOperationSpec: coreClient.OperationSpec = {
   path:
     "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.EventGrid/partnerDestinations/{partnerDestinationName}",
   httpMethod: "DELETE",
-  responses: { 200: {}, 201: {}, 202: {}, 204: {}, default: {} },
+  responses: {
+    200: {},
+    201: {},
+    202: {},
+    204: {},
+    default: {
+      bodyMapper: Mappers.ErrorResponse
+    }
+  },
   queryParameters: [Parameters.apiVersion],
   urlParameters: [
     Parameters.$host,
@@ -428,6 +634,7 @@ const deleteOperationSpec: coreClient.OperationSpec = {
     Parameters.resourceGroupName,
     Parameters.partnerDestinationName
   ],
+  headerParameters: [Parameters.accept],
   serializer
 };
 const updateOperationSpec: coreClient.OperationSpec = {
@@ -435,11 +642,21 @@ const updateOperationSpec: coreClient.OperationSpec = {
     "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.EventGrid/partnerDestinations/{partnerDestinationName}",
   httpMethod: "PATCH",
   responses: {
-    200: {},
+    200: {
+      bodyMapper: Mappers.PartnerDestination
+    },
     201: {
       bodyMapper: Mappers.PartnerDestination
     },
-    default: {}
+    202: {
+      bodyMapper: Mappers.PartnerDestination
+    },
+    204: {
+      bodyMapper: Mappers.PartnerDestination
+    },
+    default: {
+      bodyMapper: Mappers.ErrorResponse
+    }
   },
   requestBody: Parameters.partnerDestinationUpdateParameters,
   queryParameters: [Parameters.apiVersion],
@@ -461,7 +678,9 @@ const listBySubscriptionOperationSpec: coreClient.OperationSpec = {
     200: {
       bodyMapper: Mappers.PartnerDestinationsListResult
     },
-    default: {}
+    default: {
+      bodyMapper: Mappers.ErrorResponse
+    }
   },
   queryParameters: [Parameters.apiVersion, Parameters.filter, Parameters.top],
   urlParameters: [Parameters.$host, Parameters.subscriptionId],
@@ -476,7 +695,9 @@ const listByResourceGroupOperationSpec: coreClient.OperationSpec = {
     200: {
       bodyMapper: Mappers.PartnerDestinationsListResult
     },
-    default: {}
+    default: {
+      bodyMapper: Mappers.ErrorResponse
+    }
   },
   queryParameters: [Parameters.apiVersion, Parameters.filter, Parameters.top],
   urlParameters: [
@@ -495,7 +716,9 @@ const activateOperationSpec: coreClient.OperationSpec = {
     200: {
       bodyMapper: Mappers.PartnerDestination
     },
-    default: {}
+    default: {
+      bodyMapper: Mappers.ErrorResponse
+    }
   },
   queryParameters: [Parameters.apiVersion],
   urlParameters: [
@@ -514,9 +737,10 @@ const listBySubscriptionNextOperationSpec: coreClient.OperationSpec = {
     200: {
       bodyMapper: Mappers.PartnerDestinationsListResult
     },
-    default: {}
+    default: {
+      bodyMapper: Mappers.ErrorResponse
+    }
   },
-  queryParameters: [Parameters.apiVersion, Parameters.filter, Parameters.top],
   urlParameters: [
     Parameters.$host,
     Parameters.subscriptionId,
@@ -532,9 +756,10 @@ const listByResourceGroupNextOperationSpec: coreClient.OperationSpec = {
     200: {
       bodyMapper: Mappers.PartnerDestinationsListResult
     },
-    default: {}
+    default: {
+      bodyMapper: Mappers.ErrorResponse
+    }
   },
-  queryParameters: [Parameters.apiVersion, Parameters.filter, Parameters.top],
   urlParameters: [
     Parameters.$host,
     Parameters.subscriptionId,

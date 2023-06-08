@@ -4,39 +4,50 @@
 import { KeyCredential, TokenCredential } from "@azure/core-auth";
 import { PagedAsyncIterableIterator } from "@azure/core-paging";
 import { TracingClient, createTracingClient } from "@azure/core-tracing";
-import { __decorate } from "tslib";
 import { SDK_VERSION } from "./constants";
 import {
   CopyAuthorization,
   GeneratedClient,
-  GetInfoResponse,
-  GetOperationResponse,
-  ModelInfo,
-  ModelSummary,
-  OperationInfo,
+  ResourceDetails,
+  DocumentModelDetails,
+  DocumentModelSummary,
+  OperationSummary,
+  OperationDetails,
+  DocumentClassifierDetails,
+  ClassifierDocumentTypeDetails,
 } from "./generated";
 import { accept1 } from "./generated/models/parameters";
 import {
   TrainingOperationDefinition,
-  TrainingPollOperationState,
-  TrainingPoller,
+  DocumentModelOperationState,
+  DocumentModelPoller,
   toTrainingPollOperationState,
-} from "./lro/training";
-import { lro } from "./lro/util/poller";
+  DocumentModelBuildResponse,
+  AdministrationOperationState,
+  DocumentClassifierPoller,
+  DocumentClassifierOperationState,
+} from "./lro/administration";
+import { OperationContext, lro } from "./lro/util/poller";
 import {
-  BuildModelOptions,
-  CopyModelOptions,
-  DeleteModelOptions,
+  BeginCopyModelOptions,
+  DeleteDocumentModelOptions,
   DocumentModelAdministrationClientOptions,
   GetCopyAuthorizationOptions,
-  GetInfoOptions,
+  GetResourceDetailsOptions,
   GetModelOptions,
   GetOperationOptions,
   ListModelsOptions,
   ListOperationsOptions,
+  PollerOptions,
 } from "./options";
-import { DocumentModelBuildMode } from "./options/BuildModelOptions";
+import { BeginBuildDocumentClassifierOptions } from "./options/BuildDocumentClassifierOptions";
+import {
+  BeginBuildDocumentModelOptions,
+  BeginComposeDocumentModelOptions,
+  DocumentModelBuildMode,
+} from "./options/BuildModelOptions";
 import { Mappers, SERIALIZER, makeServiceClient } from "./util";
+import { FullOperationResponse, OperationOptions } from "@azure/core-client";
 
 /**
  * A client for interacting with the Form Recognizer service's model management features, such as creating, reading,
@@ -164,21 +175,21 @@ export class DocumentModelAdministrationClient {
    * const modelId = "aNewModel";
    * const containerUrl = "<training data container SAS URL>";
    *
-   * const poller = await client.beginBuildModel(modelId, containerUrl, {
+   * const poller = await client.beginBuildDocumentModel(modelId, containerUrl, {
    *   // Optionally, a text description may be attached to the model
    *   description: "This is an example model!"
    * });
    *
-   * // Model building, like all other model creation operations, returns a poller that eventually produces a ModelInfo
+   * // Model building, like all other model creation operations, returns a poller that eventually produces a ModelDetails
    * // object
-   * const modelInfo = await poller.pollUntilDone();
+   * const modelDetails = await poller.pollUntilDone();
    *
    * const {
    *   modelId, // identical to the modelId given when creating the model
    *   description, // identical to the description given when creating the model
-   *   createdDateTime, // the Date (timestamp) that the model was created
+   *   createdOn, // the Date (timestamp) that the model was created
    *   docTypes // information about the document types in the model and their field schemas
-   * } = modelInfo;
+   * } = modelDetails;
    * ```
    *
    * @param modelId - the unique ID of the model to create
@@ -187,20 +198,20 @@ export class DocumentModelAdministrationClient {
    * @param options - optional settings for the model build operation
    * @returns a long-running operation (poller) that will eventually produce the created model information or an error
    */
-  public async beginBuildModel(
+  public async beginBuildDocumentModel(
     modelId: string,
     containerUrl: string,
     buildMode: DocumentModelBuildMode,
-    options: BuildModelOptions = {}
-  ): Promise<TrainingPoller> {
+    options: BeginBuildDocumentModelOptions = {}
+  ): Promise<DocumentModelPoller> {
     return this._tracing.withSpan(
-      "DocumentModelAdministrationClient.beginBuildModel",
+      "DocumentModelAdministrationClient.beginBuildDocumentModel",
       options,
       (finalOptions) =>
-        this.createTrainingPoller({
+        this.createAdministrationPoller({
           options: finalOptions,
-          start: () =>
-            this._restClient.buildDocumentModel(
+          start: (ctx) =>
+            this._restClient.documentModels.buildModel(
               {
                 modelId,
                 description: finalOptions.description,
@@ -209,7 +220,10 @@ export class DocumentModelAdministrationClient {
                 },
                 buildMode,
               },
-              finalOptions
+              {
+                ...finalOptions,
+                abortSignal: ctx.abortSignal,
+              }
             ),
         })
     );
@@ -233,20 +247,20 @@ export class DocumentModelAdministrationClient {
    *
    * // The resulting composed model can classify and extract data from documents
    * // conforming to any of the above document types
-   * const poller = await client.beginComposeModel(modelId, subModelIds, {
+   * const poller = await client.beginComposeDocumentModel(modelId, subModelIds, {
    *   description: "This is a composed model that can handle several document types."
    * });
    *
    * // Model composition, like all other model creation operations, returns a poller that eventually produces a
-   * // ModelInfo object
-   * const modelInfo = await poller.pollUntilDone();
+   * // ModelDetails object
+   * const modelDetails = await poller.pollUntilDone();
    *
    * const {
    *   modelId, // identical to the modelId given when creating the model
    *   description, // identical to the description given when creating the model
-   *   createdDateTime, // the Date (timestamp) that the model was created
+   *   createdOn, // the Date (timestamp) that the model was created
    *   docTypes // information about the document types of the composed submodels
-   * } = modelInfo;
+   * } = modelDetails;
    * ```
    *
    * @param modelId - the unique ID of the model to create
@@ -254,19 +268,19 @@ export class DocumentModelAdministrationClient {
    * @param options - optional settings for model creation
    * @returns a long-running operation (poller) that will eventually produce the created model information or an error
    */
-  public async beginComposeModel(
+  public async beginComposeDocumentModel(
     modelId: string,
     componentModelIds: Iterable<string>,
-    options: BuildModelOptions = {}
-  ): Promise<TrainingPoller> {
+    options: BeginComposeDocumentModelOptions = {}
+  ): Promise<DocumentModelPoller> {
     return this._tracing.withSpan(
-      "DocumentModelAdministrationClient.beginComposeModel",
+      "DocumentModelAdministrationClient.beginComposeDocumentModel",
       options,
       (finalOptions) =>
-        this.createTrainingPoller({
+        this.createAdministrationPoller({
           options: finalOptions,
-          start: () =>
-            this._restClient.composeDocumentModel(
+          start: (ctx) =>
+            this._restClient.documentModels.composeModel(
               {
                 modelId,
                 componentModels: [...componentModelIds].map((submodelId) => ({
@@ -275,7 +289,10 @@ export class DocumentModelAdministrationClient {
                 description: finalOptions.description,
                 tags: finalOptions.tags,
               },
-              finalOptions
+              {
+                ...finalOptions,
+                abortSignal: ctx.abortSignal,
+              }
             ),
         })
     );
@@ -307,7 +324,7 @@ export class DocumentModelAdministrationClient {
       "DocumentModelAdministrationClient.getCopyAuthorization",
       options,
       (finalOptions) =>
-        this._restClient.authorizeCopyDocumentModel(
+        this._restClient.documentModels.authorizeModelCopy(
           {
             modelId: destinationModelId,
             description: finalOptions.description,
@@ -338,16 +355,16 @@ export class DocumentModelAdministrationClient {
    * // Finally, use the _source_ client to copy the model and await the copy operation
    * const poller = await sourceClient.beginCopyModelTo("<source model ID>");
    *
-   * // Model copying, like all other model creation operations, returns a poller that eventually produces a ModelInfo
+   * // Model copying, like all other model creation operations, returns a poller that eventually produces a ModelDetails
    * // object
-   * const modelInfo = await poller.pollUntilDone();
+   * const modelDetails = await poller.pollUntilDone();
    *
    * const {
    *   modelId, // identical to the modelId given when creating the copy authorization
    *   description, // identical to the description given when creating the copy authorization
-   *   createdDateTime, // the Date (timestamp) that the model was created
+   *   createdOn, // the Date (timestamp) that the model was created
    *   docTypes // information about the document types of the model (identical to the original, source model)
-   * } = modelInfo;
+   * } = modelDetails;
    * ```
    *
    * @param sourceModelId - the unique ID of the source model that will be copied
@@ -358,41 +375,138 @@ export class DocumentModelAdministrationClient {
   public async beginCopyModelTo(
     sourceModelId: string,
     authorization: CopyAuthorization,
-    options: CopyModelOptions = {}
-  ): Promise<TrainingPoller> {
+    options: BeginCopyModelOptions = {}
+  ): Promise<DocumentModelPoller> {
     return this._tracing.withSpan(
       "DocumentModelAdministrationClient.beginCopyModel",
       options,
       (finalOptions) =>
-        this.createTrainingPoller({
+        this.createAdministrationPoller({
           options: finalOptions,
           start: () =>
-            this._restClient.copyDocumentModelTo(sourceModelId, authorization, finalOptions),
+            this._restClient.documentModels.copyModelTo(sourceModelId, authorization, finalOptions),
         })
     );
   }
 
+  // #endregion
+
+  // #region Document Classifiers
+
   /**
-   * Create an LRO poller that handles training operations.
+   * Build a new document classifier with the given classifier ID and document types.
    *
-   * This is the meat of all training polling operations.
+   * The classifier ID must be unique among classifiers within the resource.
+   *
+   * The document types are given as an object that maps the name of the document type to the training data set for that
+   * document type. Two training data input methods are supported:
+   *
+   * - `azureBlobSource`, which trains a classifier using the data in the given Azure Blob Storage container.
+   * - `azureBlobFileListSource`, which is similar to `azureBlobSource` but allows for more fine-grained control over
+   *   the files that are included in the training data set by using a JSONL-formatted file list.
+   *
+   * The Form Recognizer service reads the training data set from an Azure Storage container, given as a URL to the
+   * container with a SAS token that allows the service backend to communicate with the container. At a minimum, the
+   * "read" and "list" permissions are required. In addition, the data in the given container must be organized
+   * according to a particular convention, which is documented in [the service's documentation for building custom
+   * document classifiers](https://aka.ms/azsdk/formrecognizer/buildclassifiermodel).
+   *
+   * ### Example
+   *
+   * ```javascript
+   * const classifierId = "aNewClassifier";
+   * const containerUrl1 = "<training data container SAS URL 1>";
+   * const containerUrl2 = "<training data container SAS URL 2>";
+   *
+   * const poller = await client.beginBuildDocumentClassifier(
+   *   classifierId,
+   *   {
+   *     // The document types. Each entry in this object should map a document type name to a
+   *     // `ClassifierDocumentTypeDetails` object
+   *     "formX": {
+   *       azureBlobSource: {
+   *         containerUrl: containerUrl1,
+   *       }
+   *     },
+   *     "formY": {
+   *       azureBlobFileListSource: {
+   *         containerUrl: containerUrl2,
+   *         fileList: "path/to/fileList.jsonl"
+   *       }
+   *     },
+   *   },
+   *   {
+   *     // Optionally, a text description may be attached to the classifier
+   *     description: "This is an example classifier!"
+   *   }
+   * );
+   *
+   * // Classifier building, like model creation operations, returns a poller that eventually produces a
+   * // DocumentClassifierDetails object
+   * const classifierDetails = await poller.pollUntilDone();
+   *
+   * const {
+   *   classifierId, // identical to the classifierId given when creating the classifier
+   *   description, // identical to the description given when creating the classifier (if any)
+   *   createdOn, // the Date (timestamp) that the classifier was created
+   *   docTypes // information about the document types in the classifier and their details
+   * } = classifierDetails;
+   * ```
+   *
+   * @param classifierId - the unique ID of the classifier to create
+   * @param docTypes - the document types to include in the classifier (a map of document type names to `ClassifierDocumentTypeDetails`)
+   * @param options - optional settings for the classifier build operation
+   * @returns a long-running operation (poller) that will eventually produce the created classifier details or an error
+   */
+  public async beginBuildDocumentClassifier(
+    classifierId: string,
+    docTypes: { [docType: string]: ClassifierDocumentTypeDetails },
+    options: BeginBuildDocumentClassifierOptions = {}
+  ): Promise<DocumentClassifierPoller> {
+    return this._tracing.withSpan(
+      "DocumentModelAdministrationClient.beginBuildDocumentClassifier",
+      options,
+      (finalOptions) =>
+        this.createAdministrationPoller<DocumentClassifierOperationState>({
+          options: finalOptions,
+          start: () =>
+            this._restClient.documentClassifiers.buildClassifier(
+              {
+                classifierId,
+                description: finalOptions.description,
+                docTypes,
+              },
+              finalOptions
+            ),
+        })
+    );
+  }
+
+  // #endregion
+
+  /**
+   * Create an LRO poller that handles model creation operations.
+   *
+   * This is the meat of the above model creation operations.
    *
    * @param definition - operation definition (start operation method, request options)
-   * @returns a training poller that produces a ModelInfo
+   * @returns a model poller (produces a ModelDetails)
    */
-  private async createTrainingPoller(
-    definition: TrainingOperationDefinition
-  ): Promise<TrainingPoller> {
+  private async createAdministrationPoller<State extends AdministrationOperationState>(
+    definition: TrainingOperationDefinition<State>
+  ): Promise<
+    State extends DocumentModelOperationState ? DocumentModelPoller : DocumentClassifierPoller
+  > {
     const { resumeFrom } = definition.options;
 
     const toInit =
       resumeFrom === undefined
-        ? () =>
+        ? (ctx: OperationContext) =>
             this._tracing.withSpan(
-              "DocumentModelAdministrationClient.createTrainingPoller-start",
+              "DocumentModelAdministrationClient.createDocumentModelPoller-start",
               definition.options,
               async (options) => {
-                const { operationLocation } = await definition.start();
+                const { operationLocation } = await definition.start(ctx);
 
                 if (operationLocation === undefined) {
                   throw new Error(
@@ -402,14 +516,20 @@ export class DocumentModelAdministrationClient {
 
                 return this._restClient.sendOperationRequest(
                   {
-                    options,
+                    options: {
+                      onResponse: (rawResponse, ...args) => {
+                        return captureRetryAfter(rawResponse, ctx, options, args);
+                      },
+                      ...options,
+                      abortSignal: ctx.abortSignal,
+                    },
                   },
                   {
                     path: operationLocation,
                     httpMethod: "GET",
                     responses: {
                       200: {
-                        bodyMapper: Mappers.GetOperationResponse,
+                        bodyMapper: Mappers.OperationDetails,
                       },
                       default: {
                         bodyMapper: Mappers.ErrorResponse,
@@ -418,47 +538,94 @@ export class DocumentModelAdministrationClient {
                     headerParameters: [accept1],
                     serializer: SERIALIZER,
                   }
-                ) as Promise<GetOperationResponse>;
+                ) as Promise<OperationDetails>;
               }
             )
-        : () =>
+        : (ctx: OperationContext) =>
             this._tracing.withSpan(
-              "DocumentModelAdministrationClient.createTrainingPoller-resume",
+              "DocumentModelAdministrationClient.createDocumentModelPoller-resume",
               definition.options,
               (options) => {
                 const { operationId } = JSON.parse(resumeFrom) as { operationId: string };
 
-                return this._restClient.getOperation(operationId, options);
+                return this._restClient.miscellaneous.getOperation(operationId, {
+                  onResponse: (rawResponse, ...args) => {
+                    return captureRetryAfter(rawResponse, ctx, options, args);
+                  },
+                  ...options,
+                });
               }
             );
 
-    const poller = await lro<ModelInfo, TrainingPollOperationState>(
+    const poller = await lro<
+      DocumentModelDetails | DocumentClassifierDetails,
+      AdministrationOperationState
+    >(
       {
-        init: async () => toTrainingPollOperationState(await toInit()),
-        poll: async ({ operationId }) =>
+        init: async (ctx) => toTrainingPollOperationState(await toInit(ctx)),
+        poll: async (ctx, { operationId }) =>
           this._tracing.withSpan(
-            "DocumentModelAdminstrationClient.createTrainingPoller-poll",
+            "DocumentModelAdminstrationClient.createDocumentModelPoller-poll",
             definition.options,
             async (options) => {
-              const res = await this._restClient.getOperation(operationId, options);
+              const res = await this._restClient.miscellaneous.getOperation(operationId, {
+                onResponse: (rawResponse, ...args) => {
+                  // Capture the `Retry-After` header if it was sent.
+                  return captureRetryAfter(rawResponse, ctx, options, args);
+                },
+                ...options,
+                abortSignal: ctx.abortSignal,
+              });
 
-              return toTrainingPollOperationState(res);
+              return toTrainingPollOperationState(res as DocumentModelBuildResponse);
             }
           ),
         serialize: ({ operationId }) => JSON.stringify({ operationId }),
       },
-      definition.options.updateIntervalInMs
+      definition.options.updateIntervalInMs,
+      definition.options.abortSignal
     );
 
     if (definition.options.onProgress !== undefined) {
-      poller.onProgress(definition.options.onProgress);
-      definition.options.onProgress(poller.getOperationState());
+      poller.onProgress(definition.options.onProgress as () => unknown);
+      definition.options.onProgress(poller.getOperationState() as State);
     }
 
-    return poller;
-  }
+    // Need this assertion. The poller above is dynamic, and we can't infer the conditional return type of this method.
+    return poller as never;
 
-  // #endregion
+    /**
+     * An inline helper for capturing the value of the `Retry-After` header if it was sent.
+     * @param rawResponse - the raw response from the service
+     * @param ctx - the operation context
+     * @param options - the operation options
+     * @param args - the arguments passed to the response handler
+     * @returns
+     */
+    function captureRetryAfter(
+      rawResponse: FullOperationResponse,
+      ctx: OperationContext,
+      options: PollerOptions<State> & OperationOptions,
+      args: [flatResponse: unknown, error?: unknown]
+    ) {
+      const retryAfterHeader = rawResponse.headers.get("retry-after");
+      // Convert the header value to milliseconds. If the header is not a valid number, then it is an HTTP
+      // date.
+      if (retryAfterHeader) {
+        const retryAfterMs = Number(retryAfterHeader) * 1000;
+        if (!Number.isNaN(retryAfterMs)) {
+          ctx.updateDelay(retryAfterMs);
+        } else {
+          ctx.updateDelay(Date.parse(retryAfterHeader) - Date.now());
+        }
+      } else {
+        ctx.updateDelay(undefined);
+      }
+
+      // Forward the `onResponse` callback if it was provided.
+      return options.onResponse?.(rawResponse, ...args);
+    }
+  }
 
   // #region Model Management
 
@@ -470,37 +637,37 @@ export class DocumentModelAdministrationClient {
    * ```javascript
    * const {
    *   // Information about the custom models in the current resource
-   *   customDocumentModelInfo: {
+   *   customDocumentModelDetails: {
    *     // The number of custom models in the current resource
    *     count,
    *     // The maximum number of models that the current resource can support
    *     limit
    *   }
-   * } = await client.getInfo();
+   * } = await client.getResourceDetails();
    * ```
    *
    * @param options - optional settings for the request
    * @returns basic information about this client's resource
    */
-  public getInfo(options: GetInfoOptions = {}): Promise<GetInfoResponse> {
+  public getResourceDetails(options: GetResourceDetailsOptions = {}): Promise<ResourceDetails> {
     return this._tracing.withSpan(
-      "DocumentModelAdministrationClient.getInfo",
+      "DocumentModelAdministrationClient.getResourceDetails",
       options,
-      (finalOptions) => this._restClient.getInfo(finalOptions)
+      (finalOptions) => this._restClient.miscellaneous.getResourceInfo(finalOptions)
     );
   }
 
   /**
-   * Retrieves information about a model ({@link ModelInfo}) by ID.
+   * Retrieves information about a model ({@link DocumentModelDetails}) by ID.
    *
    * This method can retrieve information about custom as well as prebuilt models.
    *
    * ### **Breaking Change**
    *
    * In previous versions of the Form Recognizer REST API and SDK, the `getModel` method could return any model, even
-   * one that failed to create due to errors. In the new service versions, `getModel` and `listModels` _only produce
-   * successfully created models_ (i.e. models that are "ready" for use). Failed models are now retrieved through the
-   * "operations" APIs, see {@link getOperation} and {@link listOperations}.
+   * one that failed to create due to errors. In the new service versions, `getDocumentModel` and `listDocumentModels`
+   * _only produce successfully created models_ (i.e. models that are "ready" for use). Failed models are now retrieved
+   * through the "operations" APIs, see {@link getOperation} and {@link listOperations}.
    *
    * ### Example
    *
@@ -509,9 +676,9 @@ export class DocumentModelAdministrationClient {
    * const modelId = "prebuilt-businessCard";
    *
    * const {
-   *   modelId, // identical to the modelId given when calling `getModel`
+   *   modelId, // identical to the modelId given when calling `getDocumentModel`
    *   description, // a textual description of the model, if provided during model creation
-   *   createdDateTime, // the Date (timestamp) that the model was created
+   *   createdOn, // the Date (timestamp) that the model was created
    *   // information about the document types in the model and their field schemas
    *   docTypes: {
    *     // the document type of the prebuilt business card model
@@ -525,18 +692,21 @@ export class DocumentModelAdministrationClient {
    *       fieldConfidence
    *     }
    *   }
-   * } = await client.getModel(modelId);
+   * } = await client.getDocumentModel(modelId);
    * ```
    *
    * @param modelId - the unique ID of the model to query
    * @param options - optional settings for the request
    * @returns information about the model with the given ID
    */
-  public getModel(modelId: string, options: GetModelOptions = {}): Promise<ModelInfo> {
+  public getDocumentModel(
+    modelId: string,
+    options: GetModelOptions = {}
+  ): Promise<DocumentModelDetails> {
     return this._tracing.withSpan(
-      "DocumentModelAdministrationClient.getModel",
+      "DocumentModelAdministrationClient.getDocumentModel",
       options,
-      (finalOptions) => this._restClient.getModel(modelId, finalOptions)
+      (finalOptions) => this._restClient.documentModels.getModel(modelId, finalOptions)
     );
   }
 
@@ -544,39 +714,39 @@ export class DocumentModelAdministrationClient {
    * List summaries of models in the resource. Custom as well as prebuilt models will be included. This operation
    * supports paging.
    *
-   * The model summary ({@link ModelSummary}) includes only the basic information about the model, and does not include
+   * The model summary ({@link DocumentModelSummary}) includes only the basic information about the model, and does not include
    * information about the document types in the model (such as the field schemas and confidence values).
    *
-   * To access the full information about the model, use {@link getModel}.
+   * To access the full information about the model, use {@link getDocumentModel}.
    *
    * ### **Breaking Change**
    *
    * In previous versions of the Form Recognizer REST API and SDK, the `listModels` method would return all models, even
-   * those that failed to create due to errors. In the new service versions, `listModels` and `getModels` _only produce
-   * successfully created models_ (i.e. models that are "ready" for use). Failed models are now retrieved through the
-   * "operations" APIs, see {@link getOperation} and {@link listOperations}.
+   * those that failed to create due to errors. In the new service versions, `listDocumentModels` and `getDocumentModel`
+   * _only produce successfully created models_ (i.e. models that are "ready" for use). Failed models are now retrieved
+   * through the "operations" APIs, see {@link getOperation} and {@link listOperations}.
    *
    * ### Examples
    *
    * #### Async Iteration
    *
    * ```javascript
-   * for await (const summary of client.listModels()) {
+   * for await (const summary of client.listDocumentModels()) {
    *   const {
    *     modelId, // The model's unique ID
    *     description, // a textual description of the model, if provided during model creation
    *   } = summary;
    *
-   *   // You can get the full model info using `getModel`
-   *   const model = await client.getModel(modelId);
+   *   // You can get the full model info using `getDocumentModel`
+   *   const model = await client.getDocumentModel(modelId);
    * }
    * ```
    *
    * #### By Page
    *
    * ```javascript
-   * // The listModels method is paged, and you can iterate by page using the `byPage` method.
-   * const pages = client.listModels().byPage();
+   * // The listDocumentModels method is paged, and you can iterate by page using the `byPage` method.
+   * const pages = client.listDocumentModels().byPage();
    *
    * for await (const page of pages) {
    *   // Each page is an array of models and can be iterated synchronously
@@ -586,8 +756,8 @@ export class DocumentModelAdministrationClient {
    *       description, // a textual description of the model, if provided during model creation
    *     } = summary;
    *
-   *     // You can get the full model info using `getModel`
-   *     const model = await client.getModel(modelId);
+   *     // You can get the full model info using `getDocumentModel`
+   *     const model = await client.getDocumentModel(modelId);
    *   }
    * }
    * ```
@@ -595,12 +765,152 @@ export class DocumentModelAdministrationClient {
    * @param options - optional settings for the model requests
    * @returns an async iterable of model summaries that supports paging
    */
-  public listModels(options: ListModelsOptions = {}): PagedAsyncIterableIterator<ModelSummary> {
-    return this._restClient.listModels(options);
+  public listDocumentModels(
+    options: ListModelsOptions = {}
+  ): PagedAsyncIterableIterator<DocumentModelSummary> {
+    return this._restClient.documentModels.listModels(options);
   }
 
   /**
-   * Retrieves information about an operation (`OperationInfo`) by its ID.
+   * Deletes a model with the given ID from the client's resource, if it exists. This operation CANNOT be reverted.
+   *
+   * ### Example
+   *
+   * ```javascript
+   * await client.deleteDocumentModel("<model ID to delete>"));
+   * ```
+   *
+   * @param modelId - the unique ID of the model to delete from the resource
+   * @param options - optional settings for the request
+   */
+  public deleteDocumentModel(
+    modelId: string,
+    options: DeleteDocumentModelOptions = {}
+  ): Promise<void> {
+    return this._tracing.withSpan(
+      "DocumentModelAdministrationClient.deleteDocumentModel",
+      options,
+      (finalOptions) => this._restClient.documentModels.deleteModel(modelId, finalOptions)
+    );
+  }
+
+  // #endregion
+
+  // #region Classifier Management
+
+  /**
+   * Retrieves information about a classifier ({@link DocumentClassifierDetails}) by ID.
+   *
+   * ### Example
+   *
+   * ```javascript
+   * const classifierId = "<classifier ID";
+   *
+   * const {
+   *   classifierId, // identical to the ID given when calling `getDocumentClassifier`
+   *   description, // a textual description of the classifier, if provided during classifier creation
+   *   createdOn, // the Date (timestamp) that the classifier was created
+   *   // information about the document types in the classifier and their corresponding traning data
+   *   docTypes
+   * } = await client.getDocumentClassifier(classifierId);
+   *
+   * // The `docTypes` property is a map of document type names to information about the training data
+   * // for that document type.
+   * for (const [docTypeName, classifierDocTypeDetails] of Object.entries(docTypes)) {
+   *  console.log(`- '${docTypeName}': `, classifierDocTypeDetails);
+   * }
+   * ```
+   *
+   * @param classifierId - the unique ID of the classifier to query
+   * @param options - optional settings for the request
+   * @returns information about the classifier with the given ID
+   */
+  public getDocumentClassifier(
+    classifierId: string,
+    options: OperationOptions = {}
+  ): Promise<DocumentClassifierDetails> {
+    return this._tracing.withSpan(
+      "DocumentModelAdministrationClient.getDocumentClassifier",
+      options,
+      (finalOptions) =>
+        this._restClient.documentClassifiers.getClassifier(classifierId, finalOptions)
+    );
+  }
+
+  /**
+   * List details about classifiers in the resource. This operation supports paging.
+   *
+   * ### Examples
+   *
+   * #### Async Iteration
+   *
+   * ```javascript
+   * for await (const details of client.listDocumentClassifiers()) {
+   *   const {
+   *     classifierId, // The classifier's unique ID
+   *     description, // a textual description of the classifier, if provided during creation
+   *     docTypes, // information about the document types in the classifier and their corresponding traning data
+   *   } = details;
+   * }
+   * ```
+   *
+   * #### By Page
+   *
+   * ```javascript
+   * // The listDocumentClassifiers method is paged, and you can iterate by page using the `byPage` method.
+   * const pages = client.listDocumentClassifiers().byPage();
+   *
+   * for await (const page of pages) {
+   *   // Each page is an array of classifiers and can be iterated synchronously
+   *   for (const details of page) {
+   *     const {
+   *       classifierId, // The classifier's unique ID
+   *       description, // a textual description of the classifier, if provided during creation
+   *       docTypes, // information about the document types in the classifier and their corresponding traning data
+   *     } = details;
+   *   }
+   * }
+   * ```
+   *
+   * @param options - optional settings for the classifier requests
+   * @returns an async iterable of classifier details that supports paging
+   */
+  public listDocumentClassifiers(
+    options: ListModelsOptions = {}
+  ): PagedAsyncIterableIterator<DocumentClassifierDetails> {
+    return this._restClient.documentClassifiers.listClassifiers(options);
+  }
+
+  /**
+   * Deletes a classifier with the given ID from the client's resource, if it exists. This operation CANNOT be reverted.
+   *
+   * ### Example
+   *
+   * ```javascript
+   * await client.deleteDocumentClassifier("<classifier ID to delete>"));
+   * ```
+   *
+   * @param classifierId - the unique ID of the classifier to delete from the resource
+   * @param options - optional settings for the request
+   */
+  public deleteDocumentClassifier(
+    classifierId: string,
+    options: OperationOptions = {}
+  ): Promise<void> {
+    return this._tracing.withSpan(
+      "DocumentModelAdministrationClient.deleteDocumentClassifier",
+      options,
+      (finalOptions) =>
+        this._restClient.documentClassifiers.deleteClassifier(classifierId, finalOptions)
+    );
+  }
+
+  // #endregion
+
+  // #region Operations
+
+  /**
+   * Retrieves information about an operation (`OperationDetails`) by its ID.
    *
    * Operations represent non-analysis tasks, such as building, composing, or copying a model.
    *
@@ -619,19 +929,19 @@ export class DocumentModelAdministrationClient {
    *   kind, // the operation kind, one of "documentModelBuild", "documentModelCompose", or "documentModelCopyTo"
    *   status, // the status of the operation, one of "notStarted", "running", "failed", "succeeded", or "canceled"
    *   percentCompleted, // a number between 0 and 100 representing the progress of the operation
-   *   createdDateTime, // a Date object that reflects the time when the operation was started
-   *   lastUpdatedDateTime, // a Date object that reflects the time when the operation state was last modified
+   *   createdOn, // a Date object that reflects the time when the operation was started
+   *   lastUpdatedOn, // a Date object that reflects the time when the operation state was last modified
    * } = await client.getOperation(operationId);
    * ```
    */
   public getOperation(
     operationId: string,
     options: GetOperationOptions = {}
-  ): Promise<OperationInfo> {
+  ): Promise<OperationDetails> {
     return this._tracing.withSpan(
       "DocumentModelAdministrationClient.getOperation",
       options,
-      (finalOptions) => this._restClient.getOperation(operationId, finalOptions)
+      (finalOptions) => this._restClient.miscellaneous.getOperation(operationId, finalOptions)
     );
   }
 
@@ -676,28 +986,8 @@ export class DocumentModelAdministrationClient {
    */
   public listOperations(
     options: ListOperationsOptions = {}
-  ): PagedAsyncIterableIterator<OperationInfo> {
-    return this._restClient.listOperations(options);
-  }
-
-  /**
-   * Deletes a model with the given ID from the client's resource, if it exists. This operation CANNOT be reverted.
-   *
-   * ### Example
-   *
-   * ```javascript
-   * await client.deleteModel("<model ID to delete>"));
-   * ```
-   *
-   * @param modelId - the unique ID of the model to delete from the resource
-   * @param options - optional settings for the request
-   */
-  public deleteModel(modelId: string, options: DeleteModelOptions = {}): Promise<void> {
-    return this._tracing.withSpan(
-      "DocumentModelAdministrationClient.deleteModel",
-      options,
-      (finalOptions) => this._restClient.deleteModel(modelId, finalOptions)
-    );
+  ): PagedAsyncIterableIterator<OperationSummary> {
+    return this._restClient.miscellaneous.listOperations(options);
   }
 
   // #endregion

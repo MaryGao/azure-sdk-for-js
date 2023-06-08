@@ -10,16 +10,18 @@
 // Licensed under the MIT License.
 const { EventGridManagementClient } = require("@azure/arm-eventgrid");
 const { DefaultAzureCredential } = require("@azure/identity");
+require("dotenv").config();
 
 /**
  * This sample demonstrates how to List all the system topics under a resource group.
  *
  * @summary List all the system topics under a resource group.
- * x-ms-original-file: specification/eventgrid/resource-manager/Microsoft.EventGrid/preview/2021-10-15-preview/examples/SystemTopics_ListByResourceGroup.json
+ * x-ms-original-file: specification/eventgrid/resource-manager/Microsoft.EventGrid/preview/2023-06-01-preview/examples/SystemTopics_ListByResourceGroup.json
  */
 async function systemTopicsListByResourceGroup() {
-  const subscriptionId = "5b4b650e-28b9-4790-b3ab-ddbd88d727c4";
-  const resourceGroupName = "examplerg";
+  const subscriptionId =
+    process.env["EVENTGRID_SUBSCRIPTION_ID"] || "8f6b6269-84f2-4d09-9e31-1127efcd1e40";
+  const resourceGroupName = process.env["EVENTGRID_RESOURCE_GROUP"] || "examplerg";
   const credential = new DefaultAzureCredential();
   const client = new EventGridManagementClient(credential, subscriptionId);
   const resArray = new Array();
@@ -29,4 +31,8 @@ async function systemTopicsListByResourceGroup() {
   console.log(resArray);
 }
 
-systemTopicsListByResourceGroup().catch(console.error);
+async function main() {
+  systemTopicsListByResourceGroup();
+}
+
+main().catch(console.error);

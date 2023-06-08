@@ -3,7 +3,6 @@
 
 import { KeyCredential, TokenCredential } from "@azure/core-auth";
 import { createTracingClient } from "@azure/core-tracing";
-import { ReadResult } from ".";
 import { TracingClient } from "@azure/core-tracing";
 import { SDK_VERSION } from "./constants";
 import {
@@ -20,17 +19,19 @@ import {
   DocumentAnalysisPollOperationState,
   FormRecognizerRequestBody,
   toAnalyzeResultFromGenerated,
-  toAnalyzedDocumentFromGenerated,
   toDocumentAnalysisPollOperationState,
-} from "./lro/analyze";
-import { lro } from "./lro/util/poller";
-import { GeneralDocumentResult, toGeneralDocumentResult } from "./models/GeneralDocumentResult";
-import { LayoutResult, toLayoutResult } from "./models/LayoutResult";
-import { toReadResult } from "./models/ReadResult";
-import { AnalyzeDocumentOptions } from "./options/AnalyzeDocumentsOptions";
-import { DocumentAnalysisClientOptions } from "./options/FormRecognizerClientOptions";
-import { DocumentModel, getMapper } from "./prebuilt/models";
-import { Mappers, SERIALIZER, identity, makeServiceClient } from "./util";
+} from "./lro/analysis";
+import { OperationContext, lro } from "./lro/util/poller";
+import { AnalyzeDocumentOptions } from "./options/AnalyzeDocumentOptions";
+import {
+  DEFAULT_GENERATED_CLIENT_OPTIONS,
+  DocumentAnalysisClientOptions,
+  FormRecognizerApiVersion,
+} from "./options/FormRecognizerClientOptions";
+import { DocumentModel } from "./documentModel";
+import { makeServiceClient, Mappers, SERIALIZER } from "./util";
+import { AbortSignalLike } from "@azure/abort-controller";
+import { ClassifyDocumentOptions } from "./options/ClassifyDocumentOptions";
 
 /**
  * A client for interacting with the Form Recognizer service's analysis features.
@@ -65,6 +66,7 @@ import { Mappers, SERIALIZER, identity, makeServiceClient } from "./util";
 export class DocumentAnalysisClient {
   private _restClient: GeneratedClient;
   private _tracing: TracingClient;
+  private _apiVersion: FormRecognizerApiVersion;
 
   /**
    * Create a `DocumentAnalysisClient` instance from a resource endpoint and a an Azure Identity `TokenCredential`.
@@ -135,6 +137,8 @@ export class DocumentAnalysisClient {
       packageVersion: SDK_VERSION,
       namespace: "Microsoft.CognitiveServices",
     });
+
+    this._apiVersion = options.apiVersion ?? DEFAULT_GENERATED_CLIENT_OPTIONS.apiVersion;
   }
 
   // #region Analysis
@@ -146,52 +150,14 @@ export class DocumentAnalysisClient {
    * the model ID "prebuilt-invoice", or to use the simpler prebuilt layout model, provide the model ID
    * "prebuilt-layout".
    *
-   * The fields produced in the `AnalyzeResponse` depend on the model that is used for analysis, and the values in any
+   * The fields produced in the `AnalyzeResult` depend on the model that is used for analysis, and the values in any
    * extracted documents' fields depend on the document types in the model (if any) and their corresponding field
    * schemas.
    *
    * ### Examples
    *
-   * This method supports both URLs (string) and streamable request bodies ({@link FormRecognizerRequestBody}) such as
-   * Node.JS `ReadableStream` objects, browser `Blob`s, and `ArrayBuffer`s.
-   *
-   * #### From URL
-   *
-   * The Form Recognizer service will attempt to download a file using the submitted URL, so the URL must be accessible
-   * from the public internet. For example, a SAS token can be used to grant read access to a blob in Azure Storage, and
-   * the service will use the SAS-encoded URL to request the file.
-   *
-   * ```javascript
-   * // the URL must be publicly accessible
-   * const url = "<receipt document url>";
-   *
-   * // The model that is passed to the following function call determines the type of the eventual result. In the
-   * // example, we will use the prebuilt receipt model, but you could use a custom model ID/name instead.
-   * const poller = await client.beginAnalyzeDocument("prebuilt-receipt", url);
-   *
-   * // The result is a long-running operation (poller), which must itself be polled until the operation completes
-   * const {
-   *   pages, // pages extracted from the document, which contain lines and words
-   *   tables, // extracted tables, organized into cells that contain their contents
-   *   styles, // text styles (ex. handwriting) that were observed in the document
-   *   keyValuePairs, // extracted pairs of elements  (directed associations from one element in the input to another)
-   *   entities, // extracted entities in the input's content, which are categorized (ex. "Location" or "Organization")
-   *   documents // extracted documents (instances of one of the model's document types and its field schema)
-   * } = await poller.pollUntilDone();
-   *
-   * // Extract the fields of the first document. These fields constitute a receipt, because we used the receipt model
-   * const [{ fields: receipt }] = documents;
-   *
-   * // The fields correspond to the model's document types and their field schemas. Refer to the Form Recognizer
-   * // documentation for information about the document types and field schemas within a model, or use the `getModel`
-   * // operation to view this information programmatically.
-   * console.log("The type of this receipt is:", receipt?.["ReceiptType"]?.value);
-   * ```
-   *
-   * #### From Request Body
-   *
-   * Alternatively, if the file is local (or in memory in the browser), a binary object can be uploaded. The following
-   * example uses the Node.JS filesystem API.
+   * This method supports streamable request bodies ({@link FormRecognizerRequestBody}) such as Node.JS `ReadableStream`
+   * objects, browser `Blob`s, and `ArrayBuffer`s. The contents of the body will be uploaded to the service for analysis.
    *
    * ```javascript
    * import * as fs from "fs";
@@ -223,47 +189,172 @@ export class DocumentAnalysisClient {
    *
    *
    * @param modelId - the unique ID (name) of the model within this client's resource
-   * @param input - a URL (string) to an input document accessible from the public internet, or a
-   *                {@link FormRecognizerRequestBody} that will be uploaded with the request
+   * @param document - a {@link FormRecognizerRequestBody} that will be uploaded with the request
    * @param options - optional settings for the analysis operation and poller
    * @returns a long-running operation (poller) that will eventually produce an `AnalyzeResult`
    */
   public async beginAnalyzeDocument(
     modelId: string,
-    input: string | FormRecognizerRequestBody,
+    document: FormRecognizerRequestBody,
     // eslint-disable-next-line @azure/azure-sdk/ts-naming-options
     options?: AnalyzeDocumentOptions
   ): Promise<AnalysisPoller>;
   /**
-   * Extract data from an input using a model that has a known, strongly-typed document schema (a `DocumentModel`). It
-   * is not currently possible to define a custom `DocumentModel` instance in the SDK, so only the models that are
-   * provided as part of `PrebuiltModels` can be used with this method overload.
+   * Extract data from an input using a model that has a known, strongly-typed document schema (a {@link DocumentModel}).
    *
-   * See {@link PrebuiltModels}.
-   *
-   * The fields produced in the `AnalyzeResponse` depend on the model that is used for analysis. In TypeScript, the type
+   * The fields produced in the `AnalyzeResult` depend on the model that is used for analysis. In TypeScript, the type
    * of the result for this method overload is inferred from the type of the input `DocumentModel`.
    *
    * ### Examples
    *
-   * This method supports both URLs (string) and streamable request bodies ({@link FormRecognizerRequestBody}) such as
-   * Node.JS `ReadableStream` objects, browser `Blob`s, and `ArrayBuffer`s.
+   * This method supports streamable request bodies ({@link FormRecognizerRequestBody}) such as Node.JS `ReadableStream`
+   * objects, browser `Blob`s, and `ArrayBuffer`s. The contents of the body will be uploaded to the service for analysis.
    *
-   * #### From URL
+   * If the input provided is a string, it will be treated as a URL to the location of a document to be analyzed. See the
+   * {@link beginAnalyzeDocumentFromUrl} method for more information. Use of that method is preferred when using URLs,
+   * and URL support is only provided in this method for backwards compatibility.
    *
-   * The Form Recognizer service will attempt to download a file using the submitted URL, so the URL must be accessible
-   * from the public internet. For example, a SAS token can be used to grant read access to a blob in Azure Storage, and
-   * the service will use the SAS-encoded URL to request the file.
+   * ```typescript
+   * import * as fs from "fs";
+   *
+   * // See the `prebuilt` folder in the SDK samples (http://aka.ms/azsdk/formrecognizer/js/samples) for examples of
+   * // DocumentModels for known prebuilts.
+   * import { PrebuiltReceiptModel } from "./prebuilt-receipt.ts";
+   *
+   * const file = fs.createReadStream("path/to/receipt.pdf");
+   *
+   * // The model that is passed to the following function call determines the type of the eventual result. In the
+   * // example, we will use the prebuilt receipt model.
+   * const poller = await client.beginAnalyzeDocument(PrebuiltReceiptModel, file);
+   *
+   * // The result is a long-running operation (poller), which must itself be polled until the operation completes
+   * const {
+   *   pages, // pages extracted from the document, which contain lines and words
+   *   tables, // extracted tables, organized into cells that contain their contents
+   *   styles, // text styles (ex. handwriting) that were observed in the document
+   *   keyValuePairs, // extracted pairs of elements  (directed associations from one element in the input to another)
+   *
+   *   documents // extracted documents (instances of one of the model's document types and its field schema)
+   * } = await poller.pollUntilDone();
+   *
+   * // Extract the fields of the first document. These fields constitute a receipt, because we used the receipt model
+   * const [{ fields: receipt }] = documents;
+   *
+   * // Since we used the strongly-typed PrebuiltReceiptModel object instead of the "prebuilt-receipt" model ID
+   * // string, the fields of the receipt are strongly-typed and have camelCase names (as opposed to PascalCase).
+   * console.log("The type of this receipt is:", receipt.receiptType?.value);
+   * ```
+   *
+   * @param model - a {@link DocumentModel} representing the model to use for analysis and the expected output type
+   * @param document - a {@link FormRecognizerRequestBody} that will be uploaded with the request
+   * @param options - optional settings for the analysis operation and poller
+   * @returns a long-running operation (poller) that will eventually produce an `AnalyzeResult` with documents that have
+   *          the result type associated with the input model
+   */
+  public async beginAnalyzeDocument<Result>(
+    model: DocumentModel<Result>,
+    document: FormRecognizerRequestBody,
+    // eslint-disable-next-line @azure/azure-sdk/ts-naming-options
+    options?: AnalyzeDocumentOptions<Result>
+  ): Promise<AnalysisPoller<Result>>;
+  public async beginAnalyzeDocument(
+    model: string | DocumentModel<unknown>,
+    document: FormRecognizerRequestBody,
+    options: AnalyzeDocumentOptions<unknown> = {}
+  ): Promise<AnalysisPoller<unknown>> {
+    return this._tracing.withSpan(
+      "DocumentAnalysisClient.beginAnalyzeDocument",
+      options,
+      // In the first version of the SDK, the document input was treated as a URL if it was a string, and we preserve
+      // this behavior to avoid introducing a breaking change.
+      this.analyze.bind(
+        this,
+        model,
+        typeof document === "string" ? source("url", document) : source("body", document)
+      )
+    );
+  }
+
+  /**
+   * Extract data from an input using a model given by its unique ID.
+   *
+   * This operation supports custom as well as prebuilt models. For example, to use the prebuilt invoice model, provide
+   * the model ID "prebuilt-invoice", or to use the simpler prebuilt layout model, provide the model ID
+   * "prebuilt-layout".
+   *
+   * The fields produced in the `AnalyzeResult` depend on the model that is used for analysis, and the values in any
+   * extracted documents' fields depend on the document types in the model (if any) and their corresponding field
+   * schemas.
+   *
+   * ### Examples
+   *
+   * This method supports extracting data from a file at a given URL. The Form Recognizer service will attempt to
+   * download a file using the submitted URL, so the URL must be accessible from the public internet. For example, a SAS
+   * token can be used to grant read access to a blob in Azure Storage, and the service will use the SAS-encoded URL to
+   * request the file.
    *
    * ```javascript
-   * import { PrebuiltModels } from "@azure/ai-form-recognizer";
+   * // the URL must be publicly accessible
+   * const url = "<receipt document url>";
+   *
+   * // The model that is passed to the following function call determines the type of the eventual result. In the
+   * // example, we will use the prebuilt receipt model, but you could use a custom model ID/name instead.
+   * const poller = await client.beginAnalyzeDocument("prebuilt-receipt", url);
+   *
+   * // The result is a long-running operation (poller), which must itself be polled until the operation completes
+   * const {
+   *   pages, // pages extracted from the document, which contain lines and words
+   *   tables, // extracted tables, organized into cells that contain their contents
+   *   styles, // text styles (ex. handwriting) that were observed in the document
+   *   keyValuePairs, // extracted pairs of elements  (directed associations from one element in the input to another)
+   *
+   *   documents // extracted documents (instances of one of the model's document types and its field schema)
+   * } = await poller.pollUntilDone();
+   *
+   * // Extract the fields of the first document. These fields constitute a receipt, because we used the receipt model
+   * const [{ fields: receipt }] = documents;
+   *
+   * // The fields correspond to the model's document types and their field schemas. Refer to the Form Recognizer
+   * // documentation for information about the document types and field schemas within a model, or use the `getModel`
+   * // operation to view this information programmatically.
+   * console.log("The type of this receipt is:", receipt?.["ReceiptType"]?.value);
+   * ```
+   *
+   * @param modelId - the unique ID (name) of the model within this client's resource
+   * @param documentUrl - a URL (string) to an input document accessible from the public internet
+   * @param options - optional settings for the analysis operation and poller
+   * @returns a long-running operation (poller) that will eventually produce an `AnalyzeResult`
+   */
+  public async beginAnalyzeDocumentFromUrl(
+    modelId: string,
+    documentUrl: string,
+    // eslint-disable-next-line @azure/azure-sdk/ts-naming-options
+    options?: AnalyzeDocumentOptions
+  ): Promise<AnalysisPoller>;
+  /**
+   * Extract data from an input using a model that has a known, strongly-typed document schema (a {@link DocumentModel}).
+   *
+   * The fields produced in the `AnalyzeResult` depend on the model that is used for analysis. In TypeScript, the type
+   * of the result for this method overload is inferred from the type of the input `DocumentModel`.
+   *
+   * ### Examples
+   *
+   * This method supports extracting data from a file at a given URL. The Form Recognizer service will attempt to
+   * download a file using the submitted URL, so the URL must be accessible from the public internet. For example, a SAS
+   * token can be used to grant read access to a blob in Azure Storage, and the service will use the SAS-encoded URL to
+   * request the file.
+   *
+   * ```typescript
+   * // See the `prebuilt` folder in the SDK samples (http://aka.ms/azsdk/formrecognizer/js/samples) for examples of
+   * // DocumentModels for known prebuilts.
+   * import { PrebuiltReceiptModel } from "./prebuilt-receipt.ts";
    *
    * // the URL must be publicly accessible
    * const url = "<receipt document url>";
    *
    * // The model that is passed to the following function call determines the type of the eventual result. In the
    * // example, we will use the prebuilt receipt model.
-   * const poller = await client.beginAnalyzeDocument(PrebuiltModels.Receipt, url);
+   * const poller = await client.beginAnalyzeDocument(PrebuiltReceiptModel, url);
    *
    * // The result is a long-running operation (poller), which must itself be polled until the operation completes
    * const {
@@ -271,7 +362,6 @@ export class DocumentAnalysisClient {
    *   tables, // extracted tables, organized into cells that contain their contents
    *   styles, // text styles (ex. handwriting) that were observed in the document
    *   keyValuePairs, // extracted pairs of elements  (directed associations from one element in the input to another)
-   *   entities, // extracted entities in the input's content, which are categorized (ex. "Location" or "Organization")
    *
    *   documents // extracted documents (instances of one of the model's document types and its field schema)
    * } = await poller.pollUntilDone();
@@ -279,320 +369,215 @@ export class DocumentAnalysisClient {
    * // Extract the fields of the first document. These fields constitute a receipt, because we used the receipt model
    * const [{ fields: receipt }] = documents;
    *
-   * // Since we used the strongly-typed PrebuiltModels.Receipt object instead of the "prebuilt-receipt" model ID
-   * // string, the fields of the receipt are strongly-typed and have camelCase names (as opposed to PascalCase).
-   * console.log("The type of this receipt is:", receipt.receiptType?.value);
-   * ```
-   *
-   * #### From Request Body
-   *
-   * Alternatively, if the file is local (or in memory in the browser), a binary object can be uploaded. The following
-   * example uses the Node.JS filesystem API.
-   *
-   * ```javascript
-   * import * as fs from "fs";
-   * import { PrebuiltModels } from "@azure/ai-form-recognizer";
-   *
-   * const file = fs.createReadStream("path/to/receipt.pdf");
-   *
-   * // The model that is passed to the following function call determines the type of the eventual result. In the
-   * // example, we will use the prebuilt receipt model.
-   * const poller = await client.beginAnalyzeDocument(PrebuiltModels.Receipt, file);
-   *
-   * // The result is a long-running operation (poller), which must itself be polled until the operation completes
-   * const {
-   *   pages, // pages extracted from the document, which contain lines and words
-   *   tables, // extracted tables, organized into cells that contain their contents
-   *   styles, // text styles (ex. handwriting) that were observed in the document
-   *   keyValuePairs, // extracted pairs of elements  (directed associations from one element in the input to another)
-   *   entities, // extracted entities in the input's content, which are categorized (ex. "Location" or "Organization")
-   *
-   *   documents // extracted documents (instances of one of the model's document types and its field schema)
-   * } = await poller.pollUntilDone();
-   *
-   * // Extract the fields of the first document. These fields constitute a receipt, because we used the receipt model
-   * const [{ fields: receipt }] = documents;
-   *
-   * // Since we used the strongly-typed PrebuiltModels.Receipt object instead of the "prebuilt-receipt" model ID
+   * // Since we used the strongly-typed PrebuiltReceiptModel object instead of the "prebuilt-receipt" model ID
    * // string, the fields of the receipt are strongly-typed and have camelCase names (as opposed to PascalCase).
    * console.log("The type of this receipt is:", receipt.receiptType?.value);
    * ```
    *
    * @param model - a {@link DocumentModel} representing the model to use for analysis and the expected output type
-   * @param input - a URL (string) to an input document accessible from the public internet, or a
-   *                {@link FormRecognizerRequestBody} that will be uploaded with the request
+   * @param documentUrl - a URL (string) to an input document accessible from the public internet
    * @param options - optional settings for the analysis operation and poller
-   * @returns a long-running operation (poller) that will eventually produce an `AnalyzeResult` with documents that have
-   *          the result type associated with the input model
+   * @returns a long-running operation (poller) that will eventually produce an `AnalyzeResult`
    */
-  public async beginAnalyzeDocument<Document>(
-    model: DocumentModel<Document>,
-    input: string | FormRecognizerRequestBody,
+  public async beginAnalyzeDocumentFromUrl<Result>(
+    model: DocumentModel<Result>,
+    documentUrl: string,
     // eslint-disable-next-line @azure/azure-sdk/ts-naming-options
-    options?: AnalyzeDocumentOptions<AnalyzeResult<Document>>
-  ): Promise<AnalysisPoller<AnalyzeResult<Document>>>;
-  public async beginAnalyzeDocument(
+    options?: AnalyzeDocumentOptions<Result>
+  ): Promise<AnalysisPoller<Result>>;
+  public async beginAnalyzeDocumentFromUrl(
     model: string | DocumentModel<unknown>,
-    input: string | FormRecognizerRequestBody,
+    documentUrl: string,
     options: AnalyzeDocumentOptions<unknown> = {}
   ): Promise<AnalysisPoller<unknown>> {
     return this._tracing.withSpan(
-      "DocumentAnalysisClient.beginAnalyzeDocument",
+      "DocumentAnalysisClient.beginAnalyzeDocumentFromUrl",
       options,
-      (finalOptions) => {
-        const initialModelId = typeof model === "string" ? model : model.modelId;
+      this.analyze.bind(this, model, source("url", documentUrl))
+    );
+  }
 
-        return this.createAnalysisPoller<unknown>(input, {
-          initialModelId,
-          options: finalOptions,
-          transformResult: (result) =>
-            toAnalyzeResultFromGenerated(
-              result,
-              typeof model === "string" ? toAnalyzedDocumentFromGenerated : getMapper(model)
-            ),
+  /**
+   * A helper method for running analysis polymorphically.
+   *
+   * @param model - the model ID or DocumentModel to use for analysis
+   * @param input - the string URL or request body to use
+   * @param options - analysis options
+   * @returns - an analysis poller
+   */
+  private analyze(
+    model: string | DocumentModel<unknown>,
+    input: DocumentSource,
+    options: AnalyzeDocumentOptions<unknown>
+  ) {
+    const {
+      modelId: initialModelId,
+      apiVersion: requestApiVersion,
+      transformResult,
+    } = typeof model === "string"
+      ? { modelId: model, apiVersion: undefined, transformResult: (v: AnalyzeResult) => v }
+      : model;
+
+    if (requestApiVersion && requestApiVersion !== this._apiVersion) {
+      throw new Error(
+        [
+          `API Version mismatch: the provided model wants version: ${requestApiVersion}, but the client is using ${this._apiVersion}.`,
+          "The API version of the model must match the client's API version.",
+        ].join("\n")
+      );
+    }
+
+    return this.createUnifiedPoller<unknown>(
+      (abortSignal) => {
+        const [contentType, analyzeRequest] = toAnalyzeRequest(input);
+
+        return this._restClient.documentModels.analyzeDocument(initialModelId, contentType as any, {
+          ...options,
+          abortSignal,
+          analyzeRequest,
         });
+      },
+      {
+        initialModelId,
+        options,
+        transformResult: (result) => transformResult(toAnalyzeResultFromGenerated(result)),
       }
     );
   }
 
   /**
-   * **Deprecation Warning**: This method is deprecated and will be replaced prior to a stable release of
-   * `@azure/ai-form-recognizer` 4.0.0. Please see
-   * [the deprecation notice](https://github.com/Azure/azure-sdk-for-js/blob/main/sdk/formrecognizer/ai-form-recognizer/README.md#beginextractlayout-deprecation)
-   * in the README for more information.
+   * Classify a document using a custom classifier given by its ID.
    *
-   * Extracts only the layout (basic OCR information) from an input file. The layout result includes information about
-   * the pages and their text contents, extracted tables, and identified text styles.
+   * This method produces a long-running operation (poller) that will eventually produce an `AnalyzeResult`. This is the
+   * same type as `beginAnalyzeDocument` and `beginAnalyzeDocumentFromUrl`, but the result will only contain a small
+   * subset of its fields. Only the `documents` field and `pages` field will be populated, and only minimal page
+   * information will be returned. The `documents` field will contain information about all the identified documents and
+   * the `docType` that they were classified as.
    *
-   * ### Examples
+   * ### Example
    *
-   * This method supports both URLs (string) and streamable request bodies ({@link FormRecognizerRequestBody}) such as
-   * Node.JS `ReadableStream` objects, browser `Blob`s, and `ArrayBuffer`s.
+   * This method supports streamable request bodies ({@link FormRecognizerRequestBody}) such as Node.JS `ReadableStream`
+   * objects, browser `Blob`s, and `ArrayBuffer`s. The contents of the body will be uploaded to the service for analysis.
    *
-   * #### From URL
-   *
-   * The Form Recognizer service will attempt to download a file using the submitted URL, so the URL must be accessible
-   * from the public internet. For example, a SAS token can be used to grant read access to a blob in Azure Storage, and
-   * the service will use the SAS-encoded URL to request the file.
-   *
-   * ```javascript
-   * // the URL must be publicly accessible
-   * const url = "<document url>";
-   *
-   * const poller = await client.beginExtractLayout(url);
-   *
-   * // The result is a long-running operation (poller), which must itself be polled until the operation completes
-   * const {
-   *   pages, // pages extracted from the document, which contain lines and words
-   *   tables, // extracted tables, organized into cells that contain their contents
-   *   styles // text styles (ex. handwriting) that were observed in the document
-   * } = await poller.pollUntilDone();
-   * ```
-   *
-   * #### From Request Body
-   *
-   * Alternatively, if the file is local (or in memory in the browser), a binary object can be uploaded. The following
-   * example uses the Node.JS filesystem API.
-   *
-   * ```javascript
+   * ```typescript
    * import * as fs from "fs";
    *
    * const file = fs.createReadStream("path/to/file.pdf");
    *
-   * const poller = await client.beginExtractLayout(file);
+   * const poller = await client.beginClassifyDocument("<classifier ID>", file);
    *
    * // The result is a long-running operation (poller), which must itself be polled until the operation completes
    * const {
-   *   pages, // pages extracted from the document, which contain lines and words
-   *   tables, // extracted tables, organized into cells that contain their contents
-   *   styles // text styles (ex. handwriting) that were observed in the document
+   *   pages, // pages extracted from the document, which contain only basic information for classifiers
+   *   documents // extracted documents and their types
    * } = await poller.pollUntilDone();
+   *
+   * // We'll print the documents and their types
+   * for (const { docType } of documents) {
+   *   console.log("The type of this document is:", docType);
+   * }
    * ```
    *
-   * @param input - a URL (string) to an input document accessible from the public internet, or a
-   *                {@link FormRecognizerRequestBody} that will be uploaded with the request
-   * @param options - optional settings for the analysis operation and poller
-   * @returns a long-running operation (poller) that will eventually produce a layout result or an error
-   * @deprecated will be replaced in a future version (prior to a stable release)
+   * @param classifierId - the ID of the custom classifier to use for analysis
+   * @param document - the document to classify
+   * @param options - options for the classification operation
+   * @returns a long-running operation (poller) that will eventually produce an `AnalyzeResult`
    */
-  public async beginExtractLayout(
-    input: string | FormRecognizerRequestBody,
+  public async beginClassifyDocument(
+    classifierId: string,
+    document: FormRecognizerRequestBody,
     // eslint-disable-next-line @azure/azure-sdk/ts-naming-options
-    options: AnalyzeDocumentOptions<LayoutResult> = {}
-  ): Promise<AnalysisPoller<LayoutResult>> {
+    options: ClassifyDocumentOptions = {}
+  ): Promise<AnalysisPoller> {
     return this._tracing.withSpan(
-      "DocumentAnalysisClient.beginExtractLayout",
+      "DocumentAnalysisClient.beginClassifyDocument",
       options,
-      (finalOptions) =>
-        this.createAnalysisPoller(input, {
-          initialModelId: "prebuilt-layout",
-          options: finalOptions,
-          transformResult: (res) => toLayoutResult(toAnalyzeResultFromGenerated(res, identity)),
-        })
+      this.classify.bind(this, classifierId, source("body", document))
     );
   }
 
   /**
-   * **Deprecation Warning**: This method is deprecated and will be replaced prior to a stable release of
-   * `@azure/ai-form-recognizer` 4.0.0. Please see
-   * [the deprecation notice](https://github.com/Azure/azure-sdk-for-js/blob/main/sdk/formrecognizer/ai-form-recognizer/README.md#beginextractgeneraldocument-deprecation)
-   * in the README for more information.
+   * Classify a document from a URL using a custom classifier given by its ID.
    *
-   * Extracts general document information from an input file. The general document result includes the information from
-   * layout analysis (pages, tables, and styles) as well as extracted key-value pairs and entities.
+   * This method produces a long-running operation (poller) that will eventually produce an `AnalyzeResult`. This is the
+   * same type as `beginAnalyzeDocument` and `beginAnalyzeDocumentFromUrl`, but the result will only contain a small
+   * subset of its fields. Only the `documents` field and `pages` field will be populated, and only minimal page
+   * information will be returned. The `documents` field will contain information about all the identified documents and
+   * the `docType` that they were classified as.
    *
-   * ### Examples
+   * ### Example
    *
-   * This method supports both URLs (string) and streamable request bodies ({@link FormRecognizerRequestBody}) such as
-   * Node.JS `ReadableStream` objects, browser `Blob`s, and `ArrayBuffer`s.
+   * This method supports extracting data from a file at a given URL. The Form Recognizer service will attempt to
+   * download a file using the submitted URL, so the URL must be accessible from the public internet. For example, a SAS
+   * token can be used to grant read access to a blob in Azure Storage, and the service will use the SAS-encoded URL to
+   * request the file.
    *
-   * #### From URL
-   *
-   * The Form Recognizer service will attempt to download a file using the submitted URL, so the URL must be accessible
-   * from the public internet. For example, a SAS token can be used to grant read access to a blob in Azure Storage, and
-   * the service will use the SAS-encoded URL to request the file.
-   *
-   * ```javascript
+   * ```typescript
    * // the URL must be publicly accessible
-   * const url = "<document url>";
+   * const url = "<file url>";
    *
-   * const poller = await client.beginExtractGeneralDocument(url);
-   *
-   * // The result is a long-running operation (poller), which must itself be polled until the operation completes
-   * const {
-   *   // the operation produces the fields from the layout operation
-   *   pages, // pages extracted from the document, which contain lines and words
-   *   tables, // extracted tables, organized into cells that contain their contents
-   *   styles, // text styles (ex. handwriting) that were observed in the document
-   *
-   *   // it also produces the following fields in addition
-   *   keyValuePairs, // extracted pairs of elements  (directed associations from one element in the input to another)
-   *   entities // extracted entities in the input's content, which are categorized (ex. "Location" or "Organization")
-   * } = await poller.pollUntilDone();
-   * ```
-   *
-   * #### From Request Body
-   *
-   * Alternatively, if the file is local (or in memory in the browser), a binary object can be uploaded. The following
-   * example uses the Node.JS filesystem API.
-   *
-   * ```javascript
-   * import * as fs from "fs";
-   *
-   * const file = fs.createReadStream("path/to/file.pdf");
-   *
-   * const poller = await client.beginExtractGeneralDocument(file);
+   * const poller = await client.beginClassifyDocument("<classifier ID>", url);
    *
    * // The result is a long-running operation (poller), which must itself be polled until the operation completes
    * const {
-   *   // the operation produces the fields from the layout operation
-   *   pages, // pages extracted from the document, which contain lines and words
-   *   tables, // extracted tables, organized into cells that contain their contents
-   *   styles, // text styles (ex. handwriting) that were observed in the document
-   *
-   *   // it also produces the following fields in addition
-   *   keyValuePairs, // extracted pairs of elements  (directed associations from one element in the input to another)
-   *   entities // extracted entities in the input's content, which are categorized (ex. "Location" or "Organization")
+   *   pages, // pages extracted from the document, which contain only basic information for classifiers
+   *   documents // extracted documents and their types
    * } = await poller.pollUntilDone();
-   * ```
    *
-   * @param input - a URL (string) to an input document accessible from the public internet, or a
-   *                {@link FormRecognizerRequestBody} that will be uploaded with the request
-   * @param options - optional settings for the analysis operation and poller
-   * @returns a long-running operation (poller) that will eventually produce a general document result or an error
-   * @deprecated will be replaced in a future version (prior to a stable release)
+   * // We'll print the documents and their types
+   * for (const { docType } of documents) {
+   *   console.log("The type of this document is:", docType);
+   * }
+   * ```
+   * @param classifierId - the ID of the custom classifier to use for analysis
+   * @param documentUrl - the URL of the document to classify
+   * @param options -
+   * @returns
    */
-  public async beginExtractGeneralDocument(
-    input: string | FormRecognizerRequestBody,
+  public async beginClassifyDocumentFromUrl(
+    classifierId: string,
+    documentUrl: string,
     // eslint-disable-next-line @azure/azure-sdk/ts-naming-options
-    options: AnalyzeDocumentOptions<GeneralDocumentResult> = {}
-  ): Promise<AnalysisPoller<GeneralDocumentResult>> {
+    options: ClassifyDocumentOptions = {}
+  ): Promise<AnalysisPoller> {
     return this._tracing.withSpan(
-      "DocumentAnalysisClient.beginExtractGeneralDocument",
+      "DocumentAnalysisClient.beginClassifyDocumentFromUrl",
       options,
-      (finalOptions) =>
-        this.createAnalysisPoller(input, {
-          initialModelId: "prebuilt-document",
-          options: finalOptions,
-          transformResult: (res) =>
-            toGeneralDocumentResult(toAnalyzeResultFromGenerated(res, identity)),
-        })
+      this.classify.bind(this, classifierId, source("url", documentUrl))
     );
   }
 
   /**
-   * **Deprecation Warning**: This method is deprecated and will be replaced prior to a stable release of
-   * `@azure/ai-form-recognizer` 4.0.0. Please see
-   * [the deprecation notice](https://github.com/Azure/azure-sdk-for-js/blob/main/sdk/formrecognizer/ai-form-recognizer/README.md#beginreaddocument-deprecation)
-   * in the README for more information.
-   *
-   * Extracts textual information from a document such as the text contents of pages and identified written languages.
-   *
-   * ### Examples
-   *
-   * This method supports both URLs (string) and streamable request bodies ({@link FormRecognizerRequestBody}) such as
-   * Node.JS `ReadableStream` objects, browser `Blob`s, and `ArrayBuffer`s.
-   *
-   * #### From URL
-   *
-   * The Form Recognizer service will attempt to download a file using the submitted URL, so the URL must be accessible
-   * from the public internet. For example, a SAS token can be used to grant read access to a blob in Azure Storage, and
-   * the service will use the SAS-encoded URL to request the file.
-   *
-   * ```javascript
-   * // the URL must be publicly accessible
-   * const url = "<document url>";
-   *
-   * const poller = await client.beginReadDocument(url);
-   *
-   * // The result is a long-running operation (poller), which must itself be polled until the operation completes
-   * const {
-   *   // This operation only produces `pages` and `languages`
-   *   pages, // pages extracted from the document, which contain lines and words
-   *   languages, // extracted spans identifying the written language of text in the document
-   * } = await poller.pollUntilDone();
-   * ```
-   *
-   * #### From Request Body
-   *
-   * Alternatively, if the file is local (or in memory in the browser), a binary object can be uploaded. The following
-   * example uses the Node.JS filesystem API.
-   *
-   * ```javascript
-   * import * as fs from "fs";
-   *
-   * const file = fs.createReadStream("path/to/file.pdf");
-   *
-   * const poller = await client.beginReadDocument(file);
-   *
-   * // The result is a long-running operation (poller), which must itself be polled until the operation completes
-   * const {
-   *   // This operation only produces `pages` and `languages`
-   *   pages, // pages extracted from the document, which contain lines and words
-   *   languages, // extracted spans identifying the written language of text in the document
-   * } = await poller.pollUntilDone();
-   * ```
-   *
-   * @param input - a URL (string) to an input document accessible from the public internet, or a
-   *                {@link FormRecognizerRequestBody} that will be uploaded with the request
-   * @param options - optional settings for the analysis operation and poller
-   * @returns a long-running operation (poller) that will eventually produce a read result or an error
-   * @deprecated will be replaced in a future version (prior to a stable release)
+   * A helper method for running classification polymorphically.
+   * @param classifierId - the ID of the classifier to use
+   * @param input - the string URL or request body to use
+   * @param options - analysis options
+   * @returns an analysis poller
    */
-  public async beginReadDocument(
-    input: string | FormRecognizerRequestBody,
-    // eslint-disable-next-line @azure/azure-sdk/ts-naming-options
-    options: AnalyzeDocumentOptions<ReadResult> = {}
-  ): Promise<AnalysisPoller<ReadResult>> {
-    return this._tracing.withSpan(
-      "DocumentAnalysisClient.beginReadDocument",
-      options,
-      (finalOptions) =>
-        this.createAnalysisPoller(input, {
-          initialModelId: "prebuilt-read",
-          options: finalOptions,
-          transformResult: (res) => toReadResult(toAnalyzeResultFromGenerated(res, identity)),
-        })
+  private classify(
+    classifierId: string,
+    input: DocumentSource,
+    options: ClassifyDocumentOptions
+  ): Promise<AnalysisPoller> {
+    return this.createUnifiedPoller(
+      async (abortSignal) => {
+        const [contentType, classifyRequest] = toAnalyzeRequest(input);
+
+        return this._restClient.documentClassifiers.classifyDocument(
+          classifierId,
+          contentType as any,
+          {
+            ...options,
+            abortSignal,
+            classifyRequest,
+          }
+        );
+      },
+      {
+        initialModelId: classifierId,
+        options,
+        transformResult: toAnalyzeResultFromGenerated,
+      }
     );
   }
 
@@ -601,13 +586,14 @@ export class DocumentAnalysisClient {
    *
    * This is the meat of all analysis polling operations.
    *
-   * @param input - either a string for URL inputs or a FormRecognizerRequestBody to upload a file directly to the Form
-   *                Recognizer API
+   * @param startOperation - function that starts the operation and returns the operation location
    * @param definition - operation definition (initial model ID, operation transforms, request options)
    * @returns - an analysis poller that produces the given return types according to the operation spec
    */
-  private async createAnalysisPoller<Result>(
-    input: string | FormRecognizerRequestBody,
+  private async createUnifiedPoller<Result>(
+    startOperation: (
+      abortSignal: AbortSignalLike | undefined
+    ) => Promise<{ operationLocation?: string }>,
     definition: AnalysisOperationDefinition<Result>
   ): Promise<AnalysisPoller<Result>> {
     const { resumeFrom } = definition.options;
@@ -615,14 +601,41 @@ export class DocumentAnalysisClient {
     // TODO: what should we do if resumeFrom.modelId is different from initialModelId?
     // And what do we do with the redundant input??
 
-    const getAnalyzeResult = (operationLocation: string): Promise<AnalyzeResultOperation> =>
+    const getAnalyzeResult = (
+      ctx: OperationContext,
+      operationLocation: string
+    ): Promise<AnalyzeResultOperation> =>
       this._tracing.withSpan(
         "DocumentAnalysisClient.createAnalysisPoller-getAnalyzeResult",
         definition.options,
         (finalOptions) =>
           this._restClient.sendOperationRequest<AnalyzeResultOperation>(
             {
-              options: finalOptions,
+              options: {
+                onResponse: async (rawResponse, ...args) => {
+                  // Capture the `Retry-After` header if it was sent.
+                  const retryAfterHeader = rawResponse.headers.get("retry-after");
+                  // Convert the header value to milliseconds. If the header is not a valid number, then it is an HTTP
+                  // date.
+                  if (retryAfterHeader) {
+                    const retryAfterMs = Number(retryAfterHeader) * 1000;
+                    if (!Number.isNaN(retryAfterMs)) {
+                      ctx.updateDelay(retryAfterMs);
+                    } else {
+                      ctx.updateDelay(Date.parse(retryAfterHeader) - Date.now());
+                    }
+                  } else {
+                    ctx.updateDelay(undefined);
+                  }
+
+                  // Forward the `onResponse` callback if it was provided.
+                  return finalOptions.onResponse?.(rawResponse, ...args);
+                },
+                ...finalOptions,
+                // We need to pass the abort signal from the context rather than from the options, since the user could
+                // poll the LRO with a different AbortSignal than it was instantiated with.
+                abortSignal: ctx.abortSignal,
+              },
             },
             {
               path: operationLocation,
@@ -645,17 +658,27 @@ export class DocumentAnalysisClient {
     const toInit =
       // If the user gave us a stored token, we'll poll it again
       resumeFrom !== undefined
-        ? async () =>
+        ? async (ctx: OperationContext) =>
             this._tracing.withSpan(
               "DocumentAnalysisClient.createAnalysisPoller-resume",
               definition.options,
               async () => {
-                const { operationLocation, modelId } = JSON.parse(resumeFrom) as {
+                const { clientVersion, operationLocation, modelId } = JSON.parse(resumeFrom) as {
+                  clientVersion?: string;
                   operationLocation: string;
                   modelId: string;
                 };
 
-                const result = await getAnalyzeResult(operationLocation);
+                if (!clientVersion || clientVersion !== SDK_VERSION) {
+                  throw new Error(
+                    [
+                      "Cannot restore poller from a serialized state from a different version of the client",
+                      `library (restoreFrom: '${clientVersion}', current: '${SDK_VERSION}').`,
+                    ].join(" ")
+                  );
+                }
+
+                const result = await getAnalyzeResult(ctx, operationLocation);
 
                 return toDocumentAnalysisPollOperationState(
                   definition,
@@ -666,21 +689,12 @@ export class DocumentAnalysisClient {
               }
             )
         : // Otherwise, we'll start a new operation from the initialModelId
-          async () =>
+          async (ctx: OperationContext) =>
             this._tracing.withSpan(
               "DocumentAnalysisClient.createAnalysisPoller-start",
               definition.options,
               async () => {
-                const [contentType, analyzeRequest] = toAnalyzeRequest(input);
-
-                const { operationLocation } = await this._restClient.analyzeDocument(
-                  definition.initialModelId,
-                  contentType as any,
-                  {
-                    ...definition.options,
-                    analyzeRequest,
-                  }
-                );
+                const { operationLocation } = await startOperation(ctx.abortSignal);
 
                 if (operationLocation === undefined) {
                   throw new Error(
@@ -688,7 +702,7 @@ export class DocumentAnalysisClient {
                   );
                 }
 
-                const result = await getAnalyzeResult(operationLocation);
+                const result = await getAnalyzeResult(ctx, operationLocation);
 
                 return toDocumentAnalysisPollOperationState(
                   definition,
@@ -702,12 +716,12 @@ export class DocumentAnalysisClient {
     const poller = await lro<Result, DocumentAnalysisPollOperationState<Result>>(
       {
         init: toInit,
-        poll: async ({ operationLocation, modelId }) =>
+        poll: async (ctx, { operationLocation, modelId }) =>
           this._tracing.withSpan(
             "DocumentAnalysisClient.createAnalysisPoller-poll",
             {},
             async () => {
-              const result = await getAnalyzeResult(operationLocation);
+              const result = await getAnalyzeResult(ctx, operationLocation);
 
               return toDocumentAnalysisPollOperationState(
                 definition,
@@ -718,9 +732,10 @@ export class DocumentAnalysisClient {
             }
           ),
         serialize: ({ operationLocation, modelId }) =>
-          JSON.stringify({ modelId, operationLocation }),
+          JSON.stringify({ clientVersion: SDK_VERSION, id: modelId, operationLocation }),
       },
-      definition.options.updateIntervalInMs
+      definition.options.updateIntervalInMs,
+      definition.options.abortSignal
     );
 
     if (definition.options.onProgress !== undefined) {
@@ -739,16 +754,71 @@ export class DocumentAnalysisClient {
  * @internal
  */
 function toAnalyzeRequest(
-  input: string | FormRecognizerRequestBody
+  input: DocumentSource
 ): ["application/json", AnalyzeDocumentRequest] | [ContentType, FormRecognizerRequestBody] {
-  if (typeof input === "string") {
-    return [
-      "application/json",
-      {
-        urlSource: input,
-      },
-    ];
-  } else {
-    return ["application/octet-stream", input];
+  switch (input.kind) {
+    case "body":
+      return ["application/octet-stream", input.body];
+    case "url":
+      return ["application/json", { urlSource: input.url }];
+    case "base64":
+      return ["application/json", { base64Source: input.base64 }];
+    default: {
+      const __exhaust: never = input;
+      throw new Error(`Unreachable 'toAnalyzeRequest' case: ${__exhaust}`);
+    }
   }
+}
+
+/**
+ * The input to a document analysis operation.
+ */
+// type DocumentSource = DocumentBodySource | DocumentUrlSource | DocumentBase64Source;
+
+function source<K extends DocumentSource["kind"]>(
+  kind: K,
+  value: Extract<DocumentSource, { kind: K }>[K & keyof Extract<DocumentSource, { kind: K }>]
+): DocumentSource {
+  return {
+    kind,
+    [kind]: value,
+  } as unknown as DocumentSource;
+}
+
+/**
+ * The input to a document analysis operation.
+ *
+ * @internal
+ */
+type DocumentSource = {
+  [K in keyof DocumentSourceTypes]: {
+    /** The input kind. */
+    kind: K;
+  } & { [_ in K]: DocumentSourceTypes[K] };
+}[keyof DocumentSourceTypes];
+
+/**
+ * A map of input discriminants to concrete input types.
+ *
+ * @internal
+ */
+interface DocumentSourceTypes {
+  /**
+   * A document buffer or stream to be uploaded in the request body.
+   */
+  body: FormRecognizerRequestBody;
+
+  /**
+   * A URL to a document to be analyzed.
+   */
+  url: string;
+
+  /**
+   * The data of a document to be analyzed. This is NOT base64-encoded, but will
+   * be base64-encoded by the client before uploading.
+   *
+   * NOTE: This is never used by the client because it is inefficient compared to direct uploads and does not currently
+   * support any features that `body` does not.
+   */
+  base64: Uint8Array;
 }

@@ -9,6 +9,7 @@
 import {
   Declaration,
   Modifier,
+  ModifierLike,
   PropertySignature,
   SymbolFlags,
   SyntaxKind,
@@ -19,6 +20,7 @@ import {
   TypeReference,
   TypeReferenceNode,
   isArrayTypeNode,
+  canHaveModifiers,
 } from "typescript";
 import {
   FunctionDeclaration,
@@ -104,7 +106,10 @@ const addSeenSymbols = (symbol: TSSymbol, symbols: TSSymbol[], typeChecker: Type
   typeChecker
     .getPropertiesOfType(typeChecker.getDeclaredTypeOfSymbol(symbol))
     .forEach((element: TSSymbol): void => {
-      const memberType = typeChecker.getTypeAtLocation(element.valueDeclaration);
+      if (!element.valueDeclaration) {
+        return;
+      }
+      const memberType = typeChecker.getTypeAtLocation(element.valueDeclaration!);
       const memberTypeNode = typeChecker.typeToTypeNode(memberType, undefined, undefined);
 
       // extract type of member
@@ -266,12 +271,17 @@ export = {
               return;
             }
 
-            // ignore if private methoc
-            const modifiers = converter.get(node as TSESTree.Node).modifiers;
+            const tsNode = converter.get(node as TSESTree.Node);
+            if (!canHaveModifiers(tsNode)) {
+              return;
+            }
+            // ignore if private method
+            const modifiers = tsNode.modifiers;
             if (
               modifiers !== undefined &&
               modifiers.some(
-                (modifier: Modifier): boolean => modifier.kind === SyntaxKind.PrivateKeyword
+                (modifier: Modifier | ModifierLike): boolean =>
+                  modifier.kind === SyntaxKind.PrivateKeyword
               )
             ) {
               return;
@@ -283,18 +293,17 @@ export = {
                 const symbol = typeChecker
                   .getTypeAtLocation(converter.get(node as TSESTree.Node))
                   .getSymbol();
-                const overloads =
-                  symbol !== undefined
-                    ? symbol.declarations
-                        .filter(
-                          (declaration: Declaration): boolean =>
-                            reverter.get(declaration as TSNode) !== undefined
-                        )
-                        .map((declaration: Declaration): FunctionExpression => {
-                          const method = reverter.get(declaration as TSNode) as MethodDefinition;
-                          return method.value;
-                        })
-                    : [];
+                const overloads = symbol?.declarations
+                  ? symbol.declarations
+                      .filter(
+                        (declaration: Declaration): boolean =>
+                          reverter.get(declaration as TSNode) !== undefined
+                      )
+                      .map((declaration: Declaration): FunctionExpression => {
+                        const method = reverter.get(declaration as TSNode) as MethodDefinition;
+                        return method.value;
+                      })
+                  : [];
                 evaluateOverloads(
                   overloads,
                   converter,
@@ -323,13 +332,12 @@ export = {
                 const symbol = typeChecker
                   .getTypeAtLocation(converter.get(node as TSESTree.Node))
                   .getSymbol();
-                const overloads =
-                  symbol !== undefined
-                    ? symbol.declarations.map(
-                        (declaration: Declaration): FunctionDeclaration =>
-                          reverter.get(declaration as TSNode) as FunctionDeclaration
-                      )
-                    : [];
+                const overloads = symbol?.declarations
+                  ? symbol.declarations.map(
+                      (declaration: Declaration): FunctionDeclaration =>
+                        reverter.get(declaration as TSNode) as FunctionDeclaration
+                    )
+                  : [];
                 evaluateOverloads(
                   overloads,
                   converter,

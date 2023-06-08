@@ -4,41 +4,41 @@
 import { KeyCredential, TokenCredential, isTokenCredential } from "@azure/core-auth";
 import { InternalClientPipelineOptions } from "@azure/core-client";
 import { bearerTokenAuthenticationPolicy } from "@azure/core-rest-pipeline";
-import { SpanStatusCode } from "@azure/core-tracing";
 import { SDK_VERSION } from "./constants";
 import { SearchIndexerStatus } from "./generated/service/models";
 import { SearchServiceClient as GeneratedClient } from "./generated/service/searchServiceClient";
 import { logger } from "./logger";
 import { createSearchApiKeyCredentialPolicy } from "./searchApiKeyCredentialPolicy";
 import {
+  CreateDataSourceConnectionOptions,
+  CreateIndexerOptions,
   CreateOrUpdateSkillsetOptions,
   CreateSkillsetOptions,
-  DeleteSkillsetOptions,
-  GetSkillSetOptions,
-  ListSkillsetsOptions,
-  SearchIndexerSkillset,
-  ListIndexersOptions,
-  CreateIndexerOptions,
-  GetIndexerOptions,
+  CreateorUpdateDataSourceConnectionOptions,
   CreateorUpdateIndexerOptions,
+  DeleteDataSourceConnectionOptions,
   DeleteIndexerOptions,
+  DeleteSkillsetOptions,
+  GetDataSourceConnectionOptions,
+  GetIndexerOptions,
   GetIndexerStatusOptions,
-  ResetIndexerOptions,
-  RunIndexerOptions,
+  GetSkillSetOptions,
   ListDataSourceConnectionsOptions,
+  ListIndexersOptions,
+  ListSkillsetsOptions,
+  ResetDocumentsOptions,
+  ResetIndexerOptions,
+  ResetSkillsOptions,
+  RunIndexerOptions,
   SearchIndexer,
   SearchIndexerDataSourceConnection,
-  CreateDataSourceConnectionOptions,
-  DeleteDataSourceConnectionOptions,
-  GetDataSourceConnectionOptions,
-  CreateorUpdateDataSourceConnectionOptions,
-  ResetDocumentsOptions,
-  ResetSkillsOptions,
+  SearchIndexerSkillset,
 } from "./serviceModels";
 import * as utils from "./serviceUtils";
 import { createSpan } from "./tracing";
 import { createOdataMetadataPolicy } from "./odataMetadataPolicy";
 import { ExtendedCommonClientOptions } from "@azure/core-http-compat";
+import { KnownSearchAudience } from "./searchAudience";
 
 /**
  * Client options used to configure Cognitive Search API requests.
@@ -54,6 +54,13 @@ export interface SearchIndexerClientOptions extends ExtendedCommonClientOptions 
    * The service version to use when communicating with the service.
    */
   serviceVersion?: string;
+
+  /**
+   * The Audience to use for authentication with Azure Active Directory (AAD). The
+   * audience is not considered when using a shared key.
+   * {@link KnownSearchAudience} can be used interchangeably with audience
+   */
+  audience?: string;
 }
 
 /**
@@ -135,21 +142,9 @@ export class SearchIndexerClient {
       },
     };
 
-    if (options.apiVersion) {
-      if (!utils.serviceVersions.includes(options.apiVersion)) {
-        throw new Error(`Invalid Api Version: ${options.apiVersion}`);
-      }
-      this.serviceVersion = options.apiVersion;
-      this.apiVersion = options.apiVersion;
-    }
-
-    if (options.serviceVersion) {
-      if (!utils.serviceVersions.includes(options.serviceVersion)) {
-        throw new Error(`Invalid Service Version: ${options.serviceVersion}`);
-      }
-      this.serviceVersion = options.serviceVersion;
-      this.apiVersion = options.serviceVersion;
-    }
+    this.serviceVersion =
+      options.serviceVersion ?? options.apiVersion ?? utils.defaultServiceVersion;
+    this.apiVersion = this.serviceVersion;
 
     this.client = new GeneratedClient(
       this.endpoint,
@@ -158,8 +153,12 @@ export class SearchIndexerClient {
     );
 
     if (isTokenCredential(credential)) {
+      const scope: string = options.audience
+        ? `${options.audience}/.default`
+        : `${KnownSearchAudience.AzurePublicCloud}/.default`;
+
       this.client.pipeline.addPolicy(
-        bearerTokenAuthenticationPolicy({ credential, scopes: utils.DEFAULT_SEARCH_SCOPE })
+        bearerTokenAuthenticationPolicy({ credential, scopes: scope })
       );
     } else {
       this.client.pipeline.addPolicy(createSearchApiKeyCredentialPolicy(credential));
@@ -179,8 +178,8 @@ export class SearchIndexerClient {
       return result.indexers.map(utils.generatedSearchIndexerToPublicSearchIndexer);
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -202,8 +201,8 @@ export class SearchIndexerClient {
       return result.indexers.map((idx) => idx.name);
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -227,8 +226,8 @@ export class SearchIndexerClient {
       return result.dataSources.map(utils.generatedDataSourceToPublicDataSource);
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -255,8 +254,8 @@ export class SearchIndexerClient {
       return result.dataSources.map((ds) => ds.name);
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -277,8 +276,8 @@ export class SearchIndexerClient {
       return result.skillsets.map(utils.generatedSkillsetToPublicSkillset);
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -300,8 +299,8 @@ export class SearchIndexerClient {
       return result.skillsets.map((sks) => sks.name);
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -324,8 +323,8 @@ export class SearchIndexerClient {
       return utils.generatedSearchIndexerToPublicSearchIndexer(result);
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -351,8 +350,8 @@ export class SearchIndexerClient {
       return utils.generatedDataSourceToPublicDataSource(result);
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -375,8 +374,8 @@ export class SearchIndexerClient {
       return utils.generatedSkillsetToPublicSkillset(result);
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -402,8 +401,8 @@ export class SearchIndexerClient {
       return utils.generatedSearchIndexerToPublicSearchIndexer(result);
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -432,8 +431,8 @@ export class SearchIndexerClient {
       return utils.generatedDataSourceToPublicDataSource(result);
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -459,8 +458,8 @@ export class SearchIndexerClient {
       return utils.generatedSkillsetToPublicSkillset(result);
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -497,8 +496,8 @@ export class SearchIndexerClient {
       return utils.generatedSearchIndexerToPublicSearchIndexer(result);
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -534,8 +533,8 @@ export class SearchIndexerClient {
       return utils.generatedDataSourceToPublicDataSource(result);
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -573,8 +572,8 @@ export class SearchIndexerClient {
       return utils.generatedSkillsetToPublicSkillset(result);
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -607,8 +606,8 @@ export class SearchIndexerClient {
       });
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -645,8 +644,8 @@ export class SearchIndexerClient {
       });
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -679,8 +678,8 @@ export class SearchIndexerClient {
       });
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -703,8 +702,8 @@ export class SearchIndexerClient {
       return result;
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -723,8 +722,8 @@ export class SearchIndexerClient {
       await this.client.indexers.reset(indexerName, updatedOptions);
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -743,8 +742,8 @@ export class SearchIndexerClient {
       await this.client.indexers.run(indexerName, updatedOptions);
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -772,8 +771,8 @@ export class SearchIndexerClient {
       });
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {
@@ -797,8 +796,8 @@ export class SearchIndexerClient {
       );
     } catch (e: any) {
       span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: e.message,
+        status: "error",
+        error: e.message,
       });
       throw e;
     } finally {

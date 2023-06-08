@@ -17,7 +17,9 @@ input-file: ./FormRecognizer.json
 override-client-name: GeneratedClient
 add-credentials: false
 typescript: true
-package-version: "4.0.0-beta.5"
+package-version: "4.1.0-beta.1"
+use-extension:
+  "@autorest/typescript": "6.0.0-alpha.20.20220622.1"
 ```
 
 ## Customizations for Track 2 Generator
@@ -46,4 +48,56 @@ directive:
   - from: swagger-document
     where: $.parameters.QueryStringIndexType
     transform: $["x-ms-parameter-location"] = "client";
+```
+
+### Suffix `DateTime` -> `On`
+
+```yaml
+directive:
+  - from: swagger-document
+    where: $.definitions[*].properties
+    transform: >
+      for (let p of Object.keys($).filter((k) => k.endsWith("DateTime"))) {
+        const name = p;
+        
+        if (p.startsWith("expiration")) {
+          p = p.replace("expiration", "expires");
+        }
+
+        $[name]["x-ms-client-name"] = p.replace(/DateTime$/, "On");
+      }
+```
+
+But we'll opt-out for `CopyAuthorization#expirationDateTime`.
+
+```yaml
+directive:
+  - from: swagger-document
+    where: $.definitions.CopyAuthorization.properties.expirationDateTime
+    transform: >
+      delete $["x-ms-client-name"];
+```
+
+### Unset `format: uuid` for Id parameters
+
+```yaml
+directive:
+  - from: swagger-document
+    where: $.parameters.PathModelId
+    transform: >
+      delete $["format"];
+  - from: swagger-document
+    where: $.parameters.PathOperationId
+    transform: >
+      delete $["format"];
+```
+
+### Mark `kind` optional
+
+```yaml
+directive:
+  - from: swagger-document
+    where: $.definitions.DocumentPage
+    transform: >
+      $.required = $.required.filter((r) => r !== "kind");
 ```

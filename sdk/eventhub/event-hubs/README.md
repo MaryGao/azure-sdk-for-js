@@ -30,7 +30,7 @@ Install the Azure Event Hubs client library using npm
 
 ### Currently supported environments
 
-- [LTS versions of Node.js](https://nodejs.org/about/releases/)
+- [LTS versions of Node.js](https://github.com/nodejs/release#release-schedule)
 - Latest versions of Safari, Chrome, Edge, and Firefox.
 
 See our [support policy](https://github.com/Azure/azure-sdk-for-js/blob/main/SUPPORT.md) for more details.
@@ -61,9 +61,11 @@ In addition to what is described there, this library also needs additional polyf
 - `path`
 - `process`
 
-For example, if you are using Webpack v5, you can install the following dev dependencies
+#### Bundling with Webpack
 
-- `npm install --save-dev buffer os-browserify path-browserify process`
+If you are using Webpack v5, you can install the following dev dependencies
+
+- `npm install --save-dev os-browserify path-browserify`
 
 then add the following into your webpack.config.js
 
@@ -95,7 +97,51 @@ then add the following into your webpack.config.js
    },
 ```
 
+#### Bundling with Rollup
+
+If you are using Rollup bundler, install the following dev dependencies
+
+- `npm install --save-dev @rollup/plugin-commonjs @rollup/plugin-inject @rollup/plugin-node-resolve`
+
+Then include the following in your rollup.config.js
+
+```diff
++import nodeResolve from "@rollup/plugin-node-resolve";
++import cjs from "@rollup/plugin-commonjs";
++import shim from "rollup-plugin-shim";
++import inject from "@rollup/plugin-inject";
+
+export default {
+  // other configs
+  plugins: [
++    shim({
++      fs: `export default {}`,
++      net: `export default {}`,
++      tls: `export default {}`,
++      path: `export default {}`,
++      dns: `export function resolve() { }`,
++    }),
++    nodeResolve({
++      mainFields: ["module", "browser"],
++      preferBuiltins: false,
++    }),
++    cjs(),
++    inject({
++      modules: {
++        Buffer: ["buffer", "Buffer"],
++        process: "process",
++      },
++      exclude: ["./**/package.json"],
++    }),
+  ]
+};
+```
+
 Please consult the documentation of your favorite bundler for more information on using polyfills.
+
+### React Native Support
+
+Similar to browsers, React Native does not support some JavaScript API used by this SDK library so you need to provide polyfills for them.  Please see the [Messaging React Native sample with Expo](https://github.com/Azure/azure-sdk-for-js/blob/main/samples/frameworks/react-native-expo/ts/messaging/README.md) for more details.
 
 ### Authenticate the client
 

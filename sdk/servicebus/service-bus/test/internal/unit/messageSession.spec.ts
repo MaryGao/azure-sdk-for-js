@@ -49,6 +49,7 @@ describe("Message session unit tests", () => {
 
         it("1. We received 'max messages'", async () => {
           const receiver = new MessageSession(
+            "identifier",
             createConnectionContextForTests(),
             "dummyEntityPath",
             undefined,
@@ -56,6 +57,7 @@ describe("Message session unit tests", () => {
               receiveMode: lockMode,
               retryOptions: undefined,
               skipParsingBodyAsJson: false,
+              skipConvertingDate: false,
             }
           );
 
@@ -80,6 +82,7 @@ describe("Message session unit tests", () => {
         // because otherwise it'd be one of the others.
         it("2. We've waited 'max wait time'", async () => {
           const receiver = new MessageSession(
+            "identifier",
             createConnectionContextForTests(),
             "dummyEntityPath",
             undefined,
@@ -87,6 +90,7 @@ describe("Message session unit tests", () => {
               receiveMode: lockMode,
               retryOptions: undefined,
               skipParsingBodyAsJson: false,
+              skipConvertingDate: false,
             }
           );
 
@@ -111,6 +115,7 @@ describe("Message session unit tests", () => {
           `3a. (with idle timeout) We've received 1 message and _now_ have exceeded 'max wait time past first message'`,
           async () => {
             const receiver = new MessageSession(
+              "identifier",
               createConnectionContextForTests(),
               "dummyEntityPath",
               undefined,
@@ -118,6 +123,7 @@ describe("Message session unit tests", () => {
                 receiveMode: lockMode,
                 retryOptions: undefined,
                 skipParsingBodyAsJson: false,
+                skipConvertingDate: false,
               }
             );
 
@@ -158,6 +164,7 @@ describe("Message session unit tests", () => {
         // When we eliminate that bug we can remove this test in favor of the idle timeout test above.
         (lockMode === "receiveAndDelete" ? it : it.skip)(`3b. (without idle timeout)`, async () => {
           const receiver = new MessageSession(
+            "identifier",
             createConnectionContextForTests(),
             "dummyEntityPath",
             undefined,
@@ -165,6 +172,7 @@ describe("Message session unit tests", () => {
               receiveMode: lockMode,
               retryOptions: undefined,
               skipParsingBodyAsJson: false,
+              skipConvertingDate: false,
             }
           );
 
@@ -211,6 +219,7 @@ describe("Message session unit tests", () => {
           "4. sanity check that we're using getRemainingWaitTimeInMs",
           async () => {
             const receiver = new MessageSession(
+              "identifier",
               createConnectionContextForTests(),
               "dummyEntityPath",
               undefined,
@@ -218,6 +227,7 @@ describe("Message session unit tests", () => {
                 receiveMode: lockMode,
                 retryOptions: undefined,
                 skipParsingBodyAsJson: false,
+                skipConvertingDate: false,
               }
             );
 
@@ -295,6 +305,12 @@ describe("Message session unit tests", () => {
           remainingRegisteredListeners.delete(evt.toString());
           emitter.removeListener(evt, handler);
         },
+        once(evt: ReceiverEvents, handler: OnAmqpEventAsPromise) {
+          emitter.once(evt, handler);
+          if (evt === ReceiverEvents.message) {
+            --credit;
+          }
+        },
         session: {
           on(evt: SessionEvents, handler: OnAmqpEventAsPromise) {
             emitter.on(evt, handler);
@@ -311,6 +327,15 @@ describe("Message session unit tests", () => {
           removeListener(evt: SessionEvents, handler: OnAmqpEventAsPromise) {
             remainingRegisteredListeners.delete(evt.toString());
             emitter.removeListener(evt, handler);
+          },
+          once(evt: SessionEvents, handler: OnAmqpEventAsPromise) {
+            emitter.once(evt, handler);
+
+            if (evt === SessionEvents.sessionClose) {
+              // this also happens to be the final thing the Promise does
+              // as part of it's initialization.
+              resolvePromiseIsReady();
+            }
           },
         },
         isOpen: () => true,
@@ -360,6 +385,7 @@ describe("Message session unit tests", () => {
 
     beforeEach(async () => {
       messageSession = await MessageSession.create(
+        "serviceBusClientId",
         createConnectionContextForTestsWithSessionId("session id"),
         "entity path",
         "session id",
@@ -367,6 +393,7 @@ describe("Message session unit tests", () => {
           receiveMode: "receiveAndDelete",
           retryOptions: undefined,
           skipParsingBodyAsJson: false,
+          skipConvertingDate: false,
         }
       );
 

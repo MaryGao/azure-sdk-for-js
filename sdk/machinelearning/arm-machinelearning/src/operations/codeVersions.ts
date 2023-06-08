@@ -6,14 +6,15 @@
  * Changes may cause incorrect behavior and will be lost if the code is regenerated.
  */
 
-import { PagedAsyncIterableIterator } from "@azure/core-paging";
+import { PagedAsyncIterableIterator, PageSettings } from "@azure/core-paging";
+import { setContinuationToken } from "../pagingHelper";
 import { CodeVersions } from "../operationsInterfaces";
 import * as coreClient from "@azure/core-client";
 import * as Mappers from "../models/mappers";
 import * as Parameters from "../models/parameters";
 import { AzureMachineLearningWorkspaces } from "../azureMachineLearningWorkspaces";
 import {
-  CodeVersionData,
+  CodeVersion,
   CodeVersionsListNextOptionalParams,
   CodeVersionsListOptionalParams,
   CodeVersionsListResponse,
@@ -50,7 +51,7 @@ export class CodeVersionsImpl implements CodeVersions {
     workspaceName: string,
     name: string,
     options?: CodeVersionsListOptionalParams
-  ): PagedAsyncIterableIterator<CodeVersionData> {
+  ): PagedAsyncIterableIterator<CodeVersion> {
     const iter = this.listPagingAll(
       resourceGroupName,
       workspaceName,
@@ -64,12 +65,16 @@ export class CodeVersionsImpl implements CodeVersions {
       [Symbol.asyncIterator]() {
         return this;
       },
-      byPage: () => {
+      byPage: (settings?: PageSettings) => {
+        if (settings?.maxPageSize) {
+          throw new Error("maxPageSize is not supported by this operation.");
+        }
         return this.listPagingPage(
           resourceGroupName,
           workspaceName,
           name,
-          options
+          options,
+          settings
         );
       }
     };
@@ -79,16 +84,23 @@ export class CodeVersionsImpl implements CodeVersions {
     resourceGroupName: string,
     workspaceName: string,
     name: string,
-    options?: CodeVersionsListOptionalParams
-  ): AsyncIterableIterator<CodeVersionData[]> {
-    let result = await this._list(
-      resourceGroupName,
-      workspaceName,
-      name,
-      options
-    );
-    yield result.value || [];
-    let continuationToken = result.nextLink;
+    options?: CodeVersionsListOptionalParams,
+    settings?: PageSettings
+  ): AsyncIterableIterator<CodeVersion[]> {
+    let result: CodeVersionsListResponse;
+    let continuationToken = settings?.continuationToken;
+    if (!continuationToken) {
+      result = await this._list(
+        resourceGroupName,
+        workspaceName,
+        name,
+        options
+      );
+      let page = result.value || [];
+      continuationToken = result.nextLink;
+      setContinuationToken(page, continuationToken);
+      yield page;
+    }
     while (continuationToken) {
       result = await this._listNext(
         resourceGroupName,
@@ -98,7 +110,9 @@ export class CodeVersionsImpl implements CodeVersions {
         options
       );
       continuationToken = result.nextLink;
-      yield result.value || [];
+      let page = result.value || [];
+      setContinuationToken(page, continuationToken);
+      yield page;
     }
   }
 
@@ -107,7 +121,7 @@ export class CodeVersionsImpl implements CodeVersions {
     workspaceName: string,
     name: string,
     options?: CodeVersionsListOptionalParams
-  ): AsyncIterableIterator<CodeVersionData> {
+  ): AsyncIterableIterator<CodeVersion> {
     for await (const page of this.listPagingPage(
       resourceGroupName,
       workspaceName,
@@ -193,7 +207,7 @@ export class CodeVersionsImpl implements CodeVersions {
     workspaceName: string,
     name: string,
     version: string,
-    body: CodeVersionData,
+    body: CodeVersion,
     options?: CodeVersionsCreateOrUpdateOptionalParams
   ): Promise<CodeVersionsCreateOrUpdateResponse> {
     return this.client.sendOperationRequest(
@@ -283,7 +297,7 @@ const getOperationSpec: coreClient.OperationSpec = {
   httpMethod: "GET",
   responses: {
     200: {
-      bodyMapper: Mappers.CodeVersionData
+      bodyMapper: Mappers.CodeVersion
     },
     default: {
       bodyMapper: Mappers.ErrorResponse
@@ -307,10 +321,10 @@ const createOrUpdateOperationSpec: coreClient.OperationSpec = {
   httpMethod: "PUT",
   responses: {
     200: {
-      bodyMapper: Mappers.CodeVersionData
+      bodyMapper: Mappers.CodeVersion
     },
     201: {
-      bodyMapper: Mappers.CodeVersionData
+      bodyMapper: Mappers.CodeVersion
     },
     default: {
       bodyMapper: Mappers.ErrorResponse

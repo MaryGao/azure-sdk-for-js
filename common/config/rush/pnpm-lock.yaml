@@ -1427,6 +1427,16 @@ packages:
       tslib: 2.6.2
     dev: false
 
+  /@azure/core-lro@3.0.0-beta.1:
+    resolution: {integrity: sha512-KbkVHWhLnlDQRtIZGCPQFB6y2xgeL7p5iICRYTCDjHBpWX9W/I3HkkvbvK4SordNsKwWbLKfPLrOJKJdsJocEQ==}
+    engines: {node: '>=18.0.0'}
+    dependencies:
+      '@azure/abort-controller': 2.1.2
+      '@azure/core-util': 1.9.0
+      '@azure/logger': 1.1.2
+      tslib: 2.6.2
+    dev: false
+
   /@azure/core-paging@1.6.2:
     resolution: {integrity: sha512-YKWi9YuCU04B55h25cnOYZHxXYtEvQEbKST5vqRga7hWY9ydd3FZHdeQF8pyh+acWZvppw13M/LMGx0LABUVMA==}
     engines: {node: '>=18.0.0'}
@@ -11112,13 +11122,13 @@ packages:
     dev: false
 
   file:projects/ai-vision-face.tgz:
-    resolution: {integrity: sha512-MSxrXH46y77Vn7DU26EJAGrJC1s103JsoEI1EBVxa7c0CR33/H6ZkXRoDt8SRWW6pE5AFdqEKG8YShN2DMh2Ug==, tarball: file:projects/ai-vision-face.tgz}
+    resolution: {integrity: sha512-xMirTG6eo+aHspvpR9xI6AM0wOqn9DBwLZEwWt1KMnJ8jxGsocfviMoufkl6ZreaxMqfBbUEYEk8ZrpgitdBZA==, tarball: file:projects/ai-vision-face.tgz}
     name: '@rush-temp/ai-vision-face'
     version: 0.0.0
     dependencies:
       '@azure-tools/test-credential': 1.1.0
       '@azure/abort-controller': 1.1.0
-      '@azure/core-lro': 2.7.2
+      '@azure/core-lro': 3.0.0-beta.1
       '@azure/identity': 4.2.0
       '@microsoft/api-extractor': 7.43.5(@types/node@18.19.33)
       '@types/node': 18.19.33
@@ -16906,7 +16916,7 @@ packages:
     dev: false
 
   file:projects/arm-security.tgz:
-    resolution: {integrity: sha512-J42CqmF6nVg8NXXuxrBvT4CXAv04Qq2JuI3DLonCkt/zD5DWAmzuPFxLk/sAhiodQrF6xKNrKQumJ3F9NYy6DQ==, tarball: file:projects/arm-security.tgz}
+    resolution: {integrity: sha512-2vBN5Am03jIDkisfpDkibLkKhOJKwQ79q3b6suTJA9Kca1lzG/L0bAU4wbaqx15y3Sf0gLarmoc+bSQjeMXMVg==, tarball: file:projects/arm-security.tgz}
     name: '@rush-temp/arm-security'
     version: 0.0.0
     dependencies:

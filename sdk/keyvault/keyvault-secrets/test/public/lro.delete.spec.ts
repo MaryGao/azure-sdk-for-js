@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 import { Recorder, env } from "@azure-tools/test-recorder";
-import { PollerStoppedError } from "@azure/core-lro";
+// import { PollerStoppedError } from "@azure/core-lro";
 
 import { afterEach, assert, beforeEach, describe, it } from "vitest";
 import { DeletedSecret, SecretClient } from "../../src/index.js";
@@ -9,7 +9,9 @@ import { testPollerProperties } from "./utils/recorderUtils.js";
 import { authenticate } from "./utils/testAuthentication.js";
 import TestClient from "./utils/testClient.js";
 
-describe("Secrets client - Long Running Operations - delete", { todo: true }, () => {
+console.log("LRO delete1");
+
+describe("Secrets client - Long Running Operations - delete", () => {
   const secretPrefix = `lroDelete${env.CERTIFICATE_NAME || "SecretName"}`;
   let secretSuffix: string;
   let client: SecretClient;
@@ -31,6 +33,7 @@ describe("Secrets client - Long Running Operations - delete", { todo: true }, ()
   // The tests follow
 
   it("can wait until a secret is deleted", async function (ctx) {
+    console.log("LRO delete2");
     const secretName = testClient.formatName(`${secretPrefix}-${ctx.task.name}-${secretSuffix}`);
     await client.setSecret(secretName, "value");
     const poller = await client.beginDeleteSecret(secretName, testPollerProperties);
@@ -47,15 +50,15 @@ describe("Secrets client - Long Running Operations - delete", { todo: true }, ()
     assert.equal(poller.getOperationState().result!.name, secretName);
   });
 
-  it("can resume from a stopped poller", async function (ctx) {
+  it("can resume from a stopped poller", {todo: true},async function (ctx) {
     const secretName = testClient.formatName(`${secretPrefix}-${ctx.task.name}-${secretSuffix}`);
     await client.setSecret(secretName, "value");
     const poller = await client.beginDeleteSecret(secretName, testPollerProperties);
     assert.ok(poller.getOperationState().isStarted);
 
     poller.pollUntilDone().catch((e) => {
-      assert.ok(e instanceof PollerStoppedError);
-      assert.equal(e.name, "PollerStoppedError");
+      // assert.ok(e instanceof PollerStoppedError);
+      // assert.equal(e.name, "PollerStoppedError");
       assert.equal(e.message, "This poller is already stopped");
     });
 

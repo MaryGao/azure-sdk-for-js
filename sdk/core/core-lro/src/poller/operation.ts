@@ -163,6 +163,7 @@ export async function initOperation<
   logger.verbose(`LRO: Operation description:`, config);
   const state = { status: "running", config } as any;
   const status = getOperationStatus({ response, state, operationLocation });
+  console.log("initOperation",state, status)
   await processOperationStatus({
     state,
     status,

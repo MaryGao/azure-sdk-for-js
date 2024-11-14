@@ -7,7 +7,6 @@ import { TokenCredential } from "@azure/core-auth";
 import { logger } from "./log.js";
 
 import { PageSettings, PagedAsyncIterableIterator } from "@azure/core-paging";
-import { OperationState, PollerLike } from "@azure/core-lro";
 import { DeletionRecoveryLevel as KnownDeletionRecoveryLevel } from "./generated/models/index.js";
 import { KeyVaultClient, KeyVaultClientOptionalParams } from "./generated/keyVaultClient.js";
 import { keyVaultAuthenticationPolicy } from "@azure/keyvault-common";
@@ -37,6 +36,7 @@ import { getSecretFromSecretBundle, mapPagedAsyncIterable } from "./transformati
 import { tracingClient } from "./tracing.js";
 import { bearerTokenAuthenticationPolicyName } from "@azure/core-rest-pipeline";
 import { SDK_VERSION } from "./constants.js";
+import { KeyVaultDeleteSecretPoller, PollerLike, PollOperationState } from "./lro/KeyVaultDeleteSecretPoller.js";
 
 export type DeletionRecoveryLevel = string;
 export {
@@ -198,10 +198,16 @@ export class SecretClient {
    * @param options - The optional parameters.
    */
   public async beginDeleteSecret(
-    _name: string,
-    _options: BeginDeleteSecretOptions = {},
-  ): Promise<PollerLike<OperationState<DeletedSecret>, DeletedSecret>> {
-    throw new Error("TODO: working with codegen crew on v1 -> v3 LRO migration");
+    name: string,
+    options: BeginDeleteSecretOptions = {},
+  ): Promise<PollerLike<PollOperationState<DeletedSecret>, DeletedSecret>> {
+    const poller = new KeyVaultDeleteSecretPoller({
+      name: name,
+      client: this.client,
+      operationOptions: options,
+    });
+    await poller.poll();
+    return poller;
   }
 
   /**
@@ -356,7 +362,7 @@ export class SecretClient {
   public async beginRecoverDeletedSecret(
     _name: string,
     _options: BeginRecoverDeletedSecretOptions = {},
-  ): Promise<PollerLike<OperationState<SecretProperties>, SecretProperties>> {
+  ): Promise<PollerLike<PollOperationState<SecretProperties>, SecretProperties>> {
     throw new Error("TODO: working with codegen crew on v1 -> v3 LRO migration");
     // const poller = new RecoverDeletedSecretPoller({
     //   name,

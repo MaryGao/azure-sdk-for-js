@@ -1,119 +1,119 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
+// // Copyright (c) Microsoft Corporation.
+// // Licensed under the MIT License.
 
-import { SecretProperties } from "../../secretsModels.js";
-import { KeyVaultSecretPollOperationState } from "../keyVaultSecretPoller.js";
-
-/**
- * An interface representing the state of a delete secret's poll operation
- */
-export interface RecoverDeletedSecretPollOperationState
-  extends KeyVaultSecretPollOperationState<SecretProperties> {}
+// import { SecretProperties } from "../../secretsModels.js";
+// import { KeyVaultSecretPollOperationState } from "../KeyVaultDeleteSecretPoller.js";
 
 // /**
-//  * An interface representing a delete secret's poll operation
+//  * An interface representing the state of a delete secret's poll operation
 //  */
-// export class RecoverDeletedSecretPollOperation extends KeyVaultSecretPollOperation<
-//   RecoverDeletedSecretPollOperationState,
-//   SecretProperties
-// > {
-//   constructor(
-//     public state: RecoverDeletedSecretPollOperationState,
-//     private vaultUrl: string,
-//     private client: KeyVaultClient,
-//     private options: OperationOptions = {},
-//   ) {
-//     super(state, { cancelMessage: "Canceling the recovery of a deleted secret is not supported." });
-//   }
+// export interface RecoverDeletedSecretPollOperationState
+//   extends KeyVaultSecretPollOperationState<SecretProperties> { }
 
-//   /**
-//    * The getSecret method returns the specified secret along with its properties.
-//    * This operation requires the secrets/get permission.
-//    */
-//   private getSecret(name: string, options: GetSecretOptions = {}): Promise<KeyVaultSecret> {
-//     return tracingClient.withSpan(
-//       "RecoverDeletedSecretPoller.getSecret",
-//       options,
-//       async (updatedOptions) => {
-//         const response = await this.client.getSecret(
-//           this.vaultUrl,
-//           name,
-//           options && options.version ? options.version : "",
-//           updatedOptions,
-//         );
-//         return getSecretFromSecretBundle(response);
-//       },
-//     );
-//   }
+// // /**
+// //  * An interface representing a delete secret's poll operation
+// //  */
+// // export class RecoverDeletedSecretPollOperation extends KeyVaultSecretPollOperation<
+// //   RecoverDeletedSecretPollOperationState,
+// //   SecretProperties
+// // > {
+// //   constructor(
+// //     public state: RecoverDeletedSecretPollOperationState,
+// //     private vaultUrl: string,
+// //     private client: KeyVaultClient,
+// //     private options: OperationOptions = {},
+// //   ) {
+// //     super(state, { cancelMessage: "Canceling the recovery of a deleted secret is not supported." });
+// //   }
 
-//   /**
-//    * The recoverDeletedSecret method recovers the specified deleted secret along with its properties.
-//    * This operation requires the secrets/recover permission.
-//    */
-//   private recoverDeletedSecret(
-//     name: string,
-//     options: GetSecretOptions = {},
-//   ): Promise<DeletedSecret> {
-//     return tracingClient.withSpan(
-//       "RecoverDeletedSecretPoller.recoverDeletedSecret",
-//       options,
-//       async (updatedOptions) => {
-//         const response = await this.client.recoverDeletedSecret(
-//           this.vaultUrl,
-//           name,
-//           updatedOptions,
-//         );
-//         return getSecretFromSecretBundle(response);
-//       },
-//     );
-//   }
+// //   /**
+// //    * The getSecret method returns the specified secret along with its properties.
+// //    * This operation requires the secrets/get permission.
+// //    */
+// //   private getSecret(name: string, options: GetSecretOptions = {}): Promise<KeyVaultSecret> {
+// //     return tracingClient.withSpan(
+// //       "RecoverDeletedSecretPoller.getSecret",
+// //       options,
+// //       async (updatedOptions) => {
+// //         const response = await this.client.getSecret(
+// //           this.vaultUrl,
+// //           name,
+// //           options && options.version ? options.version : "",
+// //           updatedOptions,
+// //         );
+// //         return getSecretFromSecretBundle(response);
+// //       },
+// //     );
+// //   }
 
-//   /**
-//    * Reaches to the service and updates the delete secret's poll operation.
-//    */
-//   async update(
-//     this: RecoverDeletedSecretPollOperation,
-//     options: {
-//       abortSignal?: AbortSignalLike;
-//       fireProgress?: (state: RecoverDeletedSecretPollOperationState) => void;
-//     } = {},
-//   ): Promise<RecoverDeletedSecretPollOperation> {
-//     const state = this.state;
-//     const { name } = state;
+// //   /**
+// //    * The recoverDeletedSecret method recovers the specified deleted secret along with its properties.
+// //    * This operation requires the secrets/recover permission.
+// //    */
+// //   private recoverDeletedSecret(
+// //     name: string,
+// //     options: GetSecretOptions = {},
+// //   ): Promise<DeletedSecret> {
+// //     return tracingClient.withSpan(
+// //       "RecoverDeletedSecretPoller.recoverDeletedSecret",
+// //       options,
+// //       async (updatedOptions) => {
+// //         const response = await this.client.recoverDeletedSecret(
+// //           this.vaultUrl,
+// //           name,
+// //           updatedOptions,
+// //         );
+// //         return getSecretFromSecretBundle(response);
+// //       },
+// //     );
+// //   }
 
-//     if (options.abortSignal) {
-//       this.options.abortSignal = options.abortSignal;
-//     }
+// //   /**
+// //    * Reaches to the service and updates the delete secret's poll operation.
+// //    */
+// //   async update(
+// //     this: RecoverDeletedSecretPollOperation,
+// //     options: {
+// //       abortSignal?: AbortSignalLike;
+// //       fireProgress?: (state: RecoverDeletedSecretPollOperationState) => void;
+// //     } = {},
+// //   ): Promise<RecoverDeletedSecretPollOperation> {
+// //     const state = this.state;
+// //     const { name } = state;
 
-//     if (!state.isStarted) {
-//       try {
-//         state.result = (await this.getSecret(name, this.options)).properties;
-//         state.isCompleted = true;
-//       } catch {
-//         // Nothing to do here.
-//       }
-//       if (!state.isCompleted) {
-//         state.result = (await this.recoverDeletedSecret(name, this.options)).properties;
-//         state.isStarted = true;
-//       }
-//     }
+// //     if (options.abortSignal) {
+// //       this.options.abortSignal = options.abortSignal;
+// //     }
 
-//     if (!state.isCompleted) {
-//       try {
-//         state.result = (await this.getSecret(name, this.options)).properties;
-//         state.isCompleted = true;
-//       } catch (error: any) {
-//         if (error.statusCode === 403) {
-//           // At this point, the resource exists but the user doesn't have access to it.
-//           state.isCompleted = true;
-//         } else if (error.statusCode !== 404) {
-//           state.error = error;
-//           state.isCompleted = true;
-//           throw error;
-//         }
-//       }
-//     }
+// //     if (!state.isStarted) {
+// //       try {
+// //         state.result = (await this.getSecret(name, this.options)).properties;
+// //         state.isCompleted = true;
+// //       } catch {
+// //         // Nothing to do here.
+// //       }
+// //       if (!state.isCompleted) {
+// //         state.result = (await this.recoverDeletedSecret(name, this.options)).properties;
+// //         state.isStarted = true;
+// //       }
+// //     }
 
-//     return this;
-//   }
-// }
+// //     if (!state.isCompleted) {
+// //       try {
+// //         state.result = (await this.getSecret(name, this.options)).properties;
+// //         state.isCompleted = true;
+// //       } catch (error: any) {
+// //         if (error.statusCode === 403) {
+// //           // At this point, the resource exists but the user doesn't have access to it.
+// //           state.isCompleted = true;
+// //         } else if (error.statusCode !== 404) {
+// //           state.error = error;
+// //           state.isCompleted = true;
+// //           throw error;
+// //         }
+// //       }
+// //     }
+
+// //     return this;
+// //   }
+// // }

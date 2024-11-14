@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { OperationOptions } from "@azure-rest/core-client";
+import { createRestError, OperationOptions, PathUncheckedResponse, StreamableMethod } from "@azure-rest/core-client";
 import { AbortSignalLike } from "@azure/abort-controller";
 import {
   CancelOnProgress,
@@ -13,7 +13,8 @@ import {
   PollerLike as CorePollerLike,
 } from "@azure/core-lro";
 import { KeyVaultClient } from "../generated/keyVaultClient.js";
-import { initOperation } from "../../../../core/core-lro/dist/esm/poller/operation.js";
+import { DeleteSecretOptionalParams, GetDeletedSecretOptionalParams } from "../generated/index.js";
+import { _deleteSecretSend, _getDeletedSecretSend } from "../generated/api/operations.js";
 
 
 /**
@@ -117,7 +118,6 @@ export interface PollerLike<TState extends PollOperationState<TResult>, TResult>
  * Common parameters to a Key Vault Key Poller.
  */
 export interface KeyVaultKeyPollerOptions {
-  vaultUrl: string;
   client: KeyVaultClient;
   name: string;
   operationOptions?: OperationOptions;
@@ -125,7 +125,28 @@ export interface KeyVaultKeyPollerOptions {
   resumeFrom?: string;
 }
 
-export abstract class KeyVaultSecretPoller<TState extends PollOperationState<TResult>, TResult> implements PollerLike<TState, TResult>, RunningOperation<TResult> {
+function getLroResponse<TResponse extends PathUncheckedResponse>(
+  response: TResponse,
+  expectedStatuses: string[],
+): OperationResponse<TResponse> {
+  if (!expectedStatuses.includes(response.status)) {
+    throw createRestError(response);
+  }
+
+  return {
+    flatResponse: response,
+    rawResponse: {
+      ...response,
+      statusCode: Number.parseInt(response.status),
+      body: response.body,
+      // fake header
+      headers: {
+       "operation-location": "https://fake.com",}
+    },
+  };
+}
+
+export class KeyVaultDeleteSecretPoller<TState extends PollOperationState<TResult>, TResult> implements PollerLike<TState, TResult>, RunningOperation<TResult> {
   protected httpPoller: CorePollerLike<OperationState<TResult>, TResult>;
   protected options: KeyVaultKeyPollerOptions;
   constructor(options: KeyVaultKeyPollerOptions) {
@@ -135,11 +156,55 @@ export abstract class KeyVaultSecretPoller<TState extends PollOperationState<TRe
       sendPollRequest: this.sendPollRequest.bind(this),
     }, options);
   }
-  sendInitialRequest(): Promise<OperationResponse<unknown>> {
-    throw new Error("Method not implemented.");
+
+  /**
+ * Sends a delete request for the given Key Vault Key's name to the Key Vault service.
+ * Since the Key Vault Key won't be immediately deleted, we have {@link beginDeleteKey}.
+ */
+  private deleteSecret(name: string, options: DeleteSecretOptionalParams = {}): Promise<StreamableMethod> {
+    return _deleteSecretSend(this.options.client["_client"], name, options) as any;
   }
-  sendPollRequest(_path: string, _options?: { abortSignal?: AbortSignalLike; }): Promise<OperationResponse<TResult, RawRequest>> {
-    throw new Error("Method not implemented.");
+
+  /**
+ * The getDeletedSecret method returns the specified deleted secret along with its properties.
+ * This operation requires the secrets/get permission.
+ */
+  private getDeletedSecret(
+    name: string,
+    options: GetDeletedSecretOptionalParams = {},
+  ): Promise<StreamableMethod> {
+    return _getDeletedSecretSend(this.options.client["_client"], name, options) as any;
+  }
+
+  async sendInitialRequest(): Promise<OperationResponse<unknown>> {
+    const initialResponse = await this.deleteSecret(this.options.name, this.options as DeleteSecretOptionalParams);
+    // console.log("initialResponse", initialResponse);
+    return getLroResponse(initialResponse, ["200"]);
+  }
+  async sendPollRequest(_path: string, _options?: { abortSignal?: AbortSignalLike; }): Promise<OperationResponse<TResult, RawRequest>> {
+    let response;
+    if (!this.isDone()) {
+      try {
+        response = await this.getDeletedSecret(this.options.name, this.options as GetDeletedSecretOptionalParams);
+        console.log("response", response);
+        // state.result = await this.getDeletedSecret(name, this.operationOptions);
+        // state.isCompleted = true;
+        // console.log("isCompleted***1", state, new Date().toISOString(), !state.isCompleted);
+      } catch (error: any) {
+        console.log(error)
+        if (error.statusCode === 403) {
+          // At this point, the resource exists but the user doesn't have access to it.
+          // state.isCompleted = true;
+          // console.log("isCompleted***2", state, new Date().toISOString(), !state.isCompleted);
+        } else if (error.statusCode !== 404) {
+          // state.error = error;
+          // state.isCompleted = true;
+          // console.log("isCompleted***3", state, new Date().toISOString(), !state.isCompleted);
+          throw error;
+        }
+      }
+    }
+    return response ? getLroResponse(response, ["200"]) : { flatResponse: {} as any, rawResponse: {} as any };
   }
   async poll(options?: {
     abortSignal?: AbortSignalLike;

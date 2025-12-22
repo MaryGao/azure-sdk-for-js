@@ -650,4 +650,5 @@ For complete examples of modular library customizations, refer to these packages
 - [Generate Code from TypeSpec](./Generate-code-from-TypeSpec.md)
 - [Steps After Code Generation](./steps-after-generations.md)
 - [RLC Customization Guide](./RLC-customization.md)
+- [Modular (DPG) Customization Guide Wiki](https://github.com/Azure/azure-sdk-for-js/wiki/Modular-(DPG)-Customization-Guide)
 - [Azure SDK TypeScript Design Guidelines](https://azure.github.io/azure-sdk/typescript_design.html)

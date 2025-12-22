@@ -118,3 +118,7 @@ The `package name` is used when publishing to [npmjs](https://www.npmjs.com/). I
 # After SDK generation
 
 The generated code is not enough to release at once and you need to update it for better usage experience. Please follow [steps after generation guide](https://github.com/Azure/azure-sdk-for-js/blob/main/documentation/steps-after-generations.md) to check the code.
+
+# Customization
+
+You may want to do your customizations based on generated code. We collect common customization cases and you can read [Customization on Modular (DPG) Libraries](https://github.com/Azure/azure-sdk-for-js/blob/main/documentation/modular-customization.md) for more details.

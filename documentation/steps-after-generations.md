@@ -232,6 +232,25 @@ Please add below comment in your PR to include `dpg-devs` to review your PR time
 cc @Azure/dpg-devs for awareness
 ```
 
+# Customization
+
+You may need to customize the generated code to address service-specific requirements, add convenience methods, or improve the developer experience. 
+
+For **Modular (DPG) libraries**, refer to:
+- [Customization on Modular (DPG) Libraries](https://github.com/Azure/azure-sdk-for-js/blob/main/documentation/modular-customization.md) - Comprehensive guide covering custom model transformations, operations, authentication, pagination, LRO patterns, and more.
+
+For **RLC (Rest-Level Client) libraries**, refer to:
+- [Customization on RLC Libraries](https://github.com/Azure/azure-sdk-for-js/blob/main/documentation/RLC-customization.md) - Guide for customizing rest-level client libraries.
+
+Common customization scenarios include:
+- Custom authentication flows
+- Data transformation helpers
+- Custom pagination patterns
+- Long-running operations (LRO)
+- Input validation
+- Convenience methods and operation groups
+- Multi-client packages
+
 # Release
 
 Prepare your SDK for release. The necessary approvals, guidance for testing, documentation, and release pipelines is described in your release plan. More information about the Azure SDK Release Tool is [here](https://eng.ms/docs/products/azure-developer-experience/plan/release-plan)

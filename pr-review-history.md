@@ -6,4 +6,6 @@
 
 ## PR #17 (2026-03-13) — @azure/arm-alertsmanagement v1.0.0-beta.1 (new pkg)
 - Design: `ProxyResource_1` naming (file:618) — use `@clientName` in spec to rename
-- All other checks passed (versions, CHANGELOG, KnownVersions, client name)
+
+## PR #19 (2026-03-13) — @azure/arm-eventgrid v15.0.0-beta.2 (modular migration)
+- Design: `ChannelsOperations.update => Promise<void>` (api.md:200) — pre-existing from 14.2.0; check spec for response body

@@ -12,7 +12,6 @@ strict: false
 tools:
   github:
     toolsets: [context, repos, pull_requests, actions]
-    lockdown: true
   bash: true
   cache-memory:
   repo-memory:

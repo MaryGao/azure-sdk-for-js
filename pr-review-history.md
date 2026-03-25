@@ -1,11 +1,13 @@
-# PR Review History (MaryGao/azure-sdk-for-js)
+# PR Review History
 
-## @azure/arm-commerce — Recurring Issues (PRs #5, #13, #14, #15)
-- `infoFields?: any` regression, `AzureSupportedClouds` not exported from `./api`
-- `(undocumented)` on client/context, CHANGELOG missing Breaking Changes section
+## PR #24 (2026-03-25) @azure/arm-containerregistry v12.1.0-beta.1
+Tool issue: `apiVersion` made optional in `ContainerRegistryManagementContext`. Outcome: COMMENT.
 
-## PR #17 (2026-03-13) — @azure/arm-alertsmanagement v1.0.0-beta.1 (new pkg)
-- Design: `ProxyResource_1` naming (file:618) — use `@clientName` in spec to rename
+## PR #19 (2026-03-13) @azure/arm-eventgrid v15.0.0-beta.2
+`ChannelsOperations.update => Promise<void>` — pre-existing, check spec.
 
-## PR #19 (2026-03-13) — @azure/arm-eventgrid v15.0.0-beta.2 (modular migration)
-- Design: `ChannelsOperations.update => Promise<void>` (api.md:200) — pre-existing from 14.2.0; check spec for response body
+## PR #17 (2026-03-13) @azure/arm-alertsmanagement v1.0.0-beta.1
+`ProxyResource_1` naming — use `@clientName`.
+
+## @azure/arm-commerce (PRs #5,#13,#14,#15)
+`infoFields?: any` regression, `AzureSupportedClouds` not exported from `./api`.

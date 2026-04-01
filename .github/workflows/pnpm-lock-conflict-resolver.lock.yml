@@ -21,9 +21,9 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# resolve pnpm-lock.yaml comflict in pull requests
+# resolve pnpm-lock.yaml conflict in pull requests
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"a0ac24ae0abe824ff355e9ac6c40634eef7a79596a3f861199d77f6bacf6d728","compiler_version":"v0.57.2","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"dc20c4237422bbfe45d4dae74e4c57cd9e34a8b0af230b6f6a503d106d2cafd4","compiler_version":"v0.57.2","strict":true}
 
 name: "pnpm-lock-conflict-resolver"
 "on":
@@ -945,7 +945,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           WORKFLOW_NAME: "pnpm-lock-conflict-resolver"
-          WORKFLOW_DESCRIPTION: "resolve pnpm-lock.yaml comflict in pull requests"
+          WORKFLOW_DESCRIPTION: "resolve pnpm-lock.yaml conflict in pull requests"
           HAS_PATCH: ${{ steps.collect_output.outputs.has_patch }}
         with:
           script: |
